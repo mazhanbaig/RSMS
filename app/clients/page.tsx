@@ -4,44 +4,51 @@ import Button from "@/components/Button";
 import Header from "@/components/Header";
 import { getData, deleleData } from "@/FBConfig/fbFunctions";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "../context/UserContext";
 
 export default function ClientsPage() {
     const router = useRouter();
     const [clients, setClients] = useState<any[]>([]);
+    const [searchVal, setSearchVal] = useState<string>('');
+    const userInfo = useContext(UserContext);
 
+    // Fetch clients once when userInfo is ready
     useEffect(() => {
+        if (!userInfo) return;
+
         getData('clients/')
             .then((res: any) => {
                 if (res) {
                     const clientsArray = Object.values(res);
-                    setClients(clientsArray);
-                    console.log(clientsArray); // log the actual fetched data
+                    const ownerClients = clientsArray.filter(
+                        (client: any) => client.ownerUid === userInfo.uid
+                    );
+                    setClients(ownerClients);
+                    console.log('Fetched clients:', clientsArray);
                 } else {
                     setClients([]);
                 }
             })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, []);
+            .catch(console.log);
+    }, [userInfo,clients]);
 
-    const deleteClient=(i:number)=>{
-        let client=clients[i]
-        deleleData(client.firstName)
-        .then((res)=>{
-            const updated = [...clients];
-            updated.splice(i, 1);
-            setClients(updated);
-        })
-        .catch((err)=>{
-            console.log(err);
-            
-        })
+    // Delete client
+    const deleteClient = (i: number) => {
+        const client = clients[i];
+        deleleData(client.id)
+            .then(() => {
+                const updated = [...clients];
+                updated.splice(i, 1);
+                setClients(updated);
+            })
+            .catch(console.log);
+    };
 
-    }
-
-    
+    // Filter clients based on search input
+    const filteredClients = clients.filter(client =>
+        client.firstName.toLowerCase().includes(searchVal.toLowerCase())
+    );
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -54,11 +61,13 @@ export default function ClientsPage() {
 
                     <div className="flex gap-6">
                         <div className="text-center">
-                            <div className="text-2xl font-bold text-gray-900">0</div>
+                            <div className="text-2xl font-bold text-gray-900">{clients.length}</div>
                             <div className="text-sm text-gray-600">Total Clients</div>
                         </div>
                         <div className="text-center">
-                            <div className="text-2xl font-bold text-purple-600">0</div>
+                            <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                {clients.filter(c => c.status === 'active').length}
+                            </div>
                             <div className="text-sm text-gray-600">Active Leads</div>
                         </div>
                     </div>
@@ -77,7 +86,7 @@ export default function ClientsPage() {
                             <Button
                                 label="Import Client"
                                 onClick={() => router.push("/clients/addclient")}
-                                variant="theme2"
+                                variant="theme"
                                 size="md"
                             />
                         </div>
@@ -85,15 +94,11 @@ export default function ClientsPage() {
                         <div className="flex flex-wrap gap-3">
                             <input
                                 type="text"
+                                value={searchVal}
                                 placeholder="Search clients..."
                                 className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                onChange={(e) => setSearchVal(e.target.value)}
                             />
-                            <select className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option>All Status</option>
-                                <option>Leads</option>
-                                <option>Active</option>
-                                <option>Closed</option>
-                            </select>
                         </div>
                     </div>
                 </div>
@@ -113,13 +118,12 @@ export default function ClientsPage() {
                                 <th className="text-left p-3 font-semibold text-gray-900">Budget</th>
                                 <th className="text-left p-3 font-semibold text-gray-900">Source</th>
                                 <th className="text-left p-3 font-semibold text-gray-900">Status</th>
-                                <th className="text-left p-3 font-semibold text-gray-900">Notes</th>
                                 <th className="text-left p-3 font-semibold text-gray-900">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                            {clients && clients.length > 0 ? (
-                                clients.map((client: any, index: number) => (
+                            {filteredClients.length > 0 ? (
+                                filteredClients.map((client: any, index: number) => (
                                     <tr key={index} className="hover:bg-gray-50">
                                         <td className="p-3">{index + 1}</td>
                                         <td className="p-3">{client.firstName} {client.lastName}</td>
@@ -131,14 +135,16 @@ export default function ClientsPage() {
                                         <td className="p-3">{client.minBudget} - {client.maxBudget}</td>
                                         <td className="p-3">{client.source}</td>
                                         <td className="p-3 capitalize">{client.status}</td>
-                                        <td className="p-3">{client.notes}</td>
-                                        <td className="p-3 flex gap-2"> 
-                                            <Button onClick={()=>{
-
-                                            }} label='Edit' size="sm" />
-                                            <Button onClick={() => {
-                                                deleteClient(index)
-                                            }} label='Delete' size="sm" />
+                                        <td className="p-3 flex gap-2">
+                                            <Button
+                                                onClick={() =>
+                                                    router.push(`/clients/addclient?clientData=${encodeURIComponent(JSON.stringify(client))}`)
+                                                }
+                                                label='Edit'
+                                                size="sm"
+                                                variant="theme2"
+                                            />
+                                            <Button onClick={() => deleteClient(index)} label='Delete' size="sm" variant="theme" />
                                         </td>
                                     </tr>
                                 ))
@@ -152,9 +158,7 @@ export default function ClientsPage() {
                         </tbody>
                     </table>
                 </div>
-
             </div>
         </div>
     );
 }
-

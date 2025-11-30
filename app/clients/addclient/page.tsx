@@ -1,16 +1,34 @@
 "use client";
 
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Header from "@/components/Header";
 import AddClientPart1 from "@/components/AddClientPart1"; // Personal Info
 import AddClientPart2 from "@/components/AddClientPart2"; // Property Info
 import AddClientPart3 from "@/components/AddClientPart3"; // Additional Info
 import Button from "@/components/Button";
 import { UserContext } from "@/app/context/UserContext";
-import { saveData } from "@/FBConfig/fbFunctions";
+import { saveData, updateData } from "@/FBConfig/fbFunctions";
+import { useSearchParams } from "next/navigation";
 
 export default function AddClientPage() {
-    const [formData, setFormData] = useState({
+    interface FormData {
+        id?: string,
+        firstName: string,
+        lastName: string,
+        email?: string,
+        phone: string,
+        propertyType: string,
+        minBudget: string,
+        maxBudget: string,
+        preferredLocations?: string,
+        bedrooms: string,
+        source?: string,
+        status: string,
+        notes?: string
+    }
+
+    const [formData, setFormData] = useState<FormData>({
+        id: "",
         firstName: "",
         lastName: "",
         email: "",
@@ -22,37 +40,76 @@ export default function AddClientPage() {
         bedrooms: "",
         source: "",
         status: "lead",
-        notes: ""
+        notes: "",
     });
 
     const [activeSection, setActiveSection] = useState("personal");
     const sections = ["personal", "property", "additional"];
+    const searchParams = useSearchParams();
+    const userInfo = useContext(UserContext);
 
-    let  userInfo  = useContext(UserContext)
+    // Pre-fill form for editing
+    useEffect(() => {
+        const clientData = searchParams.get("clientData");
+        if (clientData) {
+            const parsedData = JSON.parse(clientData);
+            setFormData(prev => ({ ...prev, ...parsedData })); // merge to keep id
+        }
+    }, [searchParams]);
 
     const handleChange = (e: any) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log(userInfo);
-        console.log('thsiss ss s s  s s s  s s s ssssssssssssss');
+        const requiredFields: (keyof FormData)[] = ["firstName", "lastName", "phone", "propertyType", "minBudget", 'maxBudget', 'bedrooms', 'status'];
+        const emptyFields = requiredFields.filter(field => !formData[field]?.trim());
+        if (emptyFields.length > 0) {
+            alert(`Please fill in: ${emptyFields.join(", ")}`);
+            return;
+        }
 
-        saveData(`clients/${formData.firstName}`, formData).then(() => {
-            console.log('edoneeeee');
+        const clientFullData = { ...formData, ownerUid: userInfo.uid };
 
-        }).catch((err) => {
-            console.log(err);
+        if (formData.id) {
+            // Editing existing client
+            updateData(`clients/${formData.id}`, clientFullData)
+                .then(() => console.log("Client updated"))
+                .catch(err => console.log(err));
+        } else {
+            // New client
+            const newId = crypto.randomUUID();
+            saveData(`clients/${newId}`, { ...clientFullData, id: newId })
+                .then(() => console.log("Client saved"))
+                .catch(err => console.log(err));
 
-        })
-
-
+            // Reset only after saving new client
+            setFormData({
+                id: "",
+                firstName: "",
+                lastName: "",
+                email: "",
+                phone: "",
+                propertyType: "",
+                minBudget: "",
+                maxBudget: "",
+                preferredLocations: "",
+                bedrooms: "",
+                source: "",
+                status: "lead",
+                notes: "",
+            });
+            setActiveSection("personal");
+        }
     };
+
+    if (!userInfo) return <div className="animate-pulse p-6 min-h-screen flex justify-center items-center text-center">Loading…</div>;
 
     return (
         <div className="min-h-screen bg-gray-50">
             <Header />
             <div className="max-w-5xl mx-auto p-6">
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Add New Client</h1>
+                <div className="text-center mb-8 flex-col justify-start items-center">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Add / Edit Client</h1>
                     <p className="text-gray-600">Enter client details step by step</p>
                 </div>
 
@@ -82,10 +139,11 @@ export default function AddClientPage() {
                                     }}
                                     label="Next"
                                     size="md"
+                                    variant="theme"
                                 />
                             ) : (
                                 <Button
-                                    label={"Add Client"}
+                                    label={"Save Client"}
                                     type="submit"
                                     size="md"
                                     variant="theme2"
@@ -98,4 +156,3 @@ export default function AddClientPage() {
         </div>
     );
 }
-

@@ -23,7 +23,7 @@ export default function Header({ name = 'User' }: { name?: string }) {
     }, []);
 
     return (
-        <nav className="w-full bg-white/70 backdrop-blur-lg shadow-lg px-6 py-3 flex justify-between items-center rounded">
+        <nav className="relative top-5 right-5 left-5 w-[96%] bg-white/70 backdrop-blur-lg shadow-lg px-6 py-3 flex justify-between items-center rounded-2xl">
 
             {/* Logo & Navigation */}
             <div className="flex items-center gap-6">

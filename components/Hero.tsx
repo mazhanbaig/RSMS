@@ -1,11 +1,13 @@
 import { UserContext } from "@/app/context/UserContext";
 import Button from "./Button";
 import { useContext } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Hero({ Name='' }) {
     const userInfo = useContext(UserContext)
+    let router=useRouter()
     return (
-        <div className="flex items-center justify-center min-h-[70vh] bg-linear-to-br from-blue-50 via-white to-purple-50 px-4">
+        <div className="flex items-center justify-center min-h-[90vh] bg-linear-to-br from-blue-50 via-white to-purple-50 px-4">
             <div className="text-center max-w-4xl">
                 {/* Main Heading */}
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
@@ -55,6 +57,9 @@ export default function Hero({ Name='' }) {
                 label="Get Started Today"
                 variant="theme"
                 size="lg"
+                onClick={()=>{
+                    router.push(`/clients`)
+                }}
                 />
 
                 {/* Floating Elements for visual interest */}

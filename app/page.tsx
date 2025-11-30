@@ -33,8 +33,7 @@ export default function Page() {
   }, [authUser, userInfo]);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 to-purple-50">
-      loading...
-    </div>
+    <div className="animate-pulse p-6 min-h-screen flex justify-center items-center text-center">Loading…</div>
+
   );
 }

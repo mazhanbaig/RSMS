@@ -14,7 +14,7 @@ export default function AddClientPart2({ formData, handleChange }: PropertyInfoP
                     onChange={handleChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 >
-                    <option value="">Property Type</option>
+                    <option value="" disabled>Property Type</option>
                     <option value="apartment">Apartment</option>
                     <option value="house">House</option>
                     <option value="villa">Villa</option>
@@ -30,7 +30,7 @@ export default function AddClientPart2({ formData, handleChange }: PropertyInfoP
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
                 <input
-                    type="number"
+                    type="text"
                     name="minBudget"
                     value={formData.minBudget}
                     onChange={handleChange}
@@ -38,7 +38,7 @@ export default function AddClientPart2({ formData, handleChange }: PropertyInfoP
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
                 <input
-                    type="number"
+                    type="text"
                     name="maxBudget"
                     value={formData.maxBudget}
                     onChange={handleChange}

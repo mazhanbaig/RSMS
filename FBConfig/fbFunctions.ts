@@ -1,7 +1,7 @@
 import {app} from '@/FBConfig/config'
 import { rejects } from 'assert';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { getDatabase, ref, set,get, remove } from "firebase/database";
+import { getDatabase, ref, set,get, remove, update, } from "firebase/database";
 import { resolve } from 'path';
 export const auth = getAuth(app);
 const db=getDatabase(app)
@@ -72,9 +72,9 @@ const saveData=(path:string,data:any)=>{
   })
 }
 
-const deleleData = (firstName: string) => {
+const deleleData = (id: string) => {
     return new Promise((resolve,reject)=>{
-      remove(ref(db, `clients/${firstName}`))
+      remove(ref(db, `clients/${id}`))
       .then((res)=>{
         resolve(res);
       })
@@ -84,7 +84,16 @@ const deleleData = (firstName: string) => {
     })
 };
 
+const updateData = (path: string, data: any) => {
+  return new Promise((resolve, reject) => {
+    let dataRef = ref(db, path)
+    update(dataRef, data)
+      .then(res => resolve(res))
+      .catch(err => reject(err))
+  })
+}
 
 
 
-export {signUpUser,loginUser,logout,getData,saveData,deleleData}
+
+export {signUpUser,loginUser,logout,getData,saveData,deleleData,updateData}
