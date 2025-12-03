@@ -46,6 +46,11 @@ export default function AddOwnerPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        if (!userInfo) {
+            message.error("User not detected!");
+            return;
+        }
+
         const requiredFields: (keyof FormData)[] = ["firstName", "phone", "status"];
         const emptyFields = requiredFields.filter(field => !formData[field]?.trim());
 
