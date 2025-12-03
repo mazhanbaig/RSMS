@@ -22,7 +22,7 @@ export default function PropertiesPage() {
     useEffect(() => {
         getData("properties")
             .then((res) => {
-                if (!res) return; 
+                if (!res) return;
                 const propertiesArray = Object.entries(res).map(([id, data]: [string, any]) => ({
                     id,
                     ...data
@@ -32,7 +32,7 @@ export default function PropertiesPage() {
             .catch((err) => console.log(err));
     }, []);
 
-    
+
 
 
     return (
@@ -51,12 +51,12 @@ export default function PropertiesPage() {
                     Smartly manage everything you own or handle.
                 </p>
 
-                <Button 
-                label={"Add Property"}
-                variant="theme2"
-                onClick={()=>{
-                    router.push(`/properties/addproperty`)
-                }}
+                <Button
+                    label={"Add Property"}
+                    variant="theme2"
+                    onClick={() => {
+                        router.push(`/properties/addproperty`)
+                    }}
                 />
 
                 {/* Search + Add button */}
@@ -77,76 +77,78 @@ export default function PropertiesPage() {
             <div className="max-w-6xl mx-auto mt-14 px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {properties
                     .filter((p) => p.title.toLowerCase().includes(search.toLowerCase()))
-                    .map((p, index) => (
+                    .map((p) => (
                         <div
+                        onClick={router.push(`/properties/viewproperty/${p.id}`)}
                             key={p.id}
-                            className="relative group overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-50 p-5 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-1"
-                            style={{
-                                borderLeft: `5px solid ${['#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#3B82F6'][index % 5]
-                                    }`,
-                            }}
+                            className="group relative bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
                         >
-                            {/* Animated background effect */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-
-                            {/* Corner accent */}
-                            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-bl-2xl" />
-
-                            <div className="relative">
-                                {/* Title with underline effect */}
-                                <div className="flex items-start justify-between mb-4">
-                                    <div>
-                                        <h3 className="text-xl font-bold text-gray-900 relative inline-block">
-                                            {p.title}
-                                            <span className="absolute -bottom-1 left-0 w-0 group-hover:w-full h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300" />
-                                        </h3>
+                            {/* Content */}
+                            <div className="p-5">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div className="flex-1">
+                                        <h3 className="text-lg font-bold text-gray-900 line-clamp-1 mb-1">{p.title}</h3>
+                                        <div className="flex items-center gap-1.5 text-gray-600">
+                                            <MapPin size={14} className="text-purple-600" />
+                                            <span className="text-sm truncate">{p.location}</span>
+                                        </div>
                                     </div>
                                     <button
                                         onClick={() => deleteProperty(p.id)}
-                                        className="p-2 hover:bg-red-100 rounded-full transition-colors transform hover:rotate-12 hover:scale-110"
+                                        className="p-2 bg-gray-100 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors duration-300"
                                     >
-                                        <Trash2 size={18} className="text-gray-400 hover:text-red-500" />
+                                        <Trash2 size={16} className="text-gray-600" />
                                     </button>
                                 </div>
 
-                                {/* Location with animated pin */}
-                                <div className="flex items-center gap-2 mb-3 group/location">
-                                    <div className="relative">
-                                        <MapPin
-                                            size={20}
-                                            className="text-purple-500 transform group-hover/location:scale-110 transition-transform"
-                                        />
-                                        <div className="absolute inset-0 bg-purple-500/20 rounded-full animate-ping" />
+                                {/* Quick Stats */}
+                                <div className="grid grid-cols-3 gap-2 mb-4">
+                                    <div className="text-center px-2 py-0.5 bg-blue-50 rounded-lg">
+                                        <div className="text-xl font-bold text-gray-900">{p.bedrooms || '0'}</div>
+                                        <div className="text-xs text-gray-600">Beds</div>
                                     </div>
-                                    <span className="text-gray-700 font-medium">{p.location}</span>
-                                </div>
-
-                                {/* Type with icon badge */}
-                                <div className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 bg-gradient-to-r from-gray-100 to-gray-50 rounded-full border">
-                                    <Home size={16} className="text-gray-600" />
-                                    <span className="text-sm font-semibold text-gray-800">{p.type}</span>
-                                </div>
-
-                                {/* Price with animated gradient */}
-                                <div className="mt-6 pt-4 border-t border-gray-200">
-                                    <div className="relative">
-                                        <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
-                                            {p.price}
-                                        </span>
-                                        <div className="absolute -right-2 -top-1 w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-20 blur-sm group-hover:opacity-40 transition-opacity" />
+                                    <div className="text-center px-2 py-0.5 bg-green-50 rounded-lg">
+                                        <div className="text-xl font-bold text-gray-900">{p.bathrooms || '0'}</div>
+                                        <div className="text-xs text-gray-600">Baths</div>
+                                    </div>
+                                    <div className="text-center px-2 py-0.5 bg-purple-50 rounded-lg">
+                                        <div className="text-xl font-bold text-gray-900">{p.area}</div>
+                                        <div className="text-xs text-gray-600">Area</div>
                                     </div>
                                 </div>
 
-                                {/* Hover indicator dots */}
-                                <div className="absolute bottom-3 left-5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    {[...Array(3)].map((_, i) => (
-                                        <div
-                                            key={i}
-                                            className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-purple-400 to-pink-400"
-                                            style={{ animationDelay: `${i * 100}ms` }}
-                                        />
-                                    ))}
+                                {/* Type and Price */}
+                                <div className="flex items-center justify-between pt-1 border-t border-gray-200">
+                                    <div>
+                                        <div className="text-xs text-gray-500">Type</div>
+                                        <div className="font-medium text-gray-900">{p.propertyType}</div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-xs text-gray-500">Price</div>
+                                        <div className="text-xl font-bold text-gray-900">{p.price}</div>
+                                    </div>
                                 </div>
+
+                                {/* Features Preview */}
+                                {p.features && p.features.length > 0 && (
+                                    <div className="mt-1 pt-2 border-t border-gray-100">
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="text-xs text-gray-500">Features:</div>
+                                            <div className="flex-1 flex gap-1 overflow-hidden">
+                                                {p.features.slice(0, 2).map((feature, idx) => (
+                                                    <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-md whitespace-nowrap">
+                                                        {feature}
+                                                    </span>
+                                                ))}
+                                                {p.features.length > 2 && (
+                                                    <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-md">
+                                                        +{p.features.length - 2}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}

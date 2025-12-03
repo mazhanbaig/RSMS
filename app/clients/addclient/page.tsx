@@ -173,7 +173,7 @@
 // }
 "use client";
 
-import { useContext, useEffect, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useState } from "react";
 import Header from "@/components/Header";
 import AddClientPart1 from "@/components/AddClientPart1";
 import AddClientPart2 from "@/components/AddClientPart2";
@@ -231,7 +231,7 @@ export default function AddClientPage() {
         }
     }, [searchParams]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e:any) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
