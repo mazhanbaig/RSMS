@@ -7,10 +7,16 @@ import { useContext, useEffect, useState } from "react";
 import { UserContext } from "./context/UserContext";
 
 export default function Page() {
+  interface User {
+    email: string;
+    name: string;
+    uid: string;
+    createdAt: string;
+  }
   const router = useRouter();
   const userInfo = useContext(UserContext);
 
-  const [authUser, setAuthUser] = useState(null);
+  const [authUser, setAuthUser] = useState<User|any>(null);
 
   // 1️⃣ Check authentication
   useEffect(() => {
