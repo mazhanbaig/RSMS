@@ -137,7 +137,11 @@ export default function AddPropertyPage() {
 
         // Simple validation
         const required = ['title', 'propertyType', 'price', 'area', 'city', 'location', 'description'];
-        const missing = required.filter(field => !formData[field]);
+        // const missing = required.filter(field => !formData[field]);
+        const missing = required.filter(
+            (field) => !formData[field as keyof typeof formData]
+        );
+
 
         if (missing.length > 0) {
             message.error(`Please fill: ${missing.join(", ")}`);
@@ -162,7 +166,7 @@ export default function AddPropertyPage() {
         } catch (error) {
             message.error('Error saving property. Please try again.')
             console.log(error);
-            
+
         } finally {
             setIsLoading(false);
         }

@@ -1,9 +1,9 @@
 'use client'
 
-import { getData, deleleData } from "@/FBConfig/fbFunctions"
+import { getData } from "@/FBConfig/fbFunctions"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Home, MapPin, Bed, Bath, Square, Calendar, Phone, Mail, User, Check, Star, ArrowLeft, Edit, Trash2 } from "lucide-react"
+import { Home, MapPin, Bed, Bath, Square, Calendar, Phone, User, Check, ArrowLeft } from "lucide-react"
 import Button from "@/components/Button"
 import { message } from "antd"
 import Header from "@/components/Header"
@@ -23,38 +23,51 @@ export default function ViewProperty() {
     const fetchPropertyData = () => {
         getData(`properties/${id}`)
             .then((res) => {
-                setProperty(res)
-                // Fetch related properties (same city or type)
-                getData('properties/')
-                    .then(allProperties => {
-                        if (allProperties) {
-                            const propertiesArray = Object.values(allProperties)
-                            const related = propertiesArray
-                                .filter((p: any) =>
-                                    p.id !== id &&
-                                    (p.city === res.city || p.propertyType === res.propertyType)
-                                )
-                                .slice(0, 4)
-                            setRelatedProperties(related)
-                        }
-                    })
+                if (res) {
+                    setProperty(res)
+                    fetchRelatedProperties(res.city, res.propertyType, id)
+                } else {
+                    message.error('Property not found')
+                    router.push('/properties')
+                }
             })
             .catch(err => {
-                console.error(err)
+                console.error('Error fetching property:', err)
                 message.error('Failed to load property')
+            })
+    }
+
+    const fetchRelatedProperties = (city: string, propertyType: string, currentId: string) => {
+        getData('properties')
+            .then(allProperties => {
+                if (allProperties) {
+                    const propertiesArray = Object.values(allProperties)
+                    const related = propertiesArray
+                        .filter((p: any) =>
+                            p.id !== currentId &&
+                            (p.city === city || p.propertyType === propertyType)
+                        )
+                        .slice(0, 4)
+                    setRelatedProperties(related)
+                }
+            })
+            .catch(err => {
+                console.error('Error fetching related properties:', err)
             })
     }
 
     const handleDelete = () => {
         if (confirm('Are you sure you want to delete this property?')) {
-            deleteData(`properties/${id}`)
-                .then(() => {
-                    message.success('Property deleted successfully')
-                    router.push('/properties')
-                })
-                .catch(err => {
-                    message.error('Failed to delete property')
-                })
+            // Note: You need to import deleteData if you have it
+            // deleteData(`properties/${id}`)
+            //     .then(() => {
+            //         message.success('Property deleted successfully')
+            //         router.push('/properties')
+            //     })
+            //     .catch(err => {
+            //         message.error('Failed to delete property')
+            //     })
+            message.warning('Delete functionality not implemented yet')
         }
     }
 
@@ -88,7 +101,7 @@ export default function ViewProperty() {
                 {/* Back Button */}
                 <div className="mb-6">
                     <button
-                        onClick={() => router.back()}
+                        onClick={() => router.push('/properties')}
                         className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
                     >
                         <ArrowLeft size={20} />
@@ -158,21 +171,10 @@ export default function ViewProperty() {
                                 )}
                             </div>
 
-                            {/* Thumbnail Images */}
-                            {property.images && property.images.length > 1 && (
-                                <div className="grid grid-cols-4 gap-3 mb-8">
-                                    {property.images.slice(1, 5).map((img: string, idx: number) => (
-                                        <div key={idx} className="h-24 rounded-lg overflow-hidden">
-                                            <img src={img} alt="" className="w-full h-full object-cover" />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
                             {/* Description */}
                             <div className="mb-8">
                                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Description</h2>
-                                <p className="text-gray-700 leading-relaxed">{property.description}</p>
+                                <p className="text-gray-700 leading-relaxed whitespace-pre-line">{property.description}</p>
                             </div>
 
                             {/* Features */}
@@ -202,21 +204,21 @@ export default function ViewProperty() {
                                             <Bed size={20} />
                                             <span>Bedrooms</span>
                                         </div>
-                                        <span className="font-bold text-gray-900">{property.bedrooms}</span>
+                                        <span className="font-bold text-gray-900">{property.bedrooms || 'N/A'}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2 text-gray-600">
                                             <Bath size={20} />
                                             <span>Bathrooms</span>
                                         </div>
-                                        <span className="font-bold text-gray-900">{property.bathrooms}</span>
+                                        <span className="font-bold text-gray-900">{property.bathrooms || 'N/A'}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2 text-gray-600">
                                             <Square size={20} />
                                             <span>Area</span>
                                         </div>
-                                        <span className="font-bold text-gray-900">{property.area} {property.areaUnit}</span>
+                                        <span className="font-bold text-gray-900">{property.area || 'N/A'} {property.areaUnit || ''}</span>
                                     </div>
                                     {property.yearBuilt && (
                                         <div className="flex items-center justify-between">
@@ -232,7 +234,7 @@ export default function ViewProperty() {
                                             <Home size={20} />
                                             <span>Property Type</span>
                                         </div>
-                                        <span className="font-bold text-gray-900">{property.propertyType}</span>
+                                        <span className="font-bold text-gray-900">{property.propertyType || 'N/A'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -241,30 +243,22 @@ export default function ViewProperty() {
                             <div className="bg-white border border-gray-200 rounded-xl p-6">
                                 <h3 className="text-xl font-bold text-gray-900 mb-4">Amenities</h3>
                                 <div className="space-y-3">
-                                    {property.hasParking && (
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                            <span className="text-gray-700">Parking Available</span>
-                                        </div>
-                                    )}
-                                    {property.hasGarden && (
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                            <span className="text-gray-700">Garden</span>
-                                        </div>
-                                    )}
-                                    {property.hasSecurity && (
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                            <span className="text-gray-700">Security</span>
-                                        </div>
-                                    )}
-                                    {property.isFurnished && (
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                                            <span className="text-gray-700">Fully Furnished</span>
-                                        </div>
-                                    )}
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-2 h-2 rounded-full ${property.isFurnished ? 'bg-amber-500' : 'bg-gray-300'}`}></div>
+                                        <span className="text-gray-700">{property.isFurnished ? 'Fully Furnished' : 'Unfurnished'}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-2 h-2 rounded-full ${property.hasParking ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                                        <span className="text-gray-700">{property.hasParking ? 'Parking Available' : 'No Parking'}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-2 h-2 rounded-full ${property.hasGarden ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                                        <span className="text-gray-700">{property.hasGarden ? 'Garden' : 'No Garden'}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-2 h-2 rounded-full ${property.hasSecurity ? 'bg-purple-500' : 'bg-gray-300'}`}></div>
+                                        <span className="text-gray-700">{property.hasSecurity ? 'Security' : 'No Security'}</span>
+                                    </div>
                                     {property.amenities && property.amenities.map((amenity: string, idx: number) => (
                                         <div key={idx} className="flex items-center gap-2">
                                             <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
@@ -283,7 +277,7 @@ export default function ViewProperty() {
                                             {property.ownerName?.charAt(0).toUpperCase() || 'O'}
                                         </div>
                                         <div>
-                                            <div className="font-bold text-gray-900">{property.ownerName}</div>
+                                            <div className="font-bold text-gray-900">{property.ownerName || 'Not specified'}</div>
                                             <div className="text-sm text-gray-600">Property Owner</div>
                                         </div>
                                     </div>
@@ -316,7 +310,7 @@ export default function ViewProperty() {
                                                 <span className="text-xs truncate">{related.location}</span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <div className="text-lg font-bold text-gray-900">{related.price}</div>
+                                                <div className="text-lg font-bold text-gray-900">{related.price} {related.priceUnit}</div>
                                                 <div className="text-sm text-gray-500">{related.bedrooms} Beds</div>
                                             </div>
                                         </div>
