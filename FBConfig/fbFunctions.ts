@@ -72,9 +72,9 @@ const saveData=(path:string,data:any)=>{
   })
 }
 
-const deleleData = (id: string) => {
+const deleleData = (path: string) => {
     return new Promise((resolve,reject)=>{
-      remove(ref(db, `clients/${id}`))
+      remove(ref(db,path))
       .then((res)=>{
         resolve(res);
       })

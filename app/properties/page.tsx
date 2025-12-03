@@ -1,37 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import { Home, MapPin, Trash2, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { getData } from "@/FBConfig/fbFunctions";
 
 export default function PropertiesPage() {
     const router = useRouter();
 
     const [search, setSearch] = useState("");
 
-    const [properties, setProperties] = useState<any[]>([
-        {
-            id: 1,
-            title: "Luxury Apartment in Downtown",
-            location: "Downtown Karachi",
-            price: "45,00,000 PKR",
-            type: "Apartment"
-        },
-        {
-            id: 2,
-            title: "Modern 1 Kanal House",
-            location: "DHA Phase 6 Lahore",
-            price: "6,50,00,000 PKR",
-            type: "House"
-        }
-    ]);
+    const [properties, setProperties] = useState<any[]>([]);
 
     const deleteProperty = (id: number) => {
         setProperties(properties.filter((p) => p.id !== id));
     };
+
+    useEffect(() => {
+        getData("properties")
+            .then((res) => {
+                if (!res) return;
+                const propertiesArray = Object.entries(res).map(([id, data]: [string, any]) => ({
+                    id,
+                    ...data
+                }));
+                setProperties(propertiesArray);
+            })
+            .catch((err) => console.log(err));
+    }, []);
+
+    
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pb-20">
@@ -53,6 +55,7 @@ export default function PropertiesPage() {
                 label={"Add Property"}
                 variant="theme2"
                 onClick={()=>{
+                    router.push(`/properties/addproperty`)
                 }}
                 />
 

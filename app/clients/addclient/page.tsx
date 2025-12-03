@@ -8,13 +8,15 @@ import AddClientPart3 from "@/components/AddClientPart3"; // Additional Info
 import Button from "@/components/Button";
 import { UserContext } from "@/app/context/UserContext";
 import { saveData, updateData } from "@/FBConfig/fbFunctions";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { message } from "antd";
+import router from "next/router";
 
 export default function AddClientPage() {
     interface FormData {
         id?: string,
         firstName: string,
-        lastName: string,
+        lastName?: string,
         email?: string,
         phone: string,
         propertyType: string,
@@ -39,7 +41,7 @@ export default function AddClientPage() {
         preferredLocations: "",
         bedrooms: "",
         source: "",
-        status: "lead",
+        status: "active",
         notes: "",
     });
 
@@ -47,6 +49,7 @@ export default function AddClientPage() {
     const sections = ["personal", "property", "additional"];
     const searchParams = useSearchParams();
     const userInfo = useContext(UserContext);
+    let router=useRouter()
 
     // Pre-fill form for editing
     useEffect(() => {
@@ -61,25 +64,37 @@ export default function AddClientPage() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const requiredFields: (keyof FormData)[] = ["firstName", "lastName", "phone", "propertyType", "minBudget", 'maxBudget', 'bedrooms', 'status'];
+
+        if (!userInfo) {
+            message.error("Error User Not Detected!");
+            return;
+        }
+
+        const requiredFields: (keyof FormData)[] = ["firstName", "phone", "propertyType", "minBudget", 'maxBudget', 'bedrooms', 'status'];
         const emptyFields = requiredFields.filter(field => !formData[field]?.trim());
         if (emptyFields.length > 0) {
             alert(`Please fill in: ${emptyFields.join(", ")}`);
             return;
         }
 
-        const clientFullData = { ...formData, ownerUid: userInfo.uid };
+        const clientFullData = { ...formData, ownerUid: userInfo?.uid };
 
         if (formData.id) {
             // Editing existing client
             updateData(`clients/${formData.id}`, clientFullData)
-                .then(() => console.log("Client updated"))
+                .then(() => {
+                    message.success("Edited Successfully");
+                    router.push("/owners");
+                })
                 .catch(err => console.log(err));
         } else {
             // New client
             const newId = crypto.randomUUID();
             saveData(`clients/${newId}`, { ...clientFullData, id: newId })
-                .then(() => console.log("Client saved"))
+                .then(() => {
+                    message.success('Saved Successfully')
+                    router.push("/clients");
+                })
                 .catch(err => console.log(err));
 
             // Reset only after saving new client

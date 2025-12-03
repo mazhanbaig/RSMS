@@ -36,7 +36,7 @@ export default function ClientsPage() {
     // Delete client
     const deleteClient = (i: number) => {
         const client = clients[i];
-        deleleData(client.id)
+        deleleData(`clients/${client.id}`)
             .then(() => {
                 const updated = [...clients];
                 updated.splice(i, 1);
@@ -96,7 +96,7 @@ export default function ClientsPage() {
                                 type="text"
                                 value={searchVal}
                                 placeholder="Search clients..."
-                                className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 onChange={(e) => setSearchVal(e.target.value)}
                             />
                         </div>

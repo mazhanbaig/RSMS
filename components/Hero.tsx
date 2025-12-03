@@ -3,18 +3,18 @@ import Button from "./Button";
 import { useContext } from "react";
 import { useRouter } from "next/navigation";
 
-export default function Hero({ Name='' }) {
+export default function Hero({ Name = '' }) {
     const userInfo = useContext(UserContext)
-    let router=useRouter()
+    let router = useRouter()
     return (
-        <div className="flex items-center justify-center min-h-[90vh] bg-linear-to-br from-blue-50 via-white to-purple-50 px-4">
+        <div className="flex items-center justify-center min-h-[100vh] bg-linear-to-br from-blue-50 via-white to-purple-50 px-4">
             <div className="text-center max-w-4xl">
                 {/* Main Heading */}
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
                     Welcome to{" "}
                     <span className="bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                         Zestate!
-                    </span> 
+                    </span>
                 </h1>
 
                 {/* Personalized Greeting */}
@@ -49,18 +49,24 @@ export default function Hero({ Name='' }) {
                     </div>
                 </div>
 
-                {/* CTA Button */}
-                {/* <button className="bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
-                    Get Started Today
-                </button> */}
-                <Button 
-                label="Get Started Today"
-                variant="theme"
-                size="lg"
-                onClick={()=>{
-                    router.push(`/clients`)
-                }}
-                />
+                <div className="flex justify-center items-center gap-2">
+                    <Button
+                        label="Get Started Today"
+                        variant="theme"
+                        size="lg"
+                        onClick={() => {
+                            router.push(`/clients`)
+                        }}
+                    />
+                    <Button
+                        label="Get Started With About"
+                        variant="theme2"
+                        size="lg"
+                        onClick={() => {
+                            router.push(`/about`)
+                        }}
+                    />
+                </div>
 
                 {/* Floating Elements for visual interest */}
                 <div className="absolute top-1/4 left-1/4 w-4 h-4 bg-purple-300 rounded-full opacity-50 animate-float"></div>

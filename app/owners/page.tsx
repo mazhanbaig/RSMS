@@ -1,0 +1,134 @@
+"use client";
+
+import { useContext, useEffect, useState } from "react";
+import Header from "@/components/Header";
+import Button from "@/components/Button";
+import { UserContext } from "../context/UserContext";
+import { getData, deleleData } from "@/FBConfig/fbFunctions";
+import { useRouter } from "next/navigation";
+
+export default function OwnersPage() {
+    const router = useRouter();
+    const [owners, setOwners] = useState<any[]>([]);
+    const [searchVal, setSearchVal] = useState("");
+    const userInfo = useContext(UserContext);
+
+    useEffect(() => {
+        if (!userInfo) return;
+
+        getData("owners/")
+            .then((res: any) => {
+                if (res) {
+                    const allOwners = Object.values(res).filter((owner: any) => owner.ownerUid === userInfo.uid);
+                    setOwners(allOwners);
+                } else setOwners([]);
+            })
+            .catch(console.log);
+    }, [userInfo]);
+
+    const deleteOwner = (i: number) => {
+        let owner=owners[i]
+        deleleData(`owners/${owner.id}`)
+            .then(() => setOwners(prev => prev.filter((_, idx) => idx !== i)))
+            .catch(console.log);
+    };
+
+    const filteredOwners = owners.filter(owner =>
+        owner.firstName.toLowerCase().includes(searchVal.toLowerCase())
+    );
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <Header />
+
+            <div className="max-w-7xl mx-auto p-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <h1 className="text-3xl font-bold text-gray-900">Owners</h1>
+                    <div className="flex gap-6">
+                        <div className="text-center">
+                            <div className="text-2xl font-bold text-gray-900">{owners.length}</div>
+                            <div className="text-sm text-gray-500">Total Owners</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-2xl font-bold text-green-500">
+                                {owners.filter(o => o.status === "active").length}
+                            </div>
+                            <div className="text-sm text-gray-500">Active Owners</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="flex flex-wrap gap-3">
+                            <Button
+                                label="+ Add Owner"
+                                onClick={() => router.push("/owners/addowner")}
+                                variant="theme2"
+                                size="md"
+                            />
+
+                        </div>
+
+                        <div className="flex flex-wrap gap-3">
+                            <input
+                                type="text"
+                                value={searchVal}
+                                placeholder="Search clients..."
+                                className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                onChange={(e) => setSearchVal(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto bg-white rounded-lg shadow-lg">
+                    <table className="w-full min-w-[700px]">
+                        <thead className="bg-gray-100">
+                            <tr>
+                                <th className="p-3 text-left font-semibold text-gray-900">#</th>
+                                <th className="p-3 text-left font-semibold text-gray-900">Owner Name</th>
+                                <th className="p-3 text-left font-semibold text-gray-900">Email</th>
+                                <th className="p-3 text-left font-semibold text-gray-900">Phone</th>
+                                <th className="p-3 text-left font-semibold text-gray-900">Status</th>
+                                <th className="p-3 text-left font-semibold text-gray-900">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {filteredOwners.length > 0 ? (
+                                filteredOwners.map((owner, i) => (
+                                    <tr key={i} className="hover:bg-gray-50">
+                                        <td className="p-3">{i + 1}</td>
+                                        <td className="p-3">{owner.firstName} {owner.lastName}</td>
+                                        <td className="p-3">{owner.email || "-"}</td>
+                                        <td className="p-3">{owner.phone}</td>
+                                        <td className={`p-3 capitalize ${owner.status === "active" ? "text-green-500" : owner.status === "closed" ? 'text-red-500' : 'text-purple-500'}`}>
+                                            {owner.status}
+                                        </td>
+                                        <td className="p-3 flex gap-2">
+                                            <Button
+                                                label="Edit"
+                                                size="sm"
+                                                variant="theme2"
+                                                onClick={() =>
+                                                    router.push(`/owners/addowner?ownerData=${encodeURIComponent(JSON.stringify(owner))}`)
+                                                }
+                                            />
+                                            <Button label="Delete" size="sm" variant="theme" onClick={() => deleteOwner(i)} />
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={6} className="p-8 text-center text-gray-500">
+                                        No owners found. Click "Add Owner" to start.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
+}
