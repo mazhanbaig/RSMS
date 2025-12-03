@@ -79,7 +79,7 @@ export default function PropertiesPage() {
                     .filter((p) => p.title.toLowerCase().includes(search.toLowerCase()))
                     .map((p) => (
                         <div
-                        onClick={router.push(`/properties/viewproperty/${p.id}`)}
+                            onClick={() => router.push(`/properties/viewproperty/${p.id}`)}
                             key={p.id}
                             className="group relative bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
                         >
