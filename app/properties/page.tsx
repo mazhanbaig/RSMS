@@ -135,7 +135,7 @@ export default function PropertiesPage() {
                                         <div className="flex items-center gap-1.5">
                                             <div className="text-xs text-gray-500">Features:</div>
                                             <div className="flex-1 flex gap-1 overflow-hidden">
-                                                {p.features.slice(0, 2).map((feature, idx) => (
+                                                {p.features.slice(0, 2).map((feature:any, idx:number) => (
                                                     <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-md whitespace-nowrap">
                                                         {feature}
                                                     </span>
