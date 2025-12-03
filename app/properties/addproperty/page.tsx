@@ -50,7 +50,7 @@ export default function AddPropertyPage() {
     const [images, setImages] = useState<File[]>([]);
 
     // Clean form state
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<PropertyFormData>({
         title: '',
         description: '',
         propertyType: '',
