@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
-import { UserProvider } from "./context/UserContext";
 import 'antd/dist/antd.css';
 
 
@@ -31,7 +30,6 @@ export default function RootLayout({
       <body
         className={`antialiased`}
       >
-        {/* <Header/> */}
         {children}
       </body>
     </html>
