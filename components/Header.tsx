@@ -14,7 +14,7 @@ interface UserInfo {
     // [key: string]: any;
 }
 
-export default function Header({ userData }: { userData?: Partial<UserInfo> }) {
+export default function Header({ userData }: { userData?: Partial<UserInfo> | null }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const router = useRouter();
