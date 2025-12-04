@@ -45,9 +45,11 @@ export default function ClientsPage() {
             .then((res: any) => {
                 if (res) {
                     const clientsArray = Object.values(res);
+
                     const ownerClients = clientsArray.filter(
-                        (client: any) => client.ownerUid === userInfo.uid
+                        (client: any) => client.ownerUid === userInfo?.uid
                     );
+
                     setClients(ownerClients);
                     console.log('Fetched clients:', ownerClients);
                 } else {
