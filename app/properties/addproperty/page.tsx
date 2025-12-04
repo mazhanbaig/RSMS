@@ -1,16 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useContext, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { UserContext } from "@/app/context/UserContext";
+import { useState, useEffect, ChangeEvent } from 'react';
+import { useRouter, useSearchParams } from "next/navigation";
 import Button from "@/components/Button";
 import Header from "@/components/Header";
 import AddPropertyPart1 from "@/components/AddPropertyPart1";
 import AddPropertyPart2 from "@/components/AddPropertyPart2";
-import AddPropertyPart3 from "@/components/AddPropertyPart3";
-import { saveData, updateData } from "@/FBConfig/fbFunctions";
-import { useSearchParams } from "next/navigation";
+import { getData, saveData, updateData } from "@/FBConfig/fbFunctions";
 import { message } from 'antd';
+import AddPropertyPart3 from '@/components/AddPropertyPart3';
+
+interface UserInfo {
+    uid: string;
+    email: string;
+}
 
 export default function AddPropertyPage() {
 
@@ -39,17 +42,16 @@ export default function AddPropertyPage() {
         hasSecurity: boolean;
     }
 
-
     const router = useRouter();
-    const userInfo = useContext(UserContext);
 
-    // Simple state management
+    // State for userInfo from localStorage
+    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
     const [activeSection, setActiveSection] = useState('basic');
     const [isLoading, setIsLoading] = useState(false);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [images, setImages] = useState<File[]>([]);
 
-    // Clean form state
     const [formData, setFormData] = useState<PropertyFormData>({
         title: '',
         description: '',
@@ -75,10 +77,27 @@ export default function AddPropertyPage() {
         hasSecurity: false,
     });
 
-    const sections = ['basic', 'details'];
+    const sections = ['basic', 'details', 'images'];
 
+    // Load userInfo from localStorage once
+    useEffect(() => {
+        const data = localStorage.getItem("userInfo");
+        if (data) {
+            try {
+                let parsed = JSON.parse(data)
+                getData(`users/${parsed.uid}`)
+                    .then((res: any) => {
+                        setUserInfo(res)
+                    })
+                    .catch((err: any) => {
+                        console.error(err.message);
+                    })
+            } catch (err) {
+                console.error("Failed to parse userInfo from localStorage:", err);
+            }
+        }
+    }, []);
 
-    // Simple handlers
     const handleChange = (e: any) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
@@ -86,14 +105,6 @@ export default function AddPropertyPage() {
             [name]: type === 'checkbox' ? checked : value ?? ''
         }));
     };
-    const sanitize = (obj: any) =>
-        Object.fromEntries(
-            Object.entries(obj).map(([k, v]) => [
-                k,
-                v === undefined ? null : v
-            ])
-        );
-
 
     const handleFeatureToggle = (feature: string) => {
         setFormData(prev => ({
@@ -114,12 +125,9 @@ export default function AddPropertyPage() {
     };
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log(e);
-
         const files = Array.from(e.target.files || []);
         const newImages = [...images, ...files].slice(0, 10);
         setImages(newImages);
-
         const previews = newImages.map(file => URL.createObjectURL(file));
         setImagePreviews(previews);
     };
@@ -131,17 +139,26 @@ export default function AddPropertyPage() {
         setImagePreviews(newPreviews);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-
-        // Simple validation
-        const required = ['title', 'propertyType', 'price', 'area', 'city', 'location', 'description'];
-        // const missing = required.filter(field => !formData[field]);
-        const missing = required.filter(
-            (field) => !formData[field as keyof typeof formData]
+    const sanitize = (obj: any) =>
+        Object.fromEntries(
+            Object.entries(obj).map(([k, v]) => [
+                k,
+                v === undefined ? null : v
+            ])
         );
 
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!userInfo) {
+            message.error("User not detected!");
+            return;
+        }
+
+        setIsLoading(true);
+
+        const required = ['title', 'propertyType', 'price', 'area', 'city', 'location', 'description'];
+        const missing = required.filter(field => !formData[field as keyof typeof formData]);
 
         if (missing.length > 0) {
             message.error(`Please fill: ${missing.join(", ")}`);
@@ -151,25 +168,23 @@ export default function AddPropertyPage() {
 
         const propertyData = sanitize({
             ...formData,
-            ownerUid: userInfo?.uid,
+            ownerUid: userInfo.uid,
             images: imagePreviews,
             createdAt: new Date().toISOString(),
             id: crypto.randomUUID()
         });
 
-
-        try {
-            // Save to Firebase
-            await saveData(`properties/${propertyData.id}`, propertyData);
-            message.success('Property saved successfully!')
-            router.push('/properties');
-        } catch (error) {
-            message.error('Error saving property. Please try again.')
-            console.log(error);
-
-        } finally {
-            setIsLoading(false);
-        }
+        // Save to Firebase using Promises
+        saveData(`properties/${propertyData.id}`, propertyData)
+            .then(() => {
+                message.success('Property saved successfully!');
+                router.push('/properties');
+            })
+            .catch(err => {
+                console.log(err);
+                message.error('Error saving property. Please try again.');
+            })
+            .finally(() => setIsLoading(false));
     };
 
     if (!userInfo) return (
@@ -180,7 +195,7 @@ export default function AddPropertyPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50">
-            <Header />
+            <Header userData={userInfo} />
 
             <div className="max-w-6xl mx-auto px-4 py-8">
                 <div className="text-center mb-8">
@@ -201,7 +216,6 @@ export default function AddPropertyPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-md p-6">
-                    {/* Render active section */}
                     {activeSection === 'basic' && <AddPropertyPart1 formData={formData} handleChange={handleChange} />}
                     {activeSection === 'details' && (
                         <AddPropertyPart2
@@ -211,7 +225,7 @@ export default function AddPropertyPage() {
                             handleAmenityToggle={handleAmenityToggle}
                         />
                     )}
-                    {/* {activeSection === 'images' && (
+                    {activeSection === 'images' && (
                         <AddPropertyPart3
                             formData={formData}
                             handleChange={handleChange}
@@ -219,9 +233,9 @@ export default function AddPropertyPage() {
                             handleImageUpload={handleImageUpload}
                             removeImage={removeImage}
                         />
-                    )} */}
+                    )}
 
-                    {/* Navigation Buttons */}
+
                     <div className="flex justify-between mt-8 pt-6 border-t">
                         <Button
                             type="button"

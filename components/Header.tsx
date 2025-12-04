@@ -2,27 +2,29 @@
 
 import { logout } from "@/FBConfig/fbFunctions";
 import { Menu, X } from "lucide-react";
-import { onAuthStateChanged } from "firebase/auth";
 import Link from "next/link";
-import { useContext, useEffect, useState } from "react";
-import { auth } from "@/FBConfig/fbFunctions";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserContext } from "@/app/context/UserContext";
 
-export default function Header({ name = "User" }: { name?: string }) {
+interface UserInfo {
+    name: string;
+    uid: string;
+    email: string;
+    createdAt: string;
+    [key: string]: any;
+}
+
+export default function Header({ userData }: { userData?: UserInfo }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const router = useRouter();
-    const userInfo = useContext(UserContext);
 
-    useEffect(() => {
-        onAuthStateChanged(auth, (user) => {
-            if (!user) router.push("/login");
-        });
-    }, []);
+    const cleanName = userData?.name
+        ? userData.name.trim().toLowerCase().replace(/\s+/g, "-")
+        : "user";
 
     const navLinks = [
-        { label: "Dashboard", href: `/realstate/${name}` },
+        { label: "Dashboard", href: `/realstate/${cleanName}` },
         { label: "Properties", href: "/properties" },
         { label: "Clients", href: "/clients" },
         { label: "Owners", href: "/owners" },
@@ -30,11 +32,8 @@ export default function Header({ name = "User" }: { name?: string }) {
 
     return (
         <nav className="relative top-5 right-5 left-5 w-[96%] bg-white/70 backdrop-blur-lg shadow-lg px-6 py-3 flex flex-wrap justify-between items-center rounded-2xl">
-
             {/* Logo */}
-            <div className="text-2xl font-extrabold text-gray-900 uppercase">
-                Zestate
-            </div>
+            <div className="text-2xl font-extrabold text-gray-900 uppercase">Zestate</div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-4">
@@ -49,7 +48,7 @@ export default function Header({ name = "User" }: { name?: string }) {
                 ))}
             </div>
 
-            {/* Right side - mobile: hamburger + avatar, desktop: avatar */}
+            {/* Right side */}
             <div className="flex items-center space-x-2">
                 {/* Mobile Hamburger */}
                 <button
@@ -66,10 +65,10 @@ export default function Header({ name = "User" }: { name?: string }) {
                         className="flex items-center space-x-2 p-2 rounded-xl hover:bg-gray-100 transition"
                     >
                         <div className="rounded-full bg-black text-white w-8 h-8 flex justify-center items-center">
-                            {userInfo?.name?.slice(0, 1).toUpperCase() || name[0].toUpperCase()}
+                            {userData?.name?.[0]?.toUpperCase() || "U"}
                         </div>
                         <span className="hidden sm:inline">
-                            {userInfo?.name?.toUpperCase() || name.toUpperCase()}
+                            {userData?.name ? userData.name.toUpperCase() : "USER"}
                         </span>
                     </button>
 
@@ -82,7 +81,7 @@ export default function Header({ name = "User" }: { name?: string }) {
                                 Settings
                             </Link>
                             <Link
-                                href={`/login`}
+                                href="/login"
                                 onClick={() => logout()}
                                 className="block px-4 py-2 text-red-500 hover:bg-gray-100"
                             >
@@ -93,9 +92,9 @@ export default function Header({ name = "User" }: { name?: string }) {
                 </div>
             </div>
 
-            {/* Mobile Navigation Links */}
+            {/* Mobile Navigation */}
             {isMenuOpen && (
-                <div className="absolute right-20 top-15 mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-10">
+                <div className="absolute right-0 top-14 mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-10">
                     {navLinks.map((link) => (
                         <Link
                             key={link.href}

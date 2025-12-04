@@ -6,13 +6,14 @@ import Button from "@/components/Button";
 import { Home, MapPin, Trash2, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getData } from "@/FBConfig/fbFunctions";
+import { auth, getData } from "@/FBConfig/fbFunctions";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function PropertiesPage() {
     const router = useRouter();
 
     const [search, setSearch] = useState("");
-
+    const [userInfo, setUserInfo] = useState<any>(null)
     const [properties, setProperties] = useState<any[]>([]);
 
     const deleteProperty = (id: number) => {
@@ -20,24 +21,46 @@ export default function PropertiesPage() {
     };
 
     useEffect(() => {
-        getData("properties")
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                router.replace(`/login`)
+            }
+        })
+        const data = localStorage.getItem("userInfo");
+        if (data) {
+            try {
+                let parsed = JSON.parse(data)
+                getData(`users/${parsed.uid}`)
+                    .then((res: any) => {
+                        setUserInfo(res)
+                    })
+                    .catch((err: any) => {
+                        console.error(err.message);
+                    })
+            } catch (err) {
+                console.error("Failed to parse userInfo from localStorage:", err);
+            }
+        }
+
+        getData(`properties/`)
             .then((res) => {
-                if (!res) return;
-                const propertiesArray = Object.entries(res).map(([id, data]: [string, any]) => ({
-                    id,
-                    ...data
-                }));
-                setProperties(propertiesArray);
+                if (res) {
+                    // Convert object to array with IDs
+                    const propertiesArray = Object.entries(res).map(([key, value]: [string, any]) => ({
+                        id: key,
+                        ...value
+                    }));
+                    setProperties(propertiesArray);
+                }
             })
             .catch((err) => console.log(err));
     }, []);
 
 
 
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pb-20">
-            <Header />
+            <Header userData={userInfo} />
 
             {/* PAGE TITLE */}
             <div className="max-w-6xl mx-auto mt-16 px-6">
@@ -77,9 +100,9 @@ export default function PropertiesPage() {
             <div className="max-w-6xl mx-auto mt-14 px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {properties
                     .filter((p) => p.title.toLowerCase().includes(search.toLowerCase()))
-                    .map((p) => (
+                    .map((p: any) => (
                         <div
-                            onClick={() => router.push(`/properties/viewproperty/${p.id}`)}
+                            onClick={() => router.push(`/properties/viewproperty/${encodeURIComponent(p.id)}`)}
                             key={p.id}
                             className="group relative bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
                         >
@@ -125,7 +148,7 @@ export default function PropertiesPage() {
                                     </div>
                                     <div className="text-right">
                                         <div className="text-xs text-gray-500">Price</div>
-                                        <div className="text-xl font-bold text-gray-900">{p.price}</div>
+                                        <div className="text-lg font-bold text-gray-900">{p.price} {p.priceUnit}</div>
                                     </div>
                                 </div>
 
@@ -135,7 +158,7 @@ export default function PropertiesPage() {
                                         <div className="flex items-center gap-1.5">
                                             <div className="text-xs text-gray-500">Features:</div>
                                             <div className="flex-1 flex gap-1 overflow-hidden">
-                                                {p.features.slice(0, 2).map((feature:any, idx:number) => (
+                                                {p.features.slice(0, 2).map((feature: any, idx: number) => (
                                                     <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-md whitespace-nowrap">
                                                         {feature}
                                                     </span>

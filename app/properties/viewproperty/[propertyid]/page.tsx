@@ -1,113 +1,123 @@
 'use client'
 
-import { getData } from "@/FBConfig/fbFunctions"
+import { auth, getData } from "@/FBConfig/fbFunctions"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Home, MapPin, Bed, Bath, Square, Calendar, Phone, User, Check, ArrowLeft } from "lucide-react"
+import {
+    Home, MapPin, Bed, Bath, Square, Calendar, Phone, Check, ArrowLeft, Edit2, Trash2
+} from "lucide-react"
 import Button from "@/components/Button"
 import { message } from "antd"
 import Header from "@/components/Header"
+import { onAuthStateChanged } from "firebase/auth"
 
-export default function ViewProperty() {
+export default function ViewPropertyPage() {
     const [property, setProperty] = useState<any>(null)
     const [relatedProperties, setRelatedProperties] = useState<any[]>([])
-    const { id } = useParams()
+    const [loading, setLoading] = useState(true)
+    const [userInfo, setUserInfo] = useState<any>(null)
+
+    const { propertyid } = useParams()
     const router = useRouter()
 
+    // Check user auth
     useEffect(() => {
-        if (id) {
-            fetchPropertyData()
+        onAuthStateChanged(auth, (user) => {
+            if (!user) router.replace(`/login`)
+        })
+
+        const data = localStorage.getItem("userInfo")
+        if (data) {
+            try {
+                const parsed = JSON.parse(data)
+                getData(`users/${parsed.uid}`)
+                    .then(res => setUserInfo(res))
+                    .catch(err => console.error(err))
+            } catch (err) {
+                console.error("Failed to parse userInfo:", err)
+            }
         }
-    }, [id])
+    }, [])
+
+    // Fetch property
+    useEffect(() => {
+        if (!propertyid) return
+        fetchPropertyData()
+    }, [propertyid])
 
     const fetchPropertyData = () => {
-        getData(`properties/${id}`)
-            .then((res) => {
-                if (res) {
-                    setProperty(res)
-                    fetchRelatedProperties(res.city, res.propertyType, id)
-                } else {
-                    message.error('Property not found')
+        setLoading(true)
+        getData(`properties/${propertyid}`)
+            .then(res => {
+                if (!res) {
+                    message.error("Property not found")
                     router.push('/properties')
+                    return
                 }
+                setProperty(res)
+                fetchRelatedProperties(res.city, res.propertyType, propertyid)
             })
             .catch(err => {
-                console.error('Error fetching property:', err)
-                message.error('Failed to load property')
+                console.error(err)
+                message.error("Failed to load property")
             })
+            .finally(() => setLoading(false))
     }
 
     const fetchRelatedProperties = (city: string, propertyType: string, currentId: string) => {
         getData('properties')
-            .then(allProperties => {
-                if (allProperties) {
-                    const propertiesArray = Object.values(allProperties)
-                    const related = propertiesArray
-                        .filter((p: any) =>
-                            p.id !== currentId &&
-                            (p.city === city || p.propertyType === propertyType)
-                        )
-                        .slice(0, 4)
-                    setRelatedProperties(related)
-                }
+            .then(allProps => {
+                if (!allProps) return
+                const propsArray = Object.entries(allProps).map(([key, value]: [string, any]) => ({ id: key, ...value }))
+                const related = propsArray.filter(p => p.id !== currentId && (p.city === city || p.propertyType === propertyType)).slice(0, 4)
+                setRelatedProperties(related)
             })
-            .catch(err => {
-                console.error('Error fetching related properties:', err)
-            })
+            .catch(err => console.error("Error fetching related properties:", err))
     }
 
-    const handleDelete = () => {
-        if (confirm('Are you sure you want to delete this property?')) {
-            // Note: You need to import deleteData if you have it
-            // deleteData(`properties/${id}`)
-            //     .then(() => {
-            //         message.success('Property deleted successfully')
-            //         router.push('/properties')
-            //     })
-            //     .catch(err => {
-            //         message.error('Failed to delete property')
-            //     })
-            message.warning('Delete functionality not implemented yet')
-        }
-    }
+    const handleEdit = () => router.push(`/properties/edit/${propertyid}`)
+    const handleDelete = () => message.warning("Delete not implemented yet")
 
-    if (!property) {
-        return (
-            <div className="min-h-screen bg-gray-50">
-                <Header />
-                <div className="max-w-7xl mx-auto px-4 py-8">
-                    <div className="animate-pulse">
-                        <div className="h-8 bg-gray-200 rounded w-48 mb-8"></div>
-                        <div className="grid md:grid-cols-3 gap-8">
-                            <div className="md:col-span-2">
-                                <div className="h-96 bg-gray-200 rounded-xl mb-6"></div>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="h-40 bg-gray-200 rounded-xl"></div>
-                                <div className="h-40 bg-gray-200 rounded-xl"></div>
-                            </div>
+    // Loading skeleton
+    if (loading) return (
+        <div className="min-h-screen bg-gray-50">
+            <Header userData={userInfo} />
+            <div className="max-w-7xl mx-auto px-4 py-8">
+                <div className="animate-pulse">
+                    <div className="h-8 bg-gray-200 rounded w-48 mb-8"></div>
+                    <div className="grid md:grid-cols-3 gap-8">
+                        <div className="md:col-span-2">
+                            <div className="h-96 bg-gray-200 rounded-xl mb-6"></div>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="h-40 bg-gray-200 rounded-xl"></div>
+                            <div className="h-40 bg-gray-200 rounded-xl"></div>
                         </div>
                     </div>
                 </div>
             </div>
-        )
-    }
+        </div>
+    )
+
+    if (!property) return (
+        <div className="min-h-screen bg-gray-50">
+            <Header />
+            <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+                <h1 className="text-2xl font-bold text-gray-900 mb-4">Property Not Found</h1>
+                <p className="text-gray-600 mb-6">The property doesn't exist or has been removed.</p>
+                <Button label="Back to Properties" variant="theme2" onClick={() => router.push('/properties')} />
+            </div>
+        </div>
+    )
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header />
-
+            <Header userData={userInfo} />
             <div className="max-w-7xl mx-auto px-4 py-8">
-                {/* Back Button */}
-                <div className="mb-6">
-                    <button
-                        onClick={() => router.push('/properties')}
-                        className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
-                    >
-                        <ArrowLeft size={20} />
-                        <span>Back to Properties</span>
-                    </button>
-                </div>
+                {/* Back */}
+                <button onClick={() => router.push('/properties')} className="flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-6">
+                    <ArrowLeft size={20} /> Back to Properties
+                </button>
 
                 {/* Property Header */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
@@ -124,45 +134,22 @@ export default function ViewProperty() {
                                 </div>
                             </div>
                         </div>
-
                         <div className="flex gap-3">
-                            <Button
-                                label="Edit"
-                                variant="theme2"
-                                size="md"
-                                onClick={() => router.push(`/properties/edit/${id}`)}
-                            />
-                            <Button
-                                label="Delete"
-                                variant="danger"
-                                size="md"
-                                onClick={handleDelete}
-                            />
+                            <Button label="Edit" variant="theme2" size="md" onClick={handleEdit} icon={<Edit2 size={18} />} />
+                            <Button label="Delete" variant="danger" size="md" onClick={handleDelete} icon={<Trash2 size={18} />} />
                         </div>
                     </div>
 
-                    {/* Price Display */}
-                    <div className="p-6 bg-gradient-to-r from-gray-900 to-black rounded-xl text-white mb-6">
-                        <div className="text-sm font-medium text-gray-300 mb-1">TOTAL PRICE</div>
-                        <div className="text-5xl font-bold mb-2">{property.price} {property.priceUnit}</div>
-                        <div className="text-gray-300">
-                            {property.area} {property.areaUnit} • {property.propertyType}
-                        </div>
-                    </div>
+                    
 
-                    {/* Main Content Grid */}
+                    {/* Main Grid */}
                     <div className="grid md:grid-cols-3 gap-8">
-                        {/* Left Column - Images */}
+                        {/* Left - Images & Description */}
                         <div className="md:col-span-2">
-                            {/* Main Image */}
                             <div className="mb-6">
-                                {property.images && property.images[0] ? (
-                                    <div className="relative h-96 rounded-xl overflow-hidden">
-                                        <img
-                                            src={property.images[0]}
-                                            alt={property.title}
-                                            className="w-full h-full object-cover"
-                                        />
+                                {property.images?.[0] ? (
+                                    <div className="relative h-46 rounded-xl overflow-hidden">
+                                        <img src={property.images[0]} alt={property.title} className="w-full h-full object-cover" />
                                     </div>
                                 ) : (
                                     <div className="h-96 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center">
@@ -170,22 +157,18 @@ export default function ViewProperty() {
                                     </div>
                                 )}
                             </div>
-
-                            {/* Description */}
                             <div className="mb-8">
                                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Description</h2>
-                                <p className="text-gray-700 leading-relaxed whitespace-pre-line">{property.description}</p>
+                                <p className="text-gray-700 leading-relaxed whitespace-pre-line">{property.description || 'No description.'}</p>
                             </div>
-
-                            {/* Features */}
-                            {property.features && property.features.length > 0 && (
+                            {property.features?.length > 0 && (
                                 <div className="mb-8">
                                     <h2 className="text-2xl font-bold text-gray-900 mb-4">Features</h2>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                        {property.features.map((feature: string, idx: number) => (
-                                            <div key={idx} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                                        {property.features.map((f: string, i: number) => (
+                                            <div key={i} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                                                 <Check size={16} className="text-green-600" />
-                                                <span className="text-gray-700">{feature}</span>
+                                                <span className="text-gray-700">{f}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -193,49 +176,16 @@ export default function ViewProperty() {
                             )}
                         </div>
 
-                        {/* Right Column - Details */}
+                        {/* Right - Details */}
                         <div className="space-y-6">
-                            {/* Quick Stats */}
                             <div className="bg-white border border-gray-200 rounded-xl p-6">
                                 <h3 className="text-xl font-bold text-gray-900 mb-4">Property Details</h3>
                                 <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 text-gray-600">
-                                            <Bed size={20} />
-                                            <span>Bedrooms</span>
-                                        </div>
-                                        <span className="font-bold text-gray-900">{property.bedrooms || 'N/A'}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 text-gray-600">
-                                            <Bath size={20} />
-                                            <span>Bathrooms</span>
-                                        </div>
-                                        <span className="font-bold text-gray-900">{property.bathrooms || 'N/A'}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 text-gray-600">
-                                            <Square size={20} />
-                                            <span>Area</span>
-                                        </div>
-                                        <span className="font-bold text-gray-900">{property.area || 'N/A'} {property.areaUnit || ''}</span>
-                                    </div>
-                                    {property.yearBuilt && (
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2 text-gray-600">
-                                                <Calendar size={20} />
-                                                <span>Year Built</span>
-                                            </div>
-                                            <span className="font-bold text-gray-900">{property.yearBuilt}</span>
-                                        </div>
-                                    )}
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2 text-gray-600">
-                                            <Home size={20} />
-                                            <span>Property Type</span>
-                                        </div>
-                                        <span className="font-bold text-gray-900">{property.propertyType || 'N/A'}</span>
-                                    </div>
+                                    <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-gray-600"><Bed size={20} />Bedrooms</div><span className="font-bold text-gray-900">{property.bedrooms || 'N/A'}</span></div>
+                                    <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-gray-600"><Bath size={20} />Bathrooms</div><span className="font-bold text-gray-900">{property.bathrooms || 'N/A'}</span></div>
+                                    <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-gray-600"><Square size={20} />Area</div><span className="font-bold text-gray-900">{property.area || 'N/A'} {property.areaUnit || ''}</span></div>
+                                    {property.yearBuilt && <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-gray-600"><Calendar size={20} />Year Built</div><span className="font-bold text-gray-900">{property.yearBuilt}</span></div>}
+                                    <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-gray-600"><Home size={20} />Property Type</div><span className="font-bold text-gray-900">{property.propertyType || 'N/A'}</span></div>
                                 </div>
                             </div>
 
@@ -243,75 +193,44 @@ export default function ViewProperty() {
                             <div className="bg-white border border-gray-200 rounded-xl p-6">
                                 <h3 className="text-xl font-bold text-gray-900 mb-4">Amenities</h3>
                                 <div className="space-y-3">
-                                    <div className="flex items-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full ${property.isFurnished ? 'bg-amber-500' : 'bg-gray-300'}`}></div>
-                                        <span className="text-gray-700">{property.isFurnished ? 'Fully Furnished' : 'Unfurnished'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full ${property.hasParking ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
-                                        <span className="text-gray-700">{property.hasParking ? 'Parking Available' : 'No Parking'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full ${property.hasGarden ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                                        <span className="text-gray-700">{property.hasGarden ? 'Garden' : 'No Garden'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full ${property.hasSecurity ? 'bg-purple-500' : 'bg-gray-300'}`}></div>
-                                        <span className="text-gray-700">{property.hasSecurity ? 'Security' : 'No Security'}</span>
-                                    </div>
-                                    {property.amenities && property.amenities.map((amenity: string, idx: number) => (
-                                        <div key={idx} className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                                            <span className="text-gray-700">{amenity}</span>
-                                        </div>
-                                    ))}
+                                    <div className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full ${property.isFurnished ? 'bg-amber-500' : 'bg-gray-300'}`}></div><span className="text-gray-700">{property.isFurnished ? 'Fully Furnished' : 'Unfurnished'}</span></div>
+                                    <div className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full ${property.hasParking ? 'bg-blue-500' : 'bg-gray-300'}`}></div><span className="text-gray-700">{property.hasParking ? 'Parking Available' : 'No Parking'}</span></div>
+                                    <div className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full ${property.hasGarden ? 'bg-green-500' : 'bg-gray-300'}`}></div><span className="text-gray-700">{property.hasGarden ? 'Garden' : 'No Garden'}</span></div>
+                                    <div className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full ${property.hasSecurity ? 'bg-purple-500' : 'bg-gray-300'}`}></div><span className="text-gray-700">{property.hasSecurity ? 'Security' : 'No Security'}</span></div>
+                                    {property.amenities?.map((a: string, i: number) => (<div key={i} className="flex items-center gap-2"><div className="w-2 h-2 bg-gray-400 rounded-full"></div><span className="text-gray-700">{a}</span></div>))}
                                 </div>
                             </div>
 
-                            {/* Owner Info */}
+                            {/* Owner */}
                             <div className="bg-white border border-gray-200 rounded-xl p-6">
                                 <h3 className="text-xl font-bold text-gray-900 mb-4">Owner Information</h3>
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold">
-                                            {property.ownerName?.charAt(0).toUpperCase() || 'O'}
-                                        </div>
+                                        <div className="w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold">{property.ownerName?.charAt(0).toUpperCase() || 'O'}</div>
                                         <div>
                                             <div className="font-bold text-gray-900">{property.ownerName || 'Not specified'}</div>
                                             <div className="text-sm text-gray-600">Property Owner</div>
                                         </div>
                                     </div>
-                                    {property.ownerContact && (
-                                        <div className="flex items-center gap-2 text-gray-700">
-                                            <Phone size={18} />
-                                            <span>{property.ownerContact}</span>
-                                        </div>
-                                    )}
+                                    {property.ownerContact && <div className="flex items-center gap-2 text-gray-700"><Phone size={18} />{property.ownerContact}</div>}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Related Properties */}
+                    {/* Related */}
                     {relatedProperties.length > 0 && (
                         <div className="mt-12">
                             <h2 className="text-2xl font-bold text-gray-900 mb-6">Similar Properties</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {relatedProperties.map((related) => (
-                                    <div
-                                        key={related.id}
-                                        onClick={() => router.push(`/properties/viewproperty/${related.id}`)}
-                                        className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
-                                    >
+                                {relatedProperties.map(r => (
+                                    <div key={r.id} onClick={() => router.push(`/property/viewproperty/${r.id}`)} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
                                         <div className="p-4">
-                                            <h3 className="font-bold text-gray-900 line-clamp-1 mb-2">{related.title}</h3>
-                                            <div className="flex items-center gap-1 text-gray-600 mb-3">
-                                                <MapPin size={12} />
-                                                <span className="text-xs truncate">{related.location}</span>
-                                            </div>
+                                            <h3 className="font-bold text-gray-900 line-clamp-1 mb-2">{r.title}</h3>
+                                            <div className="flex items-center gap-1 text-gray-600 mb-3"><MapPin size={12} /><span className="text-xs truncate">{r.location}</span></div>
                                             <div className="flex justify-between items-center">
-                                                <div className="text-lg font-bold text-gray-900">{related.price} {related.priceUnit}</div>
-                                                <div className="text-sm text-gray-500">{related.bedrooms} Beds</div>
+                                                <div className="text-lg font-bold text-gray-900">{r.price?.toLocaleString()} {r.priceUnit || 'PKR'}</div>
+                                                <div className="text-sm text-gray-500">{r.bedrooms || 0} Beds</div>
                                             </div>
                                         </div>
                                     </div>

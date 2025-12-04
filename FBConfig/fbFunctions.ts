@@ -38,6 +38,22 @@ const loginUser = ({ email, password }: any) => {
   });
 };
 
+
+// export const loginUser = async ({ email, password }: any) => {
+//   const userCredential = await signInWithEmailAndPassword(auth, email, password);
+//   const user = userCredential.user;
+
+//   // store minimal info in localStorage for instant access
+//   localStorage.setItem("userInfo", JSON.stringify({
+//     uid: user.uid,
+//     email: user.email || "",
+//   }));
+
+//   return user;
+// };
+
+
+
 let logout=()=>{
     signOut(auth).then(() => {
     }).catch((error) => {
@@ -92,7 +108,6 @@ const updateData = (path: string, data: any) => {
       .catch(err => reject(err))
   })
 }
-
 
 
 

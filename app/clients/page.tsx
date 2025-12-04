@@ -4,19 +4,43 @@ import Button from "@/components/Button";
 import Header from "@/components/Header";
 import { getData, deleleData } from "@/FBConfig/fbFunctions";
 import { useRouter } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
-import { UserContext } from "../context/UserContext";
+import { useEffect, useState } from "react";
 
 export default function ClientsPage() {
+    interface UserInfo {
+        uid: string;
+        email?: string;
+        name?: string;
+        [key: string]: any;
+    }
+
     const router = useRouter();
     const [clients, setClients] = useState<any[]>([]);
     const [searchVal, setSearchVal] = useState<string>('');
-    const userInfo = useContext(UserContext);
+    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
-    // Fetch clients once when userInfo is ready
+    // Load userInfo from localStorage once
     useEffect(() => {
-        if (!userInfo) return;
+        const stored = localStorage.getItem('userInfo');
+        if (stored) {
+            try {
+                const parsed: UserInfo = JSON.parse(stored);
+                getData(`users/${parsed.uid}`)
+                .then((res:any)=>{
+                    setUserInfo(res)
+                })
+                .catch((err:any)=>{
+                    console.error(err.message);           
+                })
+                setUserInfo(parsed);
+            } catch (err) {
+                console.error("Failed to parse userInfo:", err);
+            }
+        }
+    }, []);
 
+    // Fetch clients once userInfo is available
+    useEffect(() => {
         getData('clients/')
             .then((res: any) => {
                 if (res) {
@@ -25,13 +49,13 @@ export default function ClientsPage() {
                         (client: any) => client.ownerUid === userInfo.uid
                     );
                     setClients(ownerClients);
-                    console.log('Fetched clients:', clientsArray);
+                    console.log('Fetched clients:', ownerClients);
                 } else {
                     setClients([]);
                 }
             })
-            .catch(console.log);
-    }, [userInfo,clients]);
+            .catch(err => console.log(err));
+    }, [userInfo]);
 
     // Delete client
     const deleteClient = (i: number) => {
@@ -42,7 +66,7 @@ export default function ClientsPage() {
                 updated.splice(i, 1);
                 setClients(updated);
             })
-            .catch(console.log);
+            .catch(err => console.log(err));
     };
 
     // Filter clients based on search input
@@ -52,7 +76,7 @@ export default function ClientsPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header />
+            <Header userData={userInfo} />
 
             <div className="p-6 max-w-7xl mx-auto">
                 {/* Page Header with Stats */}

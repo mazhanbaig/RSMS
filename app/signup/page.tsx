@@ -30,7 +30,14 @@ export default function Signup() {
     let userInfo = { email, password, name };
 
     try {
-      const res = await signUpUser(userInfo);
+      const res:any = await signUpUser(userInfo);
+      localStorage.setItem(
+        "userInfo",
+        JSON.stringify({
+          uid: res.user.uid,
+          email: res.user.email,
+        })
+      );
       message.success('Account Created Successfully')
       route.push(`/realstate/${name}`);
     } catch (err: any) {

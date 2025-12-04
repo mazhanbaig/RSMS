@@ -1,10 +1,17 @@
-import { UserContext } from "@/app/context/UserContext";
+// import { UserContext } from "@/app/context/UserContext";
 import Button from "./Button";
 import { useContext } from "react";
 import { useRouter } from "next/navigation";
 
-export default function Hero({ Name = '' }) {
-    const userInfo = useContext(UserContext)
+interface UserInfo {
+    name: string;
+    uid: string;
+    email: string;
+    createdAt: string;
+    [key: string]: any;
+}
+
+export default function Hero({ userData }: { userData?: UserInfo }) {
     let router = useRouter()
     return (
         <div className="flex items-center justify-center min-h-[100vh] bg-linear-to-br from-blue-50 via-white to-purple-50 px-4">
@@ -22,7 +29,7 @@ export default function Hero({ Name = '' }) {
                     <p className="text-2xl md:text-3xl text-gray-700">
                         Hello,
                         <span className="font-semibold text-purple-600 relative">
-                            {userInfo?.name.toUpperCase()}!
+                            {userData?.name.toUpperCase()}!
                         </span>
                     </p>
                 </div>
@@ -59,7 +66,7 @@ export default function Hero({ Name = '' }) {
                         }}
                     />
                     <Button
-                        label="Get Started With About"
+                        label="About Us"
                         variant="theme2"
                         size="lg"
                         onClick={() => {

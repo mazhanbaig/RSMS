@@ -1,45 +1,47 @@
 'use client'
 
-import { auth } from "@/FBConfig/fbFunctions";
+import { auth, getData } from "@/FBConfig/fbFunctions";
 import { onAuthStateChanged } from "firebase/auth";
-import { useParams, useRouter } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
-import { UserContext } from "./context/UserContext";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+export interface UserInfo{
+  email:string,
+  uid:string
+}
 
 export default function Page() {
-  interface User {
-    email: string;
-    name: string;
-    uid: string;
-    createdAt: string;
-  }
+
   const router = useRouter();
-  const userInfo = useContext(UserContext);
+  const [authUser, setAuthUser] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<{ name: string } | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [authUser, setAuthUser] = useState<User|any>(null);
-
-  // 1️⃣ Check authentication
+  // 1️⃣ Check Firebase authentication
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        router.push("/login");
+        router.replace("/login");
+        setLoading(false);
       } else {
-        setAuthUser(user); // store authenticated user
+        let userInfo:any=localStorage.getItem('userInfo');
+        userInfo=JSON.parse(userInfo)
+
+        getData(`users/${userInfo.uid}`)
+        .then((res:any)=>{
+
+          
+          router.replace(`/realstate/${res.name}`)
+        })
       }
     });
 
     return () => unsubscribe();
   }, []);
 
-  // 2️⃣ When userInfo loads, redirect
-  useEffect(() => {
-    if (authUser && userInfo) {
-      router.push(`/realstate/${userInfo.name}`);
-    }
-  }, [authUser, userInfo]);
-
   return (
-    <div className="animate-pulse p-6 min-h-screen flex justify-center items-center text-center">Loading…</div>
-
+    <div className="animate-pulse p-6 min-h-screen flex justify-center items-center text-center">
+      Loading…
+    </div>
   );
 }

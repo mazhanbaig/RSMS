@@ -1,33 +1,53 @@
-"use client";
+'use client'
 
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Button from "@/components/Button";
-import { UserContext } from "../context/UserContext";
-import { getData, deleleData } from "@/FBConfig/fbFunctions";
+import { getData, deleleData, auth } from "@/FBConfig/fbFunctions";
 import { useRouter } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function OwnersPage() {
     const router = useRouter();
     const [owners, setOwners] = useState<any[]>([]);
     const [searchVal, setSearchVal] = useState("");
-    const userInfo = useContext(UserContext);
+    const [userInfo, setUserInfo] = useState<any>(null);
 
     useEffect(() => {
-        if (!userInfo) return;
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                router.push("/login");
+            } else {
+                try {
+                    const storedUser = localStorage.getItem("userInfo");
+                    if (!storedUser) return;
 
-        getData("owners/")
-            .then((res: any) => {
-                if (res) {
-                    const allOwners = Object.values(res).filter((owner: any) => owner.ownerUid === userInfo.uid);
-                    setOwners(allOwners);
-                } else setOwners([]);
-            })
-            .catch(console.log);
-    }, [userInfo]);
+                    const { uid } = JSON.parse(storedUser);
+
+                    const userData = await getData(`users/${uid}`);
+                    setUserInfo(userData);
+
+                    // Fetch owners related to this user
+                    const res = await getData("owners/");
+                    if (res) {
+                        const allOwners = Object.values(res).filter(
+                            (owner: any) => owner.ownerUid === uid
+                        );
+                        setOwners(allOwners);
+                    } else {
+                        setOwners([]);
+                    }
+                } catch (err) {
+                    console.log("Error fetching data:", err);
+                }
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     const deleteOwner = (i: number) => {
-        let owner=owners[i]
+        const owner = owners[i];
         deleleData(`owners/${owner.id}`)
             .then(() => setOwners(prev => prev.filter((_, idx) => idx !== i)))
             .catch(console.log);
@@ -39,7 +59,7 @@ export default function OwnersPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header />
+            <Header userData={userInfo} />
 
             <div className="max-w-7xl mx-auto p-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">

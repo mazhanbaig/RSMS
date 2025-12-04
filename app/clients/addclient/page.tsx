@@ -173,16 +173,20 @@
 // }
 "use client";
 
-import { ChangeEvent, useContext, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import Header from "@/components/Header";
 import AddClientPart1 from "@/components/AddClientPart1";
 import AddClientPart2 from "@/components/AddClientPart2";
 import AddClientPart3 from "@/components/AddClientPart3";
 import Button from "@/components/Button";
-import { UserContext } from "@/app/context/UserContext";
-import { saveData, updateData } from "@/FBConfig/fbFunctions";
+import { getData, saveData, updateData } from "@/FBConfig/fbFunctions";
 import { useRouter, useSearchParams } from "next/navigation";
 import { message } from "antd";
+
+interface UserInfo {
+    uid: string;
+    email: string;
+}
 
 export default function AddClientPage() {
     interface FormData {
@@ -218,20 +222,46 @@ export default function AddClientPage() {
     });
 
     const [activeSection, setActiveSection] = useState("personal");
+    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
     const sections = ["personal", "property", "additional"];
     const searchParams = useSearchParams();
-    const userInfo = useContext(UserContext);
     const router = useRouter();
 
+    // Load userInfo from localStorage once
+    useEffect(() => {
+        const data = localStorage.getItem("userInfo");
+        if (data) {
+            try {
+                let parsed = JSON.parse(data)
+                getData(`users/${parsed.uid}`)
+                    .then((res: any) => {
+                        setUserInfo(res)
+                    })
+                    .catch((err:any) => {
+                        console.error(err.message);
+                    })
+                setUserInfo(parsed);
+            } catch (err) {
+                console.error("Failed to parse userInfo from localStorage:", err);
+            }
+        }
+    }, []);
+
+    // Prefill form for editing
     useEffect(() => {
         const clientData = searchParams.get("clientData");
         if (clientData) {
-            const parsedData = JSON.parse(clientData);
-            setFormData(prev => ({ ...prev, ...parsedData }));
+            try {
+                const parsedData = JSON.parse(clientData);
+                setFormData(prev => ({ ...prev, ...parsedData }));
+            } catch (err) {
+                console.error("Failed to parse clientData:", err);
+            }
         }
     }, [searchParams]);
 
-    const handleChange = (e:any) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
@@ -243,17 +273,17 @@ export default function AddClientPage() {
             return;
         }
 
-        const requiredFields: (keyof FormData)[] = ["firstName", "phone", "propertyType", "minBudget", 'maxBudget', 'bedrooms', 'status'];
-        const emptyFields = requiredFields.filter(field => !formData[field]?.trim());
+        const requiredFields: (keyof FormData)[] = ["firstName", "phone", "propertyType", "minBudget", "maxBudget", "bedrooms", "status"];
+        const emptyFields = requiredFields.filter(field => !(formData[field]?.trim()));
         if (emptyFields.length > 0) {
             alert(`Please fill in: ${emptyFields.join(", ")}`);
             return;
         }
 
-        // ✅ userInfo is typed, so uid exists
         const clientFullData = { ...formData, ownerUid: userInfo.uid };
 
         if (formData.id) {
+            // Edit existing client
             updateData(`clients/${formData.id}`, clientFullData)
                 .then(() => {
                     message.success("Edited Successfully");
@@ -261,10 +291,11 @@ export default function AddClientPage() {
                 })
                 .catch(err => console.log(err));
         } else {
+            // Add new client
             const newId = crypto.randomUUID();
             saveData(`clients/${newId}`, { ...clientFullData, id: newId })
                 .then(() => {
-                    message.success('Saved Successfully');
+                    message.success("Saved Successfully");
                     router.push("/clients");
                 })
                 .catch(err => console.log(err));
@@ -292,7 +323,7 @@ export default function AddClientPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header />
+            <Header userData={userInfo} />
             <div className="max-w-5xl mx-auto p-6">
                 <div className="text-center mb-8 flex-col justify-start items-center">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Add / Edit Client</h1>
@@ -307,7 +338,7 @@ export default function AddClientPage() {
 
                         <div className="flex justify-between mt-6">
                             <Button
-                                label='Previous'
+                                label="Previous"
                                 onClick={() => {
                                     const idx = sections.indexOf(activeSection);
                                     if (idx > 0) setActiveSection(sections[idx - 1]);
@@ -328,7 +359,7 @@ export default function AddClientPage() {
                                 />
                             ) : (
                                 <Button
-                                    label={"Save Client"}
+                                    label="Save Client"
                                     type="submit"
                                     size="md"
                                     variant="theme2"

@@ -27,10 +27,17 @@ export default function Login() {
         setIsLoading(true);
         const userInfo = { email, password, name };
         try {
-            await loginUser(userInfo);
-            const cleanName = name.trim().toLowerCase().replace(/\s+/g, "-");
-            route.push(`/realstate/${cleanName}`);
-            message.success('Login Successfull')
+            loginUser(userInfo)
+            .then((res:any)=>{
+                localStorage.setItem('userInfo', JSON.stringify({
+                    uid: res.user.uid,
+                    email: res.user.email
+                }))
+                
+                const cleanName = name.trim().toLowerCase().replace(/\s+/g, "-");
+                route.push(`/realstate/${cleanName}`);
+                message.success('Login Successfull')
+            })
         } catch (err: any) {
             console.log("Login Error:", err.message);
             message.error('Error While Login')
