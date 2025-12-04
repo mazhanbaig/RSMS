@@ -11,10 +11,10 @@ interface UserInfo {
     uid: string;
     email: string;
     createdAt: string;
-    [key: string]: any;
+    // [key: string]: any;
 }
 
-export default function Header({ userData }: { userData?: UserInfo }) {
+export default function Header({ userData }: { userData?: Partial<UserInfo> }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const router = useRouter();
