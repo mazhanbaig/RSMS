@@ -12,7 +12,31 @@ import Header from "@/components/Header"
 import { onAuthStateChanged } from "firebase/auth"
 
 export default function ViewPropertyPage() {
-    const [property, setProperty] = useState<any>(null)
+    interface PropertyFormData {
+        title: string;
+        description: string;
+        propertyType: string;
+        price: string;
+        priceUnit: string;
+        location: string;
+        city: string;
+        area: string;
+        areaUnit: string;
+        bedrooms: string;
+        bathrooms: string;
+        yearBuilt?: string;
+        ownerName: string;
+        ownerContact?: string;
+        features: string[];
+        amenities: string[];
+        facingDirection?: string;
+        propertyCondition: string;
+        isFurnished: boolean;
+        hasParking: boolean;
+        hasGarden: boolean;
+        hasSecurity: boolean;
+    }
+    const [property, setProperty] = useState<PropertyFormData|null>(null)
     const [relatedProperties, setRelatedProperties] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [userInfo, setUserInfo] = useState<any>(null)
@@ -48,14 +72,14 @@ export default function ViewPropertyPage() {
     const fetchPropertyData = () => {
         setLoading(true)
         getData(`properties/${propertyid}`)
-            .then(res => {
+            .then((res:any) => {
                 if (!res) {
                     message.error("Property not found")
                     router.push('/properties')
                     return
                 }
                 setProperty(res)
-                fetchRelatedProperties(res.city, res.propertyType, propertyid)
+                fetchRelatedProperties(res.city??'', res.propertyType??'', propertyid??'')
             })
             .catch(err => {
                 console.error(err)
