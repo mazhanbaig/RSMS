@@ -18,7 +18,7 @@ interface UserInfo {
 export default function RealStatePortal() {
     const { name } = useParams();
     const router = useRouter();
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+    const [userInfo, setUserInfo] = useState<UserInfo | undefined>(undefined);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
