@@ -1,4 +1,3 @@
-
 'use client'
 
 import { auth, getData } from "@/FBConfig/fbFunctions"

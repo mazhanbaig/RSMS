@@ -33,7 +33,7 @@ export default function RealStatePortal() {
                     const { uid } = JSON.parse(storedUser);
 
                     // Fetch full user data from your database
-                    const userData = await getData(`users/${uid}`);
+                    const userData = await getData(`users/${uid}`) as UserInfo;
                     setUserInfo(userData);
                 } catch (err) {
                     console.log("Error fetching user info:", err);
