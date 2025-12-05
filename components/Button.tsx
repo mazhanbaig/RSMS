@@ -1,13 +1,16 @@
 'use client';
 
+import React from "react";
+
 interface ButtonProps {
     label: string;
     onClick?: () => any;
     type?: "button" | "submit";
-    variant?: "primary" | "secondary" | "danger" | "theme" | 'theme2';
-    size?: 'sm' | 'md' | 'lg' | 'xl';
+    variant?: "primary" | "secondary" | "danger" | "theme" | "theme2";
+    size?: "sm" | "md" | "lg" | "xl";
     disabled?: boolean;
     classNameC?: string;
+    icon?: React.ReactNode;   // ✅ Added icon support
 }
 
 export default function Button({
@@ -15,9 +18,10 @@ export default function Button({
     onClick,
     type = "button",
     variant = "primary",
-    size = 'md',
+    size = "md",
     disabled = false,
     classNameC = "",
+    icon,                     // ✅ Added here
 }: ButtonProps) {
     const styles: Record<string, string> = {
         primary: "bg-blue-600 hover:bg-blue-700 text-white",
@@ -30,7 +34,7 @@ export default function Button({
     const sizes: Record<string, string> = {
         sm: "px-3 py-1 text-sm",
         md: "px-4 py-2 text-md",
-        lg: "px-5 py-2.5 text-md", // ✅ added comma
+        lg: "px-5 py-2.5 text-md",
         xl: "px-6 py-3 text-lg",
     };
 
@@ -40,14 +44,15 @@ export default function Button({
             onClick={onClick}
             disabled={disabled}
             className={`
-                rounded-xl font-medium transition
+                rounded-xl font-medium transition flex items-center gap-2
                 ${styles[variant]}
                 ${sizes[size]}
                 ${disabled ? "opacity-50 cursor-not-allowed" : ""}
                 ${classNameC}
             `}
         >
-            {label}
+            {icon && <span className="flex items-center">{icon}</span>}
+            <span>{label}</span>
         </button>
     );
 }
