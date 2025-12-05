@@ -82,7 +82,7 @@ export default function ViewPropertyPage() {
     const fetchPropertyData = (id: string) => {
         setLoading(true)
         getData(`properties/${id}`)
-            .then((res: PropertyFormData) => {
+            .then((res: any) => {
                 if (!res) {
                     message.error("Property not found")
                     router.push('/properties')
@@ -103,7 +103,7 @@ export default function ViewPropertyPage() {
 
     const fetchRelatedProperties = (city: string, propertyType: string, currentId: string) => {
         getData('properties')
-            .then(allProps => {
+            .then((allProps:any) => {
                 if (!allProps) return
                 const propsArray = Object.entries(allProps).map(
                     ([key, value]: [string, any]) => ({ id: key, ...value })
