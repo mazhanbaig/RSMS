@@ -50,7 +50,7 @@ export default function PropertiesPage() {
                         id: key,
                         ...value
                     }));
-                    let filtered=propertiesArray.filter((p)=>{
+                    let filtered=propertiesArray.filter((p:any)=>{
                         return p.ownerUid==userInfo.uid
                     })
                     setProperties(filtered);
