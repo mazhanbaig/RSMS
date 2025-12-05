@@ -20,7 +20,7 @@ export default function Hero({ userData }: { userData?: UserInfo }) {
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
                     Welcome to{" "}
                     <span className="bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                        Zestate!
+                        Zstate!
                     </span>
                 </h1>
 

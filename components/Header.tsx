@@ -33,7 +33,7 @@ export default function Header({ userData }: { userData?: Partial<UserInfo> | nu
     return (
         <nav className="relative top-5 right-5 left-5 w-[96%] bg-white/70 backdrop-blur-lg shadow-lg px-6 py-3 flex flex-wrap justify-between items-center rounded-2xl">
             {/* Logo */}
-            <div className="text-2xl font-extrabold text-gray-900 uppercase">Zestate</div>
+            <div className="text-2xl font-extrabold text-gray-900 uppercase">Zstate</div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-4">
