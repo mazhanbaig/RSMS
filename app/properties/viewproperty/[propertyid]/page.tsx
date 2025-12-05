@@ -350,15 +350,18 @@ export default function ViewPropertyPage() {
     const fetchPropertyData = (id: string) => {
         setLoading(true)
         getData(`properties/${id}`)
-            .then((res: any) => {
+            .then((res: PropertyFormData) => {
                 if (!res) {
                     message.error("Property not found")
                     router.push('/properties')
                     return
                 }
                 setProperty(res)
-                fetchRelatedProperties(res.city, res.propertyType, id)
+
+                const pid = Array.isArray(propertyid) ? propertyid[0] : propertyid;
+                fetchRelatedProperties(res.city ?? '', res.propertyType ?? '', pid);
             })
+
             .catch(err => {
                 console.error(err)
                 message.error("Failed to load property")
