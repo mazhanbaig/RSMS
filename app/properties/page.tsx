@@ -6,8 +6,9 @@ import Button from "@/components/Button";
 import { Home, MapPin, Trash2, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { auth, getData } from "@/FBConfig/fbFunctions";
+import { auth, deleleData, getData } from "@/FBConfig/fbFunctions";
 import { onAuthStateChanged } from "firebase/auth";
+import { message } from "antd";
 
 export default function PropertiesPage() {
     const router = useRouter();
@@ -16,47 +17,48 @@ export default function PropertiesPage() {
     const [userInfo, setUserInfo] = useState<any>(null)
     const [properties, setProperties] = useState<any[]>([]);
 
-    const deleteProperty = (id: number) => {
-        setProperties(properties.filter((p) => p.id !== id));
+    const deleteProperty = (id: string) => {
+        deleleData(`properties/${id}`)
+            .then(() => {
+                // Remove from local state
+                setProperties(prev => prev.filter(p => p.id !== id));
+                message.error('Property Deleted')
+            })
+            .catch(err => console.error("Failed to delete property:", err));
     };
 
     useEffect(() => {
-        onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                router.replace(`/login`)
-            }
-        })
-        const data = localStorage.getItem("userInfo");
-        if (data) {
-            try {
-                let parsed = JSON.parse(data)
-                getData(`users/${parsed.uid}`)
-                    .then((res: any) => {
-                        setUserInfo(res)
-                    })
-                    .catch((err: any) => {
-                        console.error(err.message);
-                    })
-            } catch (err) {
-                console.error("Failed to parse userInfo from localStorage:", err);
-            }
-        }
+        const loadData = async () => {
+            onAuthStateChanged(auth, (user) => {
+                if (!user) router.replace(`/login`);
+            });
 
-        getData(`properties/`)
-            .then((res) => {
-                if (res) {
-                    // Convert object to array with IDs
-                    const propertiesArray = Object.entries(res).map(([key, value]: [string, any]) => ({
-                        id: key,
-                        ...value
-                    }));
-                    console.log(userInfo);
-                    
+            const data = localStorage.getItem("userInfo");
+            if (!data) return;
+
+            try {
+                const parsed = JSON.parse(data);
+
+                // 1️⃣ Fetch user info
+                const userRes = await getData(`users/${parsed.uid}`);
+                setUserInfo(userRes);
+
+                // 2️⃣ Fetch properties after user info is loaded
+                const allProps = await getData("properties/");
+                if (allProps) {
+                    const propertiesArray = Object.entries(allProps)
+                        .map(([id, value]) => ({ id, ...value }))
+                        .filter((p) => p.ownerUid === userRes.uid); // 🔹 use loaded userRes
                     setProperties(propertiesArray);
                 }
-            })
-            .catch((err) => console.log(err));
+            } catch (err) {
+                console.error("Error loading data:", err);
+            }
+        };
+
+        loadData();
     }, []);
+
 
 
 
@@ -106,7 +108,7 @@ export default function PropertiesPage() {
                         <div
                             onClick={() => router.push(`/properties/viewproperty/${encodeURIComponent(p.id)}`)}
                             key={p.id}
-                            className="group relative bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+                            className="group relative bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500"
                         >
                             {/* Content */}
                             <div className="p-5">
@@ -119,7 +121,10 @@ export default function PropertiesPage() {
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => deleteProperty(p.id)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            deleteProperty(p.id)
+                                        }}
                                         className="p-2 bg-gray-100 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors duration-300"
                                     >
                                         <Trash2 size={16} className="text-gray-600" />

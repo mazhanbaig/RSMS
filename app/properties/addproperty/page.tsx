@@ -253,7 +253,8 @@ export default function AddPropertyPage() {
                                 type="button"
                                 label="Next"
                                 variant="theme"
-                                onClick={() => {
+                                onClick={(e:any) => {
+                                    e.preventDefault()
                                     const idx = sections.indexOf(activeSection);
                                     if (idx < sections.length - 1) setActiveSection(sections[idx + 1]);
                                 }}
