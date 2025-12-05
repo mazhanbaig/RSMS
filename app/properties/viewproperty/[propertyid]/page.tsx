@@ -37,6 +37,7 @@ interface PropertyFormData {
     hasParking: boolean;
     hasGarden: boolean;
     hasSecurity: boolean;
+    images?: string[];
 }
 
 export default function ViewPropertyPage() {
