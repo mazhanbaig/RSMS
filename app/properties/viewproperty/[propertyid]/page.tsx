@@ -91,7 +91,13 @@ export default function ViewPropertyPage() {
                 setProperty(res)
 
                 const pid = Array.isArray(propertyid) ? propertyid[0] : propertyid;
-                fetchRelatedProperties(res.city ?? '', res.propertyType ?? '', pid);
+
+                fetchRelatedProperties(
+                    res.city ?? '',
+                    res.propertyType ?? '',
+                    pid ?? ''
+                );
+
             })
 
             .catch(err => {
@@ -103,7 +109,7 @@ export default function ViewPropertyPage() {
 
     const fetchRelatedProperties = (city: string, propertyType: string, currentId: string) => {
         getData('properties')
-            .then((allProps:any) => {
+            .then((allProps: any) => {
                 if (!allProps) return
                 const propsArray = Object.entries(allProps).map(
                     ([key, value]: [string, any]) => ({ id: key, ...value })
