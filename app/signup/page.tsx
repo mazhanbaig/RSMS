@@ -77,7 +77,7 @@ export default function Signup() {
             onClick={handleGoogleSignup}
             disabled={isLoading}
             variant="theme2"
-            classNameC="w-full h-13"
+            classNameC="w-full h-13 text-center"
             icon={
               !isLoading && (
                 <img

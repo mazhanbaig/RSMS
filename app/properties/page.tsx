@@ -40,7 +40,7 @@ export default function PropertiesPage() {
                 const parsed = JSON.parse(data);
 
                 // 1️⃣ Fetch user info
-                const userRes = await getData(`users/${parsed.uid}`);
+                const userRes:any = await getData(`users/${parsed.uid}`);
                 setUserInfo(userRes);
 
                 // 2️⃣ Fetch properties after user info is loaded
@@ -48,8 +48,9 @@ export default function PropertiesPage() {
                 if (allProps) {
                     const propertiesArray = Object.entries(allProps)
                         .map(([id, value]) => ({ id, ...value }))
-                        .filter((p) => p.ownerUid === userRes.uid); // 🔹 use loaded userRes
-                    setProperties(propertiesArray);
+                        .filter((p) => p.ownerUid === userRes.uid);
+                
+                    setProperties(propertiesArray.reverse());
                 }
             } catch (err) {
                 console.error("Error loading data:", err);

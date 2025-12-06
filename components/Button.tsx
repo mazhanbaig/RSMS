@@ -4,7 +4,7 @@ import React from "react";
 
 interface ButtonProps {
     label: string;
-    onClick?: () => any;
+    onClick?: (e?:any) => any;
     type?: "button" | "submit";
     variant?: "primary" | "secondary" | "danger" | "theme" | "theme2";
     size?: "sm" | "md" | "lg" | "xl";
@@ -44,7 +44,7 @@ export default function Button({
             onClick={onClick}
             disabled={disabled}
             className={`
-                rounded-xl font-medium transition flex items-center gap-2
+                rounded-xl text-center flex justify-center font-medium transition flex items-center gap-2
                 ${styles[variant]}
                 ${sizes[size]}
                 ${disabled ? "opacity-50 cursor-not-allowed" : ""}

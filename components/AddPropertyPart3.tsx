@@ -70,7 +70,7 @@ export default function AddPropertyPart3({
                     <div className="mt-4">
                         <h3 className="text-lg font-semibold text-gray-800 mb-3">Uploaded Images ({imagePreviews.length}/10)</h3>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                            {imagePreviews.map((preview, index) => (
+                            {imagePreviews.map((preview:any, index:number) => (
                                 <div key={index} className="relative">
                                     <img
                                         src={preview}

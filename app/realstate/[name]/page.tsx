@@ -7,7 +7,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-interface UserInfo {
+export interface UserInfo {
     uid: string;
     email: string;
     name: string;
@@ -26,7 +26,6 @@ export default function RealStatePortal() {
                 router.push('/login');
             } else {
                 try {
-                    // Get uid & email from localStorage
                     const storedUser = localStorage.getItem('userInfo');
                     if (!storedUser) return;
 

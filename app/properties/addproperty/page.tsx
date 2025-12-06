@@ -133,8 +133,8 @@ export default function AddPropertyPage() {
     };
 
     const removeImage = (index: number) => {
-        const newImages = images.filter((_, i) => i !== index);
-        const newPreviews = imagePreviews.filter((_, i) => i !== index);
+        const newImages = images.filter((img, i) => i !== index);
+        const newPreviews = imagePreviews.filter((img, i) => i !== index);
         setImages(newImages);
         setImagePreviews(newPreviews);
     };

@@ -71,12 +71,14 @@ export default function ViewPropertyPage() {
     // Fetch property
     useEffect(() => {
         if (!propertyid) return
-
-        // ✅ FIX: Convert propertyid to string safely
         const id = Array.isArray(propertyid) ? propertyid[0] : propertyid
-
         fetchPropertyData(id)
     }, [propertyid])
+
+    useEffect(() => {
+        if (property && userInfo) fetchRelatedProperties()
+    }, [property, userInfo])
+
 
     // ✅ FIX: fetchPropertyData now accepts string
     const fetchPropertyData = (id: string) => {
@@ -92,12 +94,7 @@ export default function ViewPropertyPage() {
 
                 const pid = Array.isArray(propertyid) ? propertyid[0] : propertyid;
 
-                fetchRelatedProperties(
-                    res.city ?? '',
-                    res.propertyType ?? '',
-                    pid ?? ''
-                );
-
+                fetchRelatedProperties()
             })
 
             .catch(err => {
@@ -107,17 +104,24 @@ export default function ViewPropertyPage() {
             .finally(() => setLoading(false))
     }
 
-    const fetchRelatedProperties = (city: string, propertyType: string, currentId: string) => {
+    const fetchRelatedProperties = () => {
         getData('properties')
             .then((allProps: any) => {
                 if (!allProps) return
                 const propsArray = Object.entries(allProps).map(
                     ([key, value]: [string, any]) => ({ id: key, ...value })
                 )
-                const related = propsArray
-                    .filter(p => p.id !== currentId &&
-                        (p.city === city || p.propertyType === propertyType))
-                    .slice(0, 4)
+                const ownersProps = propsArray.filter(p => {
+                    return p.ownerUid == userInfo?.uid
+                })
+                let related = ownersProps.filter((p) => {
+                    const target:any = property?.price;     
+                    const min = target * 0.9;              
+                    const max = target * 1.1;               
+
+                    return p.price >= min && p.price <= max;
+                });
+
                 setRelatedProperties(related)
             })
             .catch(err => console.error("Error fetching related properties:", err))
@@ -243,11 +247,11 @@ export default function ViewPropertyPage() {
                         </div>
 
                         {/* Right - Details */}
-                        <div className="space-y-6">
+                        <div className="space-y-2">
 
                             <div className="bg-white border border-gray-200 rounded-xl p-6">
-                                <h3 className="text-xl font-bold text-gray-900 mb-4">Property Details</h3>
-                                <div className="space-y-4">
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Property Details</h3>
+                                <div className="space-y-3">
 
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2 text-gray-600">
@@ -301,7 +305,7 @@ export default function ViewPropertyPage() {
 
                             {/* Amenities */}
                             <div className="bg-white border border-gray-200 rounded-xl p-6">
-                                <h3 className="text-xl font-bold text-gray-900 mb-4">Amenities</h3>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Amenities</h3>
                                 <div className="space-y-3">
 
                                     <div className="flex items-center gap-2">
@@ -344,10 +348,10 @@ export default function ViewPropertyPage() {
 
                             {/* Owner */}
                             <div className="bg-white border border-gray-200 rounded-xl p-6">
-                                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">
                                     Owner Information
                                 </h3>
-                                <div className="space-y-4">
+                                <div className="space-y-2">
 
                                     <div className="flex items-center gap-3">
                                         <div className="w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold">

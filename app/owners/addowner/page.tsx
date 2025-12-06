@@ -17,7 +17,6 @@ export default function AddOwnerPage() {
         [key: string]: any;
     }
 
-
     const [formData, setFormData] = useState({
         id: "",
         firstName: "",
