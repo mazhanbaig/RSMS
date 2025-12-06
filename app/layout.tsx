@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import 'antd/dist/antd.css';
 
 export const metadata: Metadata = {
-  title: "ZeState",
+  title: "ZState",
   description: "Revolutionizing Real Estate Management",
 };
 

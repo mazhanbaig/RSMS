@@ -1,84 +1,87 @@
-// import { UserContext } from "@/app/context/UserContext";
-import Button from "./Button";
-import { useContext } from "react";
+'use client';
+
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Home, Users, Shield, Zap, ArrowRight } from "lucide-react";
+import Button from "./Button";
+import { getData } from "@/FBConfig/fbFunctions";
+import StatCard from "./StatCard";
 
 interface UserInfo {
-    name: string;
-    uid: string;
-    email: string;
-    createdAt: string;
-    [key: string]: any;
+    name?: string;
+    email?: string;
+    uid?: string;
 }
 
 export default function Hero({ userData }: { userData?: UserInfo }) {
-    let router = useRouter()
+    const router = useRouter();
+    const [greeting, setGreeting] = useState("");
+    const [ownerProperties, setOwnerProperties] = useState<any[]>([]);
+    const [ownerClients, setOwnerClients] = useState<any[]>([]);
+    const firstName = userData?.name?.split(" ")[0] || "There";
+
+    useEffect(() => {
+        const hour = new Date().getHours();
+        setGreeting(hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening");
+
+        if (userData?.uid) {
+            // Fetch properties
+            getData(`properties/`).then((res: any) => {
+                const ownerProps = Object.values(res).filter(
+                    (p: any) => p.ownerUid === userData.uid
+                );
+                setOwnerProperties(ownerProps);
+            });
+
+            // Fetch clients
+            getData(`clients/`).then((res: any) => {
+                const ownerClnts = Object.values(res).filter(
+                    (c: any) => c.ownerUid === userData.uid
+                );
+                setOwnerClients(ownerClnts);
+            });
+        }
+    }, [userData?.uid]);
+
     return (
-        <div className="flex items-center justify-center min-h-[100vh] bg-linear-to-br from-blue-50 via-white to-purple-50 px-4">
-            <div className="text-center max-w-4xl">
-                {/* Main Heading */}
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-                    Welcome to{" "}
-                    <span className="bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                        Zstate!
-                    </span>
-                </h1>
+        <section className="relative flex flex-col items-center justify-center min-h-screen px-2 sm:px-4 bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden text-center">
+            {/* Floating Blobs */}
+            <div className="absolute top-5 left-5 w-16 sm:w-20 h-16 sm:h-20 bg-purple-300 rounded-full opacity-30 animate-float"></div>
+            <div className="absolute bottom-5 right-5 w-20 sm:w-24 h-20 sm:h-24 bg-blue-300 rounded-full opacity-20 animate-float animation-delay-2000"></div>
 
-                {/* Personalized Greeting */}
-                <div className="relative inline-block mb-8">
-                    <p className="text-2xl md:text-3xl text-gray-700">
-                        Hello,
-                        <span className="font-semibold text-purple-600 relative">
-                            {userData?.name.toUpperCase()}!
-                        </span>
-                    </p>
+            {/* Greeting */}
+            <h1 className="text-xl xs:text-2xl sm:text-5xl md:text-6xl font-bold mb-3 leading-tight">
+                {greeting}, <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">{firstName}!</span>
+            </h1>
+            <p className="text-[10px] xs:text-xs sm:text-lg text-gray-600 mb-6 max-w-[220px] xs:max-w-xs sm:max-w-md">
+                Your real estate journey starts here. Manage properties and clients easily.
+            </p>
+
+            {/* Stats */}
+            {userData && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 xs:gap-3 mb-6 w-full max-w-[220px] xs:max-w-xs sm:max-w-3xl">
+                    <StatCard label="Properties" value={ownerProperties.length} icon={<Home className="w-5 h-5 text-purple-500" />} />
+                    <StatCard label="Clients" value={ownerClients.length} icon={<Users className="w-5 h-5 text-blue-500" />} />
+                    <StatCard label="Support" value="24/7" icon={<Shield className="w-5 h-5 text-green-500" />} />
+                    <StatCard label="Secure" value="100%" icon={<Zap className="w-5 h-5 text-orange-500" />} />
                 </div>
+            )}
 
-                {/* Main Description */}
-                <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8 leading-relaxed">
-                    We're thrilled to have you here. Your real estate management journey
-                    starts now with powerful tools at your fingertips.
-                </p>
-
-                {/* Stats Preview */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-2xl mx-auto mb-8">
-                    <div className="bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200 shadow-sm">
-                        <div className="text-2xl font-bold text-purple-600 mb-1">24/7</div>
-                        <div className="text-sm text-gray-600">Support</div>
-                    </div>
-                    <div className="bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200 shadow-sm">
-                        <div className="text-2xl font-bold text-blue-600 mb-1">100%</div>
-                        <div className="text-sm text-gray-600">Secure</div>
-                    </div>
-                    <div className="bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-gray-200 shadow-sm">
-                        <div className="text-2xl font-bold text-green-600 mb-1">Easy</div>
-                        <div className="text-sm text-gray-600">To Use</div>
-                    </div>
-                </div>
-
-                <div className="flex justify-center items-center gap-2">
-                    <Button
-                        label="Get Started Today"
-                        variant="theme"
-                        size="lg"
-                        onClick={() => {
-                            router.push(`/clients`)
-                        }}
-                    />
-                    <Button
-                        label="About Us"
-                        variant="theme2"
-                        size="lg"
-                        onClick={() => {
-                            router.push(`/about`)
-                        }}
-                    />
-                </div>
-
-                {/* Floating Elements for visual interest */}
-                <div className="absolute top-1/4 left-1/4 w-4 h-4 bg-purple-300 rounded-full opacity-50 animate-float"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-6 h-6 bg-blue-300 rounded-full opacity-30 animate-float-delayed"></div>
+            {/* Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-6 w-full max-w-[220px] xs:max-w-xs sm:max-w-md">
+                <Button label="Get Started With ZState" size="lg" onClick={() => router.push("/clients")} icon={<ArrowRight className="ml-2" />} />
+                <Button label="About Us" size="lg" variant="theme2" onClick={() => router.push("/about")} />
             </div>
-        </div>
+
+            {/* Animations */}
+            <style jsx>{`
+                @keyframes float {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-15px); }
+                }
+                .animate-float { animation: float 6s ease-in-out infinite; }
+                .animation-delay-2000 { animation-delay: 2s; }
+            `}</style>
+        </section>
     );
 }
