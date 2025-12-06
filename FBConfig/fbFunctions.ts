@@ -128,4 +128,4 @@ const updateData = (path: string, data: any) => {
 
 
 
-export {signInWithGoogle,loginUser,logout,getData,saveData,deleleData,updateData}
+export {signInWithGoogle,logout,getData,saveData,deleleData,updateData}
