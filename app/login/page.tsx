@@ -1,43 +1,32 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { loginUser } from "@/FBConfig/fbFunctions";
+import { signInWithGoogle } from "@/FBConfig/fbFunctions";
 import Link from "next/link";
 import Button from "@/components/Button";
-import {
-    User,
-    Mail,
-    Lock,
-    Eye,
-    EyeOff,
-    Building,
-    ArrowRight
-} from "lucide-react";
+import { Building, ArrowRight, CheckCircle } from "lucide-react";
 import { message } from "antd";
+import Image from "next/image";
 
 export default function Login() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [name, setName] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const route = useRouter();
+    const router = useRouter();
 
-    const handleLogin = async () => {
+    const handleGoogleLogin = async () => {
         setIsLoading(true);
-        const userInfo = { email, password, name };
         try {
-            loginUser(userInfo)
-            .then((res:any)=>{
-                localStorage.setItem('userInfo', JSON.stringify({
-                    uid: res.user.uid,
-                    email: res.user.email
-                }))
-                
-                const cleanName = name.trim().toLowerCase().replace(/\s+/g, "-");
-                route.push(`/realstate/${cleanName}`);
-                message.success('Login Successfull')
-            })
+            const res: any = await signInWithGoogle();
+            localStorage.setItem('userInfo', JSON.stringify({
+                uid: res.user.uid,
+                email: res.user.email,
+                name: res.user.displayName
+            }))
+
+            // You might want to get the name from Google profile instead of user input
+            const userName = res.user.displayName || "user";
+            const cleanName = userName.trim().toLowerCase().replace(/\s+/g, "-");
+            router.push(`/realstate/${cleanName}`);
+            message.success('Login Successful')
         } catch (err: any) {
             console.log("Login Error:", err.message);
             message.error('Error While Login')
@@ -48,87 +37,55 @@ export default function Login() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-50 p-4">
-            <div className="w-full max-w-3xl bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+            <div className="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
 
-                {/* Left Visual Panel */}
-                <div className="hidden sm:flex flex-col justify-center items-center bg-gradient-to-br from-gray-900 to-black text-white md:w-1/2 p-10 relative overflow-hidden">
+                {/* Header Section */}
+                <div className="flex flex-col justify-center items-center bg-gradient-to-br from-gray-900 to-black text-white p-10">
                     <Building className="w-16 h-16 mb-4" />
                     <h1 className="text-4xl font-bold mb-2">Zestate</h1>
                     <p className="text-gray-300 text-center">Manage properties, clients, and owners with ease</p>
-
-                    {/* Decorative Circles */}
-                    <div className="absolute -bottom-10 -right-10 w-32 h-32 rounded-full bg-purple-600 opacity-20"></div>
-                    <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-blue-500 opacity-20"></div>
                 </div>
 
                 {/* Form Panel */}
-                <div className="w-full md:w-1/2 p-10">
-                    <div className="mb-6 text-center">
+                <div className="w-full p-10">
+                    <div className="mb-8 text-center">
                         <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
                         <p className="text-gray-500">Login to your Zestate portal</p>
                     </div>
 
-                    <div className="space-y-5">
-                        {/* Name Input */}
-                        <div className="relative">
-                            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                <User className="w-5 h-5" />
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="Full Name"
-                                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 focus:border-gray-900 focus:ring-2 focus:ring-gray-200 transition-all duration-300"
-                                value={name}
-                                onChange={(e) => setName(e.target.value.toLowerCase())}
-                                required
-                            />
+                    {/* Benefits List */}
+                    <div className="mb-8 space-y-4">
+                        <div className="flex items-center gap-3">
+                            <CheckCircle className="w-5 h-5 text-green-500" />
+                            <span className="text-gray-700">Quick one-click login</span>
                         </div>
-
-                        {/* Email Input */}
-                        <div className="relative">
-                            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                <Mail className="w-5 h-5" />
-                            </div>
-                            <input
-                                type="email"
-                                placeholder="Email Address"
-                                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 focus:border-gray-900 focus:ring-2 focus:ring-gray-200 transition-all duration-300"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
+                        <div className="flex items-center gap-3">
+                            <CheckCircle className="w-5 h-5 text-green-500" />
+                            <span className="text-gray-700">Enhanced security</span>
                         </div>
-
-                        {/* Password Input */}
-                        <div className="relative">
-                            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                <Lock className="w-5 h-5" />
-                            </div>
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                placeholder="Password"
-                                className="w-full pl-12 pr-12 py-3 rounded-xl border border-gray-300 focus:border-gray-900 focus:ring-2 focus:ring-gray-200 transition-all duration-300"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                            </button>
+                        <div className="flex items-center gap-3">
+                            <CheckCircle className="w-5 h-5 text-green-500" />
+                            <span className="text-gray-700">No password to remember</span>
                         </div>
-
-                        {/* Login Button */}
-                        <Button
-                            label={isLoading ? "Logging in..." : "Login"}
-                            onClick={handleLogin}
-                            disabled={isLoading}
-                            classNameC="w-full bg-gradient-to-r from-gray-900 to-black hover:from-gray-800 hover:to-gray-900 text-white py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-                        />
                     </div>
+
+                    <Button
+                        label={isLoading ? "Logging in..." : "Login with Google"}
+                        onClick={handleGoogleLogin}
+                        disabled={isLoading}
+                        variant="theme2"
+                        classNameC="w-full h-13"
+                        icon={
+                            !isLoading && (
+                                <img
+                                    src="https://www.google.com/favicon.ico"
+                                    alt="Google"
+                                    className="w-5 h-5"
+                                />
+                            )
+                        }
+                    />
+
 
                     {/* Signup Link */}
                     <div className="mt-8 pt-6 border-t border-gray-200 text-center">

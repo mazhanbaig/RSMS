@@ -1,56 +1,73 @@
 import {app} from '@/FBConfig/config'
 import { rejects } from 'assert';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { getDatabase, ref, set,get, remove, update, } from "firebase/database";
 import { resolve } from 'path';
 export const auth = getAuth(app);
 const db=getDatabase(app)
 
-const signUpUser=({email,name,password}:any)=>{
-    return new Promise((resolve,reject)=>{
-        createUserWithEmailAndPassword(auth, email, password)
-        .then((res) => {
-        const user = res.user;
+// const signUpUser=({email,name,password}:any)=>{
+//     return new Promise((resolve,reject)=>{
+//         createUserWithEmailAndPassword(auth, email, password)
+//         .then((res) => {
+//         const user = res.user;
+//         set(ref(db, 'users/' + user.uid), {
+//           uid: user.uid,
+//           name: name,
+//           email: email,
+//           createdAt: new Date().toISOString()
+//         })
+//         .then(() => {
+//           resolve(res); // resolve after saving data
+//         })
+//         .catch((err) => {
+//           reject(err);
+//         });
+//       })
+//         .catch((err)=>{
+//             reject(err)
+//         })
+//     })
+// }
+
+// const loginUser = ({ email, password }: any) => {
+//   return new Promise((resolve, reject) => {
+//     signInWithEmailAndPassword(auth, email, password)
+//       .then((user) => resolve(user))
+//       .catch((err) => reject(err));
+//   });
+// };
+
+
+const signInWithGoogle = () => {
+  return new Promise((resolve, reject) => {
+    const provider = new GoogleAuthProvider();
+    
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const user = result.user;
+        
+        // Save user data to database if it's their first time
         set(ref(db, 'users/' + user.uid), {
           uid: user.uid,
-          name: name,
-          email: email,
+          name: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          provider: 'google',
           createdAt: new Date().toISOString()
         })
         .then(() => {
-          resolve(res); // resolve after saving data
+          resolve(result);
         })
         .catch((err) => {
           reject(err);
         });
       })
-        .catch((err)=>{
-            reject(err)
-        })
-    })
-}
-
-const loginUser = ({ email, password }: any) => {
-  return new Promise((resolve, reject) => {
-    signInWithEmailAndPassword(auth, email, password)
-      .then((user) => resolve(user))
-      .catch((err) => reject(err));
+      .catch((err) => {
+        reject(err);
+      });
   });
 };
-
-
-// export const loginUser = async ({ email, password }: any) => {
-//   const userCredential = await signInWithEmailAndPassword(auth, email, password);
-//   const user = userCredential.user;
-
-//   // store minimal info in localStorage for instant access
-//   localStorage.setItem("userInfo", JSON.stringify({
-//     uid: user.uid,
-//     email: user.email || "",
-//   }));
-
-//   return user;
-// };
 
 
 
@@ -111,4 +128,4 @@ const updateData = (path: string, data: any) => {
 
 
 
-export {signUpUser,loginUser,logout,getData,saveData,deleleData,updateData}
+export {signInWithGoogle,loginUser,logout,getData,saveData,deleleData,updateData}
