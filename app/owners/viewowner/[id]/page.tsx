@@ -45,7 +45,7 @@ export default function ViewOwnerPage() {
 
         const fetchOwner = async () => {
             try {
-                const data = await getData(`owners/${id}`);
+                const data:any = await getData(`owners/${id}`);
                 if (data) setOwner(data);
                 else router.push('/owners');
             } catch (err) {

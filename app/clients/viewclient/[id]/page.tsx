@@ -63,7 +63,7 @@ export default function ViewClientPage() {
 
         const fetchClient = async () => {
             try {
-                const clientData = await getData(`clients/${id}`);
+                const clientData:any = await getData(`clients/${id}`);
                 if (clientData) {
                     setClient(clientData);
                 } else {
