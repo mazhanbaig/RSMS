@@ -82,6 +82,8 @@ export default function AddClientPart1({ formData, handleChange }: PersonalInfoP
                     >
                         <option value="active">Active</option>
                         <option value="closed">Closed</option>
+                        <option value="lost">Lost</option>
+
                     </select>
                 </div>
 

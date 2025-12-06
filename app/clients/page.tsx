@@ -2,7 +2,9 @@
 
 import Button from "@/components/Button";
 import Header from "@/components/Header";
-import { getData, deleleData } from "@/FBConfig/fbFunctions";
+import { getData, deleleData, auth } from "@/FBConfig/fbFunctions";
+import { message } from "antd";
+import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -19,6 +21,16 @@ export default function ClientsPage() {
     const [searchVal, setSearchVal] = useState<string>('');
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                router.replace("/login");
+            }
+        });
+        return () => unsubscribe();
+    }, [])
+
+
     // Load userInfo from localStorage once
     useEffect(() => {
         const stored = localStorage.getItem('userInfo');
@@ -26,12 +38,12 @@ export default function ClientsPage() {
             try {
                 const parsed: UserInfo = JSON.parse(stored);
                 getData(`users/${parsed.uid}`)
-                .then((res:any)=>{
-                    setUserInfo(res)
-                })
-                .catch((err:any)=>{
-                    console.error(err.message);           
-                })
+                    .then((res: any) => {
+                        setUserInfo(res)
+                    })
+                    .catch((err: any) => {
+                        console.error(err.message);
+                    })
                 setUserInfo(parsed);
             } catch (err) {
                 console.error("Failed to parse userInfo:", err);
@@ -76,6 +88,12 @@ export default function ClientsPage() {
         client.firstName.toLowerCase().includes(searchVal.toLowerCase())
     );
 
+    if (!userInfo) {
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        </div>
+    }
+
     return (
         <div className="min-h-screen bg-gray-50">
             <Header userData={userInfo} />
@@ -94,7 +112,7 @@ export default function ClientsPage() {
                             <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                                 {clients.filter(c => c.status === 'active').length}
                             </div>
-                            <div className="text-sm text-gray-600">Active Leads</div>
+                            <div className="text-sm text-gray-600">Active</div>
                         </div>
                     </div>
                 </div>
@@ -150,7 +168,11 @@ export default function ClientsPage() {
                         <tbody className="divide-y divide-gray-200">
                             {filteredClients.length > 0 ? (
                                 filteredClients.map((client: any, index: number) => (
-                                    <tr key={index} className="hover:bg-gray-50">
+                                    <tr
+                                        onClick={() => {
+                                            router.push(`/clients/viewclient/${client.id}`)
+                                        }}
+                                        key={index} className="hover:bg-gray-50">
                                         <td className="p-3">{index + 1}</td>
                                         <td className="p-3">{client.firstName} {client.lastName}</td>
                                         <td className="p-3">{client.email}</td>
@@ -163,14 +185,18 @@ export default function ClientsPage() {
                                         <td className="p-3 capitalize">{client.status}</td>
                                         <td className="p-3 flex gap-2">
                                             <Button
-                                                onClick={() =>
+                                                onClick={(e: any) => {
+                                                    e.stopPropagation()
                                                     router.push(`/clients/addclient?clientData=${encodeURIComponent(JSON.stringify(client))}`)
-                                                }
+                                                }}
                                                 label='Edit'
                                                 size="sm"
                                                 variant="theme2"
                                             />
-                                            <Button onClick={() => deleteClient(index)} label='Delete' size="sm" variant="theme" />
+                                            <Button onClick={(e: any) => {
+                                                e.stopPropagation()
+                                                deleteClient(index)
+                                            }} label='Delete' size="sm" variant="theme" />
                                         </td>
                                     </tr>
                                 ))

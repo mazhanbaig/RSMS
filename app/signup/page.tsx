@@ -28,7 +28,7 @@ export default function Signup() {
         })
       );
       message.success('Account Created Successfully');
-      router.push(`/realstate/${res.name}`);
+      router.replace(`/realstate/${res.name}`);
     } catch (err: any) {
       console.log("Google signup error:", err.message);
       message.error('Error While Signup');

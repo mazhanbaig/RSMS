@@ -16,7 +16,7 @@ export default function OwnersPage() {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (!user) {
-                router.push("/login");
+                router.replace("/login");
             } else {
                 try {
                     const storedUser = localStorage.getItem("userInfo");
@@ -57,6 +57,12 @@ export default function OwnersPage() {
         owner.firstName.toLowerCase().includes(searchVal.toLowerCase())
     );
 
+    if (!userInfo) {
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        </div>
+    }
+
     return (
         <div className="min-h-screen bg-gray-50">
             <Header userData={userInfo} />
@@ -70,7 +76,7 @@ export default function OwnersPage() {
                             <div className="text-sm text-gray-500">Total Owners</div>
                         </div>
                         <div className="text-center">
-                            <div className="text-2xl font-bold text-green-500">
+                            <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                                 {owners.filter(o => o.status === "active").length}
                             </div>
                             <div className="text-sm text-gray-500">Active Owners</div>
@@ -117,7 +123,7 @@ export default function OwnersPage() {
                         <tbody className="divide-y divide-gray-200">
                             {filteredOwners.length > 0 ? (
                                 filteredOwners.map((owner, i) => (
-                                    <tr key={i} className="hover:bg-gray-50">
+                                    <tr onClick={() => router.push(`owners/viewowner/${owner.id}`)} key={i} className="hover:bg-gray-50">
                                         <td className="p-3">{i + 1}</td>
                                         <td className="p-3">{owner.firstName} {owner.lastName}</td>
                                         <td className="p-3">{owner.email || "-"}</td>

@@ -40,7 +40,7 @@ export default function PropertiesPage() {
                 const parsed = JSON.parse(data);
 
                 // 1️⃣ Fetch user info
-                const userRes:any = await getData(`users/${parsed.uid}`);
+                const userRes: any = await getData(`users/${parsed.uid}`);
                 setUserInfo(userRes);
 
                 // 2️⃣ Fetch properties after user info is loaded
@@ -49,7 +49,7 @@ export default function PropertiesPage() {
                     const propertiesArray = Object.entries(allProps)
                         .map(([id, value]) => ({ id, ...value }))
                         .filter((p) => p.ownerUid === userRes.uid);
-                
+
                     setProperties(propertiesArray.reverse());
                 }
             } catch (err) {
@@ -61,7 +61,11 @@ export default function PropertiesPage() {
     }, []);
 
 
-
+    if (!userInfo) {
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        </div>
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pb-20">

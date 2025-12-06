@@ -25,7 +25,7 @@ export default function Login() {
             // You might want to get the name from Google profile instead of user input
             const userName = res.user.displayName || "user";
             const cleanName = userName.trim().toLowerCase().replace(/\s+/g, "-");
-            router.push(`/realstate/${cleanName}`);
+            router.replace(`/realstate/${cleanName}`);
             message.success('Login Successful')
         } catch (err: any) {
             console.log("Login Error:", err.message);
