@@ -44,7 +44,7 @@ export default function Hero({ userData }: { userData?: UserInfo }) {
     }, [userData?.uid]);
 
     return (
-        <section className="relative flex flex-col items-center justify-center min-h-screen px-2 sm:px-4 bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden text-center">
+        <section className="relative flex flex-col items-center justify-start mt-20 px-2 sm:px-4 bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden text-center">
             {/* Floating Blobs */}
             <div className="absolute top-5 left-5 w-16 sm:w-20 h-16 sm:h-20 bg-purple-300 rounded-full opacity-30 animate-float"></div>
             <div className="absolute bottom-5 right-5 w-20 sm:w-24 h-20 sm:h-24 bg-blue-300 rounded-full opacity-20 animate-float animation-delay-2000"></div>
@@ -68,9 +68,10 @@ export default function Hero({ userData }: { userData?: UserInfo }) {
             )}
 
             {/* Buttons */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-6 w-full max-w-[220px] xs:max-w-xs sm:max-w-md">
-                <Button label="Get Started With ZState" size="lg" onClick={() => router.push("/clients")} icon={<ArrowRight className="ml-2" />} />
-                <Button label="About Us" size="lg" variant="theme2" onClick={() => router.push("/about")} />
+            <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3 mb-6 w-full max-w-[220px] xs:max-w-xs sm:max-w-full">
+                <Button label="Get Started With ZState" size="md" onClick={() => router.push("/clients")} icon={<ArrowRight className="ml-2" />} />
+                <Button label="About Us" size="md" variant="theme2" onClick={() => router.push("/about")} />
+                <Button label="Contact Us" size="md" variant="theme2" onClick={() => router.push("/contact")} />
             </div>
 
             {/* Animations */}

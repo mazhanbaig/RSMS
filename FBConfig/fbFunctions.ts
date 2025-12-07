@@ -1,5 +1,6 @@
 import {app} from '@/FBConfig/config'
 import { rejects } from 'assert';
+import axios from 'axios';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { getDatabase, ref, set,get, remove, update, } from "firebase/database";
 import { resolve } from 'path';
@@ -126,6 +127,38 @@ const updateData = (path: string, data: any) => {
   })
 }
 
+const uploadImage = async (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "ImagesOfProperties"); // NO spaces
+
+  const url = "https://api.cloudinary.com/v1_1/dwtvol0ha/image/upload";
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    return data.secure_url;
+  } catch (err) {
+    console.error("Upload error:", err);
+    return null;
+  }
+};
+
+const uploadImagesToCloudinary = async (files: File[]) => {
+  const urls: string[] = [];
+  for (let file of files) {
+    const url = await uploadImage(file);
+    if (url) urls.push(url);
+  }
+  return urls;
+};
 
 
-export {signInWithGoogle,logout,getData,saveData,deleleData,updateData}
+
+
+
+
+export {signInWithGoogle,logout,getData,saveData,deleleData,updateData,uploadImage,uploadImagesToCloudinary}

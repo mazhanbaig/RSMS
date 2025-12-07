@@ -6,7 +6,7 @@ import Button from "@/components/Button";
 import Header from "@/components/Header";
 import AddPropertyPart1 from "@/components/AddPropertyPart1";
 import AddPropertyPart2 from "@/components/AddPropertyPart2";
-import { getData, saveData, updateData } from "@/FBConfig/fbFunctions";
+import { getData, saveData, updateData, uploadImage, uploadImagesToCloudinary } from "@/FBConfig/fbFunctions";
 import { message } from 'antd';
 import AddPropertyPart3 from '@/components/AddPropertyPart3';
 
@@ -147,21 +147,28 @@ export default function AddPropertyPage() {
             ])
         );
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
         if (!userInfo) {
             message.error("User not detected!");
             return;
         }
-
         setIsLoading(true);
 
         const required = ['title', 'propertyType', 'price', 'area', 'city', 'location', 'description'];
         const missing = required.filter(field => !formData[field as keyof typeof formData]);
-
         if (missing.length > 0) {
             message.error(`Please fill: ${missing.join(", ")}`);
+            setIsLoading(false);
+            return;
+        }
+
+        let uploadedUrls: string[] = [];
+        try {
+            uploadedUrls = await uploadImagesToCloudinary(images);
+            if (uploadedUrls.length === 0) throw new Error("No images uploaded");
+        } catch (err) {
+            message.error("Failed to upload images");
             setIsLoading(false);
             return;
         }
@@ -169,26 +176,27 @@ export default function AddPropertyPage() {
         const propertyData = sanitize({
             ...formData,
             ownerUid: userInfo.uid,
-            images: imagePreviews,
+            images: uploadedUrls,
             createdAt: new Date().toISOString(),
             id: crypto.randomUUID()
         });
 
-        // Save to Firebase using Promises
         saveData(`properties/${propertyData.id}`, propertyData)
             .then(() => {
                 message.success('Property saved successfully!');
                 router.push('/properties');
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
                 message.error('Error saving property. Please try again.');
             })
             .finally(() => setIsLoading(false));
     };
 
+
+
     if (!userInfo) {
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
         </div>
     }
@@ -253,7 +261,7 @@ export default function AddPropertyPage() {
                                 type="button"
                                 label="Next"
                                 variant="theme"
-                                onClick={(e:any) => {
+                                onClick={(e: any) => {
                                     e.preventDefault()
                                     const idx = sections.indexOf(activeSection);
                                     if (idx < sections.length - 1) setActiveSection(sections[idx + 1]);

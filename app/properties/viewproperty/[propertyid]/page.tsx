@@ -43,6 +43,7 @@ export default function ViewPropertyPage() {
 
     const [property, setProperty] = useState<PropertyFormData | null>(null)
     const [relatedProperties, setRelatedProperties] = useState<any[]>([])
+    const [currIndex, setCurrIndex] = useState(0)
     const [loading, setLoading] = useState(true)
     const [userInfo, setUserInfo] = useState<any>(null)
 
@@ -115,9 +116,9 @@ export default function ViewPropertyPage() {
                     return p.ownerUid == userInfo?.uid
                 })
                 let related = ownersProps.filter((p) => {
-                    const target:any = property?.price;     
-                    const min = target * 0.9;              
-                    const max = target * 1.1;               
+                    const target: any = property?.price;
+                    const min = target * 0.9;
+                    const max = target * 1.1;
 
                     return p.price >= min && p.price <= max;
                 });
@@ -125,7 +126,7 @@ export default function ViewPropertyPage() {
                 setRelatedProperties(related)
             })
             .catch(err => console.error("Error fetching related properties:", err))
-    }
+    } 
 
     const handleEdit = () => router.push(`/properties/edit/${propertyid}`)
     const handleDelete = () => message.warning("Delete not implemented yet")
@@ -205,9 +206,13 @@ export default function ViewPropertyPage() {
                         {/* Left - Images & Description */}
                         <div className="md:col-span-2">
                             <div className="mb-6">
-                                {property.images?.[0] ? (
+                                {property.images ? (
+                                    // <div className="relative h-46 rounded-xl overflow-hidden">
+                                    //     <img src={property.images[0]} alt={property.title} className="w-full h-full object-cover" />
+                                    // </div>
                                     <div className="relative h-46 rounded-xl overflow-hidden">
-                                        <img src={property.images[0]} alt={property.title} className="w-full h-full object-cover" />
+                                        <img src={property.images[currIndex]} alt={property.title} className="w-full h-full object-cover" />
+                                        <Button label={'Next'}/>
                                     </div>
                                 ) : (
                                     <div className="h-96 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center">
