@@ -121,17 +121,6 @@ export default function ViewOwnerPage() {
             <Header userData={userInfo} />
 
             <div className="max-w-6xl mx-auto mt-16 px-4 sm:px-6 md:px-6 lg:px-6">
-                {/* Back Navigation */}
-                <div className="mb-6">
-                    <Button
-                        label="Back to Owners"
-                        onClick={() => router.push('/owners')}
-                        variant="theme2"
-                        size="md"
-                        icon={<ArrowLeft className="w-4 h-4" />}
-                    />
-                </div>
-
                 {/* Owner Header */}
                 <div className="mb-8 text-center sm:text-left">
                     <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-bold text-gray-900 mb-2">

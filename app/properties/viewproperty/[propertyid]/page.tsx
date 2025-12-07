@@ -174,14 +174,6 @@ export default function ViewPropertyPage() {
 
             <div className="max-w-7xl mx-auto px-4 py-8">
 
-                {/* Back */}
-                <button
-                    onClick={() => router.push('/properties')}
-                    className="flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-6"
-                >
-                    <ArrowLeft size={20} /> Back to Properties
-                </button>
-
                 {/* Property Header */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
 
