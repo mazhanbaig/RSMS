@@ -136,8 +136,10 @@ export default function OwnersPage() {
                                                 label="Edit"
                                                 size="sm"
                                                 variant="theme2"
-                                                onClick={() =>
+                                                onClick={(e:any) =>{
+                                                    e.stopPropagation()
                                                     router.push(`/owners/addowner?ownerData=${encodeURIComponent(JSON.stringify(owner))}`)
+                                                }
                                                 }
                                             />
                                             <Button label="Delete" size="sm" variant="theme" onClick={() => deleteOwner(i)} />
