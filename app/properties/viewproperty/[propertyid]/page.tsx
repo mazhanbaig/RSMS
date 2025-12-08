@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import {
     Home, MapPin, Bed, Bath, Square, Calendar,
-    Phone, Check, ArrowLeft, Edit2, Trash2
+    Phone, Check, ArrowLeft, Edit2, Trash2,
+    Share2
 } from "lucide-react"
 import Button from "@/components/Button"
 import { message } from "antd"
@@ -135,6 +136,19 @@ export default function ViewPropertyPage() {
         );
     };
 
+    const handleShare = () => {
+        if (navigator.share) {
+            navigator.share({
+                title: property?.title,
+                text: `Check out this property: ${property?.title}`,
+                url: window.location.href,
+            })
+        } else {
+            navigator.clipboard.writeText(window.location.href)
+            message.success('Link copied to clipboard!')
+        }
+    }
+
     // Loading skeleton
     if (loading) return (
         <div className="min-h-screen bg-gray-50">
@@ -206,18 +220,34 @@ export default function ViewPropertyPage() {
                         <div className="md:col-span-2">
                             <div className="mb-6">
                                 {property.images ? (
-                                    
-                                    <div className="relative h-46 rounded-xl overflow-hidden">
+                                    <div className="relative h-46 rounded-xl overflow-hidden shadow-md group">
+
+                                        {/* Share Button */}
+                                        <div
+                                            onClick={handleShare}
+                                            className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow cursor-pointer  text-sm font-semibold text-gray-800 hover:bg-white transition"
+                                        >
+                                            <Share2 size={18} className="text-black" />
+                                        </div>
+
+                                        {/* Image */}
                                         <img
                                             src={property.images[currIndex]}
                                             alt={property.title}
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                         />
 
+                                        {/* Next Button */}
                                         <div className="absolute bottom-3 right-3">
-                                            <Button label="Next" variant="primary" onClick={handleNext} />
+                                            <Button
+                                                label="Next"
+                                                onClick={handleNext}
+                                                classNameC="!px-5 !py-2 rounded-full bg-black/60 text-white 
+                       hover:bg-black/80 backdrop-blur-md"
+                                            />
                                         </div>
                                     </div>
+
 
                                 ) : (
                                     <div className="h-96 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center">
@@ -381,39 +411,50 @@ export default function ViewPropertyPage() {
                         </div>
                     </div>
 
-                    {/* Related */}
+                    {/* Related Properties */}
                     {relatedProperties.length > 0 && (
-                        <div className="mt-12">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                                Similar Properties
+                        <div className="mt-14">
+                            <h2 className="text-3xl font-extrabold text-gray-900 mb-8 tracking-tight">
+                                Similar Listings
                             </h2>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {relatedProperties.map(r => (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7">
+
+                                {relatedProperties.map((p) => (
                                     <div
-                                        key={r.id}
-                                        onClick={() => router.push(`/property/viewproperty/${r.id}`)}
-                                        className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
+                                        key={p.id}
+                                        onClick={() => router.push(`/property/viewproperty/${p.id}`)}
+                                        className="group bg-white rounded-xl shadow-lg border border-gray-200 
+                               overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-300"
                                     >
+                                        {/* Image */}
+                                        <div className="relative h-44 overflow-hidden">
+                                            <img
+                                                src={p.images?.[0]}
+                                                className="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"
+                                            />
+
+                                            {/* Price Tag */}
+                                            <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-md">
+                                                <span className="text-purple-700 font-bold text-sm">
+                                                    {p.price} {p.priceUnit}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Content */}
                                         <div className="p-4">
-                                            <h3 className="font-bold text-gray-900 line-clamp-1 mb-2">
-                                                {r.title}
+                                            <h3 className="text-lg font-bold text-gray-900 mb-1 line-clamp-1">
+                                                {p.title}
                                             </h3>
-                                            <div className="flex items-center gap-1 text-gray-600 mb-3">
-                                                <MapPin size={12} />
-                                                <span className="text-xs truncate">{r.location}</span>
-                                            </div>
-                                            <div className="flex justify-between items-center">
-                                                <div className="text-lg font-bold text-gray-900">
-                                                    {r.price?.toLocaleString()} {r.priceUnit || 'PKR'}
-                                                </div>
-                                                <div className="text-sm text-gray-500">
-                                                    {r.bedrooms || 0} Beds
-                                                </div>
-                                            </div>
+
+                                            <p className="text-gray-600 text-sm flex items-center gap-1 line-clamp-1">
+                                                <MapPin size={14} /> {p.location}
+                                            </p>
                                         </div>
                                     </div>
                                 ))}
+
                             </div>
                         </div>
                     )}
