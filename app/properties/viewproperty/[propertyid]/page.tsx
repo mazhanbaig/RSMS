@@ -126,10 +126,14 @@ export default function ViewPropertyPage() {
                 setRelatedProperties(related)
             })
             .catch(err => console.error("Error fetching related properties:", err))
-    } 
+    }
+    const handleNext = () => {
+        if (!property?.images) return;
 
-    const handleEdit = () => router.push(`/properties/edit/${propertyid}`)
-    const handleDelete = () => message.warning("Delete not implemented yet")
+        setCurrIndex((prev) =>
+            prev + 1 < property.images!.length ? prev + 1 : 0
+        );
+    };
 
     // Loading skeleton
     if (loading) return (
@@ -193,11 +197,6 @@ export default function ViewPropertyPage() {
                                 </div>
                             </div>
                         </div>
-
-                        <div className="flex gap-3">
-                            <Button label="Edit" variant="theme2" size="md" onClick={handleEdit} icon={<Edit2 size={18} />} />
-                            <Button label="Delete" variant="danger" size="md" onClick={handleDelete} icon={<Trash2 size={18} />} />
-                        </div>
                     </div>
 
                     {/* Main Grid */}
@@ -207,13 +206,19 @@ export default function ViewPropertyPage() {
                         <div className="md:col-span-2">
                             <div className="mb-6">
                                 {property.images ? (
-                                    // <div className="relative h-46 rounded-xl overflow-hidden">
-                                    //     <img src={property.images[0]} alt={property.title} className="w-full h-full object-cover" />
-                                    // </div>
+                                    
                                     <div className="relative h-46 rounded-xl overflow-hidden">
-                                        <img src={property.images[currIndex]} alt={property.title} className="w-full h-full object-cover" />
-                                        <Button label={'Next'}/>
+                                        <img
+                                            src={property.images[currIndex]}
+                                            alt={property.title}
+                                            className="w-full h-full object-cover"
+                                        />
+
+                                        <div className="absolute bottom-3 right-3">
+                                            <Button label="Next" variant="primary" onClick={handleNext} />
+                                        </div>
                                     </div>
+
                                 ) : (
                                     <div className="h-96 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center">
                                         <Home size={64} className="text-gray-400" />
