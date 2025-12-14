@@ -1,53 +1,20 @@
-import {app} from '@/FBConfig/config'
-import { rejects } from 'assert';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { getDatabase, ref, set,get, remove, update, } from "firebase/database";
-import { resolve } from 'path';
+import { app } from '@/FBConfig/config'
+import { getAuth, signOut, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { getDatabase, ref, set, get, remove, update } from "firebase/database";
+
 export const auth = getAuth(app);
-const db=getDatabase(app)
+const db = getDatabase(app);
 
-// const signUpUser=({email,name,password}:any)=>{
-//     return new Promise((resolve,reject)=>{
-//         createUserWithEmailAndPassword(auth, email, password)
-//         .then((res) => {
-//         const user = res.user;
-//         set(ref(db, 'users/' + user.uid), {
-//           uid: user.uid,
-//           name: name,
-//           email: email,
-//           createdAt: new Date().toISOString()
-//         })
-//         .then(() => {
-//           resolve(res); // resolve after saving data
-//         })
-//         .catch((err) => {
-//           reject(err);
-//         });
-//       })
-//         .catch((err)=>{
-//             reject(err)
-//         })
-//     })
-// }
-
-// const loginUser = ({ email, password }: any) => {
-//   return new Promise((resolve, reject) => {
-//     signInWithEmailAndPassword(auth, email, password)
-//       .then((user) => resolve(user))
-//       .catch((err) => reject(err));
-//   });
-// };
-
+// ---------------- GOOGLE SIGN-IN ----------------
 
 const signInWithGoogle = () => {
   return new Promise((resolve, reject) => {
     const provider = new GoogleAuthProvider();
-    
+
     signInWithPopup(auth, provider)
       .then((result) => {
         const user = result.user;
-        
-        // Save user data to database if it's their first time
+
         set(ref(db, 'users/' + user.uid), {
           uid: user.uid,
           name: user.displayName,
@@ -56,88 +23,71 @@ const signInWithGoogle = () => {
           provider: 'google',
           createdAt: new Date().toISOString()
         })
-        .then(() => {
-          resolve(result);
-        })
-        .catch((err) => {
-          reject(err);
-        });
+          .then(() => resolve(result))
+          .catch((err) => reject(err));
       })
-      .catch((err) => {
-        reject(err);
-      });
+      .catch((err) => reject(err));
   });
 };
 
+// ---------------- LOGOUT ----------------
 
+let logout = () => {
+  return signOut(auth);
+};
 
-let logout=()=>{
-    signOut(auth).then(() => {
-    }).catch((error) => {
-    });
-}
+// ---------------- GET DATA ----------------
 
 const getData = (path: string) => {
   return new Promise((resolve, reject) => {
     const dbRef = ref(db, path);
     get(dbRef)
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          resolve(snapshot.val());
-        } else {
-          resolve(null); // no data
-        }
-      })
+      .then((snapshot) => resolve(snapshot.exists() ? snapshot.val() : null))
       .catch((err) => reject(err));
   });
-}
+};
 
-const saveData=(path:string,data:any)=>{
-  return new Promise((resolve,reject)=>{
-    let dataRef=ref(db,path)
-    set(dataRef,data)
-    .then((res)=>{
-      resolve(res)
-    })
-    .catch((err)=>{
-      reject(err)
-    })
-  })
-}
+// ---------------- SAVE DATA ----------------
+
+const saveData = (path: string, data: any) => {
+  return new Promise((resolve, reject) => {
+    set(ref(db, path), data)
+      .then((res) => resolve(res))
+      .catch((err) => reject(err));
+  });
+};
+
+// ---------------- DELETE DATA ----------------
 
 const deleleData = (path: string) => {
-    return new Promise((resolve,reject)=>{
-      remove(ref(db,path))
-      .then((res)=>{
-        resolve(res);
-      })
-      .catch((err)=>{
-        reject(err)
-      })
-    })
+  return new Promise((resolve, reject) => {
+    remove(ref(db, path))
+      .then((res) => resolve(res))
+      .catch((err) => reject(err));
+  });
 };
+
+// ---------------- UPDATE DATA ----------------
 
 const updateData = (path: string, data: any) => {
   return new Promise((resolve, reject) => {
-    let dataRef = ref(db, path)
-    update(dataRef, data)
-      .then(res => resolve(res))
-      .catch(err => reject(err))
-  })
-}
+    update(ref(db, path), data)
+      .then((res) => resolve(res))
+      .catch((err) => reject(err));
+  });
+};
+
+// ---------------- UPLOAD IMAGE (Cloudinary) ----------------
 
 const uploadImage = async (file: File) => {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("upload_preset", "ImagesOfProperties"); // NO spaces
+  formData.append("upload_preset", "ImagesOfProperties");
 
   const url = "https://api.cloudinary.com/v1_1/dwtvol0ha/image/upload";
 
   try {
-    const res = await fetch(url, {
-      method: "POST",
-      body: formData
-    });
+    const res = await fetch(url, { method: "POST", body: formData });
     const data = await res.json();
     return data.secure_url;
   } catch (err) {
@@ -155,9 +105,13 @@ const uploadImagesToCloudinary = async (files: File[]) => {
   return urls;
 };
 
-
-
-
-
-
-export {signInWithGoogle,logout,getData,saveData,deleleData,updateData,uploadImage,uploadImagesToCloudinary}
+export {
+  signInWithGoogle,
+  logout,
+  getData,
+  saveData,
+  deleleData,
+  updateData,
+  uploadImage,
+  uploadImagesToCloudinary
+};
