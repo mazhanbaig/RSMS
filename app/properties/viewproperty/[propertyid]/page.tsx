@@ -188,13 +188,13 @@ export default function ViewPropertyPage() {
     )
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-white">
             <Header userData={userInfo} />
 
-            <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="max-w-7xl mx-auto py-8">
 
                 {/* Property Header */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+                <div className="bg-white h-screen shadow-lg p-6 mb-30">
 
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                         <div>
@@ -418,27 +418,27 @@ export default function ViewPropertyPage() {
                                 Similar Listings
                             </h2>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7">
+                            {/* Horizontal scroll (no scrollbar) */}
+                            <div className="flex gap-6 overflow-x-auto pb-3 scroll-smooth no-scrollbar">
 
                                 {relatedProperties.map((p) => (
                                     <div
                                         key={p.id}
                                         onClick={() => router.push(`/property/viewproperty/${p.id}`)}
-                                        className="group bg-white rounded-xl shadow-lg border border-gray-200 
-                               overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-300"
+                                        className="min-w-[240px] bg-white rounded-2xl shadow-lg border border-gray-200 
+                               cursor-pointer overflow-hidden hover:shadow-2xl transition-all duration-300"
                                     >
                                         {/* Image */}
                                         <div className="relative h-44 overflow-hidden">
                                             <img
                                                 src={p.images?.[0]}
-                                                className="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"
+                                                className="w-full h-full object-cover transform hover:scale-110 transition duration-500"
                                             />
 
                                             {/* Price Tag */}
-                                            <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-md">
-                                                <span className="text-purple-700 font-bold text-sm">
-                                                    {p.price} {p.priceUnit}
-                                                </span>
+                                            <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 
+                                        rounded-full shadow-md text-purple-700 font-bold text-sm">
+                                                {p.price} {p.priceUnit}
                                             </div>
                                         </div>
 
@@ -458,7 +458,6 @@ export default function ViewPropertyPage() {
                             </div>
                         </div>
                     )}
-
                 </div>
             </div>
         </div>

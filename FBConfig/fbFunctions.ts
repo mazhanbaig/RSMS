@@ -1,6 +1,5 @@
 import {app} from '@/FBConfig/config'
 import { rejects } from 'assert';
-import axios from 'axios';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { getDatabase, ref, set,get, remove, update, } from "firebase/database";
 import { resolve } from 'path';
