@@ -118,110 +118,13 @@ export default function DealPage() {
         }
 
         // Create certificate content using YOUR component's exact design
-        const certificateHTML = `
-        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
-            <!-- Header -->
-            <div style="text-align: center;">
-                <h1 style="font-size: 72px; font-weight: 900; letter-spacing: 0.3em; color: #000000; margin-bottom: 20px;">
-                    CERTIFICATE
-                </h1>
-                <div style="height: 2px; width: 250px; background: linear-gradient(90deg, #D4AF37, #FFD700, #D4AF37); margin: 0 auto 20px auto;"></div>
-                <h2 style="font-size: 28px; font-weight: 600; color: #000000; letter-spacing: 0.1em;">
-                    OF ${dealType === 'sold' ? 'PROPERTY SALE' : 'RENTAL AGREEMENT'}
-                </h2>
-            </div>
-            
-            <!-- Body -->
-            <div style="text-align: center;">
-                <p style="font-size: 20px; color: #666666; margin-bottom: 20px;">
-                    This certification is presented to:
-                </p>
-                
-                <div style="display: inline-block; position: relative; margin: 0 0 40px 0;">
-                    <div style="position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px; background: linear-gradient(45deg, #D4AF37, #FFD700); opacity: 0.15; border-radius: 999px;"></div>
-                    <div style="position: relative; z-index: 1; padding: 30px 60px; border: 4px solid #D4AF37; border-radius: 999px; background: white;">
-                        <h3 style="font-size: 48px; font-weight: 700; color: #000000; margin: 0; font-family: 'Playfair Display', serif;">
-                            ${formData.customerName}
-                        </h3>
-                    </div>
-                </div>
-                
-                <div style="font-size: 18px; color: #333333; line-height: 1.6; max-width: 800px; margin: 0 auto;">
-                    For successfully completing the ${dealType === 'sold' ? 'purchase' : 'rental'} of<br>
-                    <span style="font-size: 24px; font-weight: 700; color: #000000; display: block; margin: 15px 0;">
-                        ${property?.title || 'Property Title'}
-                    </span>
-                    located at ${property?.location || 'Location'}, ${property?.city || 'City'}<br>
-                    ${dealType === 'sold' ? 'Purchase Amount: ' : 'Rental Amount: '}
-                    <span style="font-size: 28px; font-weight: 700; color: #D4AF37; display: inline-block; margin: 15px 0;">
-                        ${formatCurrency(formData.dealAmount)}
-                    </span>
-                    ${dealType === 'rented' ? ` for ${formData.agreementDuration}` : ''}
-                </div>
-            </div>
-            
-            <!-- Footer -->
-            <div>
-                <!-- Signatures -->
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-bottom: 40px;">
-                    <div style="text-align: center;">
-                        <div style="height: 2px; width: 150px; background: linear-gradient(90deg, #D4AF37, transparent); margin: 0 auto 15px auto;"></div>
-                        <p style="font-size: 12px; color: #666666; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;">
-                            Property Owner
-                        </p>
-                        <p style="font-size: 18px; font-weight: 700; color: #000000;">
-                            ${property?.ownerName || 'Owner Name'}
-                        </p>
-                    </div>
-                    
-                    <div style="text-align: center;">
-                        <div style="height: 2px; width: 150px; background: linear-gradient(90deg, #D4AF37, transparent); margin: 0 auto 15px auto;"></div>
-                        <p style="font-size: 12px; color: #666666; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;">
-                            ${dealType === 'sold' ? 'Buyer' : 'Tenant'}
-                        </p>
-                        <p style="font-size: 18px; font-weight: 700; color: #000000;">
-                            ${formData.customerName}
-                        </p>
-                    </div>
-                    
-                    <div style="text-align: center;">
-                        <div style="height: 2px; width: 150px; background: linear-gradient(90deg, #D4AF37, transparent); margin: 0 auto 15px auto;"></div>
-                        <p style="font-size: 12px; color: #666666; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;">
-                            ZState Agent
-                        </p>
-                        <p style="font-size: 18px; font-weight: 700; color: #000000;">
-                            ${formData.agentName || 'Agent Name'}
-                        </p>
-                    </div>
-                </div>
-                
-                <!-- Certificate ID -->
-                <div style="text-align: center; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-                    <div>
-                        <span style="font-size: 14px; color: #666666; margin-right: 10px;">Certificate ID:</span>
-                        <span style="font-size: 18px; font-weight: 700; color: #000000; font-family: 'Courier New', monospace;">
-                            ${formData.certificateId}
-                        </span>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: center; align-items: center; gap: 30px; margin-top: 20px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 10px; height: 10px; background-color: #10B981; border-radius: 50%;"></div>
-                            <span style="font-size: 12px; color: #666666;">Digitally Verified</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 10px; height: 10px; background-color: #3B82F6; border-radius: 50%;"></div>
-                            <span style="font-size: 12px; color: #666666;">Official Document</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 10px; height: 10px; background-color: #D4AF37; border-radius: 50%;"></div>
-                            <span style="font-size: 12px; color: #666666;">ZState Certified</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `
+        const certificateHTML = renderToStaticMarkup(
+            <ZStateCertificate
+                dealType={property.propertyStatus}
+                property={property}
+                formData={formData}
+            />
+        );
 
         container.innerHTML = certificateHTML
 
