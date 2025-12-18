@@ -98,19 +98,19 @@ export default function Hero({ userData }: { userData?: UserInfo }) {
                         label="Get Started With ZState"
                         onClick={() => router.push("/clients")}
                         icon={<ArrowRight className="ml-2" />}
-                        className="w-full sm:w-auto"
+                        classNameC="w-full sm:w-auto"
                     />
                     <Button
                         label="About Us"
                         variant="theme2"
                         onClick={() => router.push("/about")}
-                        className="w-full sm:w-auto"
+                        classNameC="w-full sm:w-auto"
                     />
                     <Button
                         label="Contact Us"
                         variant="theme2"
                         onClick={() => router.push("/contact")}
-                        className="w-full sm:w-auto"
+                        classNameC="w-full sm:w-auto"
                     />
                 </div>
             </div>
