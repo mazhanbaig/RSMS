@@ -116,4 +116,4 @@ export default function Hero({ userData }: { userData?: UserInfo }) {
             </div>
         </section>
     );
-}
+}  
