@@ -46,68 +46,71 @@ export default function Hero({ userData }: { userData?: UserInfo }) {
     }, [userData?.uid]);
 
     return (
-        <section className="relative w-full px-4 sm:px-6 pt-24 pb-16 bg-gradient-to-b from-slate-50 via-white to-slate-100">
+        <section className="relative w-full px-4 sm:px-6 pt-16 sm:pt-24 pb-12 sm:pb-16 bg-gradient-to-b from-slate-50 via-white to-slate-100">
 
             {/* Soft background glow */}
-            <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl" />
-            <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl" />
+            <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl hidden sm:block" />
+            <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl hidden sm:block" />
 
-            <div className="relative max-w-6xl mx-auto text-center flex flex-col items-center gap-6">
+            <div className="relative max-w-6xl mx-auto text-center flex flex-col items-center gap-4 sm:gap-6">
 
                 {/* Greeting */}
-                <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
                     {greeting},{" "}
                     <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                         {firstName}
                     </span>
                 </h1>
 
-                <p className="text-sm sm:text-base text-slate-600 max-w-md">
+                <p className="text-xs sm:text-base text-slate-600 max-w-xs sm:max-w-md">
                     Manage properties, clients, and deals from one secure and powerful platform.
                 </p>
 
                 {/* Stats */}
                 {userData && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-xl sm:max-w-5xl mt-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 w-full max-w-xs sm:max-w-5xl mt-4 sm:mt-6">
                         <StatCard
                             label="Properties"
                             value={ownerProperties.length}
-                            icon={<Home className="w-5 h-5 text-purple-600" />}
+                            icon={<Home className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />}
                         />
                         <StatCard
                             label="Clients"
                             value={ownerClients.length}
-                            icon={<Users className="w-5 h-5 text-blue-600" />}
+                            icon={<Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />}
                         />
                         <StatCard
                             label="Support"
                             value="24/7"
-                            icon={<Shield className="w-5 h-5 text-green-600" />}
+                            icon={<Shield className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />}
                         />
                         <StatCard
                             label="Secure"
                             value="100%"
-                            icon={<Zap className="w-5 h-5 text-orange-500" />}
+                            icon={<Zap className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />}
                         />
                     </div>
                 )}
 
                 {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-3 mt-6 w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6 w-full sm:w-auto">
                     <Button
                         label="Get Started With ZState"
                         onClick={() => router.push("/clients")}
                         icon={<ArrowRight className="ml-2" />}
+                        className="w-full sm:w-auto"
                     />
                     <Button
                         label="About Us"
                         variant="theme2"
                         onClick={() => router.push("/about")}
+                        className="w-full sm:w-auto"
                     />
                     <Button
                         label="Contact Us"
                         variant="theme2"
                         onClick={() => router.push("/contact")}
+                        className="w-full sm:w-auto"
                     />
                 </div>
             </div>
