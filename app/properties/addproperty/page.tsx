@@ -13,6 +13,7 @@ import AddPropertyPart3 from '@/components/AddPropertyPart3';
 interface UserInfo {
     uid: string;
     email: string;
+    name:string;
 }
 
 export default function AddPropertyPage() {
@@ -40,6 +41,8 @@ export default function AddPropertyPage() {
         hasParking: boolean;
         hasGarden: boolean;
         hasSecurity: boolean;
+        propertyStatus: 'available' | 'rented' | 'sold' | 'under-Negotiation'
+
     }
 
     const router = useRouter();
@@ -75,6 +78,7 @@ export default function AddPropertyPage() {
         hasParking: false,
         hasGarden: false,
         hasSecurity: false,
+        propertyStatus:'available' 
     });
 
     const sections = ['basic', 'details', 'images'];
@@ -175,7 +179,8 @@ export default function AddPropertyPage() {
 
         const propertyData = sanitize({
             ...formData,
-            ownerUid: userInfo.uid,
+            agentUid: userInfo.uid,
+            agentName: userInfo.name,
             images: uploadedUrls,
             createdAt: new Date().toISOString(),
             id: crypto.randomUUID()

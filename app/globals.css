@@ -33,3 +33,39 @@ body {
 .no-scrollbar {
   scrollbar-width: none;
 }
+
+/* Certificate-specific animations */
+@keyframes border-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.6);
+  }
+}
+
+.gold-border-glow {
+  animation: border-glow 3s ease-in-out infinite;
+}
+
+@keyframes gold-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.gold-pulse {
+  animation: gold-pulse 2s ease-in-out infinite;
+}
+
+/* Gold gradient backgrounds */
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #D4AF37 100%);
+}
+
+.bg-black-gold {
+  background: linear-gradient(to bottom, #000000, #0A0A0A);
+}

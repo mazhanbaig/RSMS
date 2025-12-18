@@ -1,0 +1,762 @@
+'use client'
+
+import { useSearchParams, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { getData, updateData } from "@/FBConfig/fbFunctions"
+import Header from "@/components/Header"
+import Button from "@/components/Button"
+import { message, Modal } from "antd"
+import { 
+    User, FileText, Calendar, Phone, DollarSign, Home, 
+    MapPin, Bed, Bath, Square, Download, Printer, 
+    Mail, ShieldCheck, Building, Clock
+} from "lucide-react"
+
+interface PropertyData {
+    id: string;
+    title: string;
+    description: string;
+    propertyType: string;
+    price: string;
+    priceUnit: string;
+    location: string;
+    city: string;
+    area: string;
+    areaUnit: string;
+    bedrooms: string;
+    bathrooms: string;
+    yearBuilt?: string;
+    ownerName: string;
+    ownerContact?: string;
+    ownerEmail?: string;
+    features: string[];
+    amenities: string[];
+    propertyCondition: string;
+    propertyStatus: 'available' | 'rented' | 'sold' | 'under-Negotiation';
+    images?: string[];
+}
+
+interface DealData {
+    customerName: string;
+    customerContact: string;
+    customerEmail: string;
+    dealAmount: string;
+    dealDate: string;
+    agreementDuration: string;
+    commission: string;
+    agentName: string;
+    extraNotes: string;
+}
+
+interface CertificateData {
+    certificateId: string;
+    type: 'sale' | 'rental';
+    issueDate: string;
+    validUntil?: string;
+    digitalSignature: string;
+}
+
+export default function DealPage() {
+    const params = useSearchParams()
+    const router = useRouter()
+    const propertyId = params.get("id")
+
+    const [property, setProperty] = useState<PropertyData | null>(null)
+    const [userInfo, setUserInfo] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
+    const [showCertificate, setShowCertificate] = useState(false)
+    const [certificateData, setCertificateData] = useState<CertificateData | null>(null)
+
+    // Deal Form States
+    const [dealData, setDealData] = useState<DealData>({
+        customerName: "",
+        customerContact: "",
+        customerEmail: "",
+        dealAmount: "",
+        dealDate: new Date().toISOString().split('T')[0],
+        agreementDuration: "12 months",
+        commission: "",
+        agentName: "",
+        extraNotes: ""
+    })
+
+    // Auth check
+    useEffect(() => {
+        const data = localStorage.getItem("userInfo")
+        if (data) {
+            try {
+                const parsed = JSON.parse(data)
+                setUserInfo(parsed)                                
+                setDealData(prev => ({ ...prev, agentName: parsed.displayName || parsed.email || "" }))
+            } catch (err) { console.error(err) }
+        }
+    }, [])
+
+    // Fetch Property
+    useEffect(() => {
+        if (!propertyId) return
+        
+        setLoading(true)
+        getData(`properties/${propertyId}`)
+            .then((res: any) => {
+                if (!res) {
+                    message.error("Property not found")
+                    router.push('/properties')
+                    return
+                }
+                
+                // Check if property is sold or rented
+                if (res.propertyStatus !== 'sold' && res.propertyStatus !== 'rented') {
+                    message.warning("Property must be marked as sold or rented first")
+                    router.push(`/property/viewproperty/${propertyId}`)
+                    return
+                }
+                
+                setProperty({ id: propertyId, ...res })
+                
+                // Auto-fill deal amount with property price
+                setDealData(prev => ({
+                    ...prev,
+                    dealAmount: res.price || "",
+                    agreementDuration: res.propertyStatus === 'rented' ? "12 months" : "N/A"
+                }))
+            })
+            .catch(err => {
+                console.error(err)
+                message.error("Failed to load property")
+            })
+            .finally(() => setLoading(false))
+    }, [propertyId, router])
+
+    const handleInputChange = (field: keyof DealData, value: string) => {
+        setDealData(prev => ({ ...prev, [field]: value }))
+    }
+
+    const handleSaveDeal = () => {
+        if (!customerName || !customerContact || !dealAmount || !dealDate) {
+            message.error("Please fill all required fields")
+            return
+        }
+
+        if (!propertyId) return
+
+        const dealUpdate = {
+            ...dealData,
+            dealStatus: 'completed',
+            lastUpdated: new Date().toISOString(),
+            updatedBy: userInfo?.uid || 'system'
+        }
+
+        // Update property with deal information
+        updateData(`properties/${propertyId}`, dealUpdate)
+            .then(() => {
+                message.success("Deal information saved successfully!")
+                
+                // Also save to deals collection
+                const dealRecord = {
+                    propertyId,
+                    propertyTitle: property?.title,
+                    ...dealData,
+                    timestamp: new Date().toISOString(),
+                    createdBy: userInfo?.uid
+                }
+                
+                // Save to deals collection (you need to create this in Firebase)
+                // updateData(`deals/${propertyId}`, dealRecord)
+                //     .then(() => console.log("Deal record saved"))
+                //     .catch(err => console.error(err))
+            })
+            .catch((err) => {
+                console.error(err)
+                message.error("Failed to save deal information")
+            })
+    }
+
+    const handleGenerateCertificate = () => {
+        if (!customerName || !customerContact || !dealAmount || !dealDate) {
+            message.error("Please fill all required fields first")
+            return
+        }
+
+        handleSaveDeal()
+
+        // Generate certificate data
+        const certificateType = property?.propertyStatus === 'sold' ? 'sale' : 'rental'
+        const certId = `ZSTATE-${certificateType.toUpperCase()}-${new Date().getTime()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+        
+        const newCertificateData: CertificateData = {
+            certificateId: certId,
+            type: certificateType,
+            issueDate: new Date().toLocaleDateString('en-IN'),
+            validUntil: property?.propertyStatus === 'rented' ? 
+                new Date(new Date().setMonth(new Date().getMonth() + parseInt(dealData.agreementDuration)))?.toLocaleDateString('en-IN') : 
+                undefined,
+            digitalSignature: `ZS-${userInfo?.uid?.substr(0, 8) || 'AUTH'}`
+        }
+
+        setCertificateData(newCertificateData)
+        setShowCertificate(true)
+    }
+
+    const handlePrintCertificate = () => {
+        const printContent = document.getElementById('certificate-content')
+        if (!printContent) return
+
+        const printWindow = window.open('', '_blank')
+        if (printWindow) {
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>ZState Certificate - ${certificateData?.certificateId}</title>
+                        <style>
+                            body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 40px; background: #f8fafc; }
+                            .certificate-container { max-width: 800px; margin: 0 auto; background: white; border: 15px solid #7c3aed; border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); }
+                            .header { text-align: center; margin-bottom: 40px; }
+                            .header h1 { color: #7c3aed; font-size: 36px; margin-bottom: 10px; font-weight: 800; }
+                            .header h2 { color: #4f46e5; font-size: 24px; margin-bottom: 20px; }
+                            .certificate-number { background: #f1f5f9; padding: 10px 20px; border-radius: 10px; display: inline-block; margin-bottom: 30px; }
+                            .content { line-height: 1.8; }
+                            .section { margin: 25px 0; padding: 20px; background: #f8fafc; border-radius: 10px; }
+                            .section h3 { color: #475569; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; }
+                            .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+                            .signature-area { margin-top: 50px; display: flex; justify-content: space-between; }
+                            .signature-box { text-align: center; width: 30%; }
+                            .signature-line { border-top: 2px solid #334155; width: 100%; margin: 20px 0 5px; }
+                            .stamp { position: absolute; right: 40px; bottom: 40px; opacity: 0.3; }
+                            .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+                            @media print { body { padding: 0; } .certificate-container { border: 20px solid #7c3aed; margin: 0; box-shadow: none; } }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="certificate-container">
+                            <div class="header">
+                                <h1>ZSTATE PROPERTY CERTIFICATE</h1>
+                                <h2>Official ${property?.propertyStatus === 'sold' ? 'Sale' : 'Rental'} Certificate</h2>
+                                <div class="certificate-number">
+                                    <strong>Certificate ID:</strong> ${certificateData?.certificateId}
+                                </div>
+                            </div>
+                            
+                            <div class="content">
+                                <p>This is to certify that the ${property?.propertyStatus === 'sold' ? 'sale' : 'rental'} transaction has been successfully completed and registered with ZState Real Estate Platform.</p>
+                                
+                                <div class="section">
+                                    <h3>Property Details</h3>
+                                    <div class="grid-2">
+                                        <div>
+                                            <p><strong>Property Title:</strong><br/>${property?.title}</p>
+                                            <p><strong>Location:</strong><br/>${property?.location}, ${property?.city}</p>
+                                            <p><strong>Type:</strong><br/>${property?.propertyType}</p>
+                                        </div>
+                                        <div>
+                                            <p><strong>Area:</strong><br/>${property?.area} ${property?.areaUnit}</p>
+                                            <p><strong>Bed/Bath:</strong><br/>${property?.bedrooms} Beds, ${property?.bathrooms} Baths</p>
+                                            <p><strong>Condition:</strong><br/>${property?.propertyCondition}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="section">
+                                    <h3>Transaction Details</h3>
+                                    <div class="grid-2">
+                                        <div>
+                                            <p><strong>${property?.propertyStatus === 'sold' ? 'Buyer' : 'Tenant'}:</strong><br/>${dealData.customerName}</p>
+                                            <p><strong>Contact:</strong><br/>${dealData.customerContact}</p>
+                                            ${dealData.customerEmail ? `<p><strong>Email:</strong><br/>${dealData.customerEmail}</p>` : ''}
+                                        </div>
+                                        <div>
+                                            <p><strong>Transaction Amount:</strong><br/>₹${parseInt(dealData.dealAmount).toLocaleString('en-IN')}</p>
+                                            <p><strong>Transaction Date:</strong><br/>${new Date(dealData.dealDate).toLocaleDateString('en-IN')}</p>
+                                            ${dealData.agreementDuration !== "N/A" ? `<p><strong>Agreement Duration:</strong><br/>${dealData.agreementDuration}</p>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="section">
+                                    <h3>Parties Involved</h3>
+                                    <div class="grid-2">
+                                        <div>
+                                            <p><strong>${property?.propertyStatus === 'sold' ? 'Seller' : 'Property Owner'}:</strong><br/>${property?.ownerName}</p>
+                                            <p><strong>Contact:</strong><br/>${property?.ownerContact || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p><strong>Certifying Agent:</strong><br/>${dealData.agentName}</p>
+                                            <p><strong>Commission:</strong><br/>${dealData.commission ? '₹' + dealData.commission : 'N/A'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                ${dealData.extraNotes ? `
+                                <div class="section">
+                                    <h3>Additional Notes</h3>
+                                    <p>${dealData.extraNotes}</p>
+                                </div>
+                                ` : ''}
+                                
+                                <div class="signature-area">
+                                    <div class="signature-box">
+                                        <div class="signature-line"></div>
+                                        <p><strong>${property?.ownerName || 'Property Owner'}</strong><br/>
+                                        ${property?.propertyStatus === 'sold' ? 'Seller' : 'Property Owner'}</p>
+                                    </div>
+                                    
+                                    <div class="signature-box">
+                                        <div class="signature-line"></div>
+                                        <p><strong>ZState Authority</strong><br/>
+                                        Certifying Officer</p>
+                                        <small>Digital Signature: ${certificateData?.digitalSignature}</small>
+                                    </div>
+                                    
+                                    <div class="signature-box">
+                                        <div class="signature-line"></div>
+                                        <p><strong>${dealData.customerName}</strong><br/>
+                                        ${property?.propertyStatus === 'sold' ? 'Buyer' : 'Tenant'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="footer">
+                                <p>This certificate is computer generated and officially issued by ZState Real Estate Platform.</p>
+                                <p>Issued on: ${certificateData?.issueDate} | Valid ${certificateData?.validUntil ? 'until: ' + certificateData.validUntil : 'indefinitely'}</p>
+                                <p>© ${new Date().getFullYear()} ZState. All rights reserved. This document is legally binding.</p>
+                            </div>
+                        </div>
+                    </body>
+                </html>
+            `)
+            printWindow.document.close()
+            printWindow.print()
+        }
+    }
+
+    const handleDownloadPDF = () => {
+        message.info("PDF download feature would be implemented here")
+        // In a real implementation, you would use jsPDF or similar library
+    }
+
+    if (loading) return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading deal information...</p>
+            </div>
+        </div>
+    )
+
+    if (!property) return (
+        <div className="min-h-screen bg-gray-50">
+            <Header userData={userInfo} />
+            <div className="max-w-4xl mx-auto px-4 py-8">
+                <div className="text-center py-12">
+                    <h1 className="text-3xl font-bold mb-4">Property Not Found</h1>
+                    <Button 
+                        label="Back to Properties" 
+                        variant="theme2" 
+                        onClick={() => router.push('/properties')} 
+                    />
+                </div>
+            </div>
+        </div>
+    )
+
+    const { customerName, customerContact, customerEmail, dealAmount, dealDate, agreementDuration, commission, agentName, extraNotes } = dealData
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <Header userData={userInfo} />
+
+            <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+                {/* Header */}
+                <div className="text-center">
+                    <h1 className="text-4xl font-extrabold text-gray-900">
+                        {property.propertyStatus === 'sold' ? 'Property Sale' : 'Property Rental'} Deal
+                    </h1>
+                    <p className="text-gray-600 mt-2">
+                        Complete the transaction details to generate official ZState certificate
+                    </p>
+                </div>
+
+                {/* Status Banner */}
+                <div className={`rounded-2xl p-6 ${property.propertyStatus === 'sold' ? 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200' : 'bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200'}`}>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className={`p-3 rounded-full ${property.propertyStatus === 'sold' ? 'bg-green-100' : 'bg-blue-100'}`}>
+                                <ShieldCheck className={property.propertyStatus === 'sold' ? 'text-green-600' : 'text-blue-600'} size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900">
+                                    {property.propertyStatus === 'sold' ? 'Sale' : 'Rental'} Transaction
+                                </h2>
+                                <p className="text-gray-600">
+                                    {property.propertyStatus === 'sold' 
+                                        ? 'Mark property as sold and generate sale certificate'
+                                        : 'Mark property as rented and generate rental agreement'}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Clock size={18} className="text-gray-500" />
+                            <span className="text-sm text-gray-600">
+                                Started: {new Date().toLocaleDateString('en-IN')}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid lg:grid-cols-3 gap-6">
+                    {/* Left Column - Property Details */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Property Card */}
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                            <div className="p-6">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-900">{property.title}</h3>
+                                        <div className="flex items-center gap-2 text-gray-600 mt-1">
+                                            <MapPin size={16} />
+                                            <span>{property.location}, {property.city}</span>
+                                        </div>
+                                    </div>
+                                    <span className={`px-3 py-1 rounded-full text-sm font-bold ${property.propertyStatus === 'sold' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                                        {property.propertyStatus.toUpperCase()}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4 border-y border-gray-200">
+                                    <div className="text-center">
+                                        <div className="flex items-center justify-center gap-2 text-gray-700">
+                                            <Bed size={18} />
+                                            <span className="font-bold">{property.bedrooms}</span>
+                                        </div>
+                                        <div className="text-sm text-gray-500 mt-1">Beds</div>
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="flex items-center justify-center gap-2 text-gray-700">
+                                            <Bath size={18} />
+                                            <span className="font-bold">{property.bathrooms}</span>
+                                        </div>
+                                        <div className="text-sm text-gray-500 mt-1">Baths</div>
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="flex items-center justify-center gap-2 text-gray-700">
+                                            <Square size={18} />
+                                            <span className="font-bold">{property.area}</span>
+                                        </div>
+                                        <div className="text-sm text-gray-500 mt-1">{property.areaUnit}</div>
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="flex items-center justify-center gap-2 text-gray-700">
+                                            <Building size={18} />
+                                            <span className="font-bold">{property.propertyType}</span>
+                                        </div>
+                                        <div className="text-sm text-gray-500 mt-1">Type</div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <div className="text-sm text-gray-500">Original Price</div>
+                                            <div className="text-2xl font-bold text-purple-700">
+                                                ₹{Number(property.price).toLocaleString('en-IN')} {property.priceUnit}
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-sm text-gray-500">Owner</div>
+                                            <div className="font-bold">{property.ownerName}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Deal Form */}
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 space-y-6">
+                            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                                <FileText className="text-purple-600" />
+                                Deal Information
+                            </h3>
+
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {/* Customer Details */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                            <User size={16} />
+                                            {property.propertyStatus === 'sold' ? 'Buyer' : 'Tenant'} Name *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
+                                            value={customerName}
+                                            onChange={(e) => handleInputChange('customerName', e.target.value)}
+                                            placeholder="Enter full name"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                            <Phone size={16} />
+                                            Contact Number *
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
+                                            value={customerContact}
+                                            onChange={(e) => handleInputChange('customerContact', e.target.value)}
+                                            placeholder="03XX-XXXXXXX"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                            <Mail size={16} />
+                                            Email Address
+                                        </label>
+                                        <input
+                                            type="email"
+                                            className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
+                                            value={customerEmail}
+                                            onChange={(e) => handleInputChange('customerEmail', e.target.value)}
+                                            placeholder="customer@email.com"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Transaction Details */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                            <DollarSign size={16} />
+                                            Final Deal Amount *
+                                        </label>
+                                        <input
+                                            type="number"
+                                            className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
+                                            value={dealAmount}
+                                            onChange={(e) => handleInputChange('dealAmount', e.target.value)}
+                                            placeholder="Enter final amount"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                            <Calendar size={16} />
+                                            Deal Date *
+                                        </label>
+                                        <input
+                                            type="date"
+                                            className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
+                                            value={dealDate}
+                                            onChange={(e) => handleInputChange('dealDate', e.target.value)}
+                                            required
+                                        />
+                                    </div>
+
+                                    {property.propertyStatus === 'rented' && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Agreement Duration
+                                            </label>
+                                            <select
+                                                className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
+                                                value={agreementDuration}
+                                                onChange={(e) => handleInputChange('agreementDuration', e.target.value)}
+                                            >
+                                                <option value="6 months">6 Months</option>
+                                                <option value="12 months">12 Months</option>
+                                                <option value="24 months">24 Months</option>
+                                                <option value="36 months">36 Months</option>
+                                            </select>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Additional Fields */}
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Agent Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
+                                        value={agentName}
+                                        onChange={(e) => handleInputChange('agentName', e.target.value)}
+                                        placeholder="Agent handling the deal"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Commission (if any)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
+                                        value={commission}
+                                        onChange={(e) => handleInputChange('commission', e.target.value)}
+                                        placeholder="Enter commission amount"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Extra Notes */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Additional Notes & Conditions
+                                </label>
+                                <textarea
+                                    className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition h-32"
+                                    value={extraNotes}
+                                    onChange={(e) => handleInputChange('extraNotes', e.target.value)}
+                                    placeholder="Any special conditions, payment terms, or additional notes..."
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column - Actions */}
+                    <div className="space-y-6">
+                        {/* Summary Card */}
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                            <h4 className="font-bold text-gray-900 mb-4">Deal Summary</h4>
+                            <div className="space-y-3">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Property Value</span>
+                                    <span className="font-bold">₹{Number(property.price).toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Deal Amount</span>
+                                    <span className="font-bold text-green-600">₹{dealAmount ? Number(dealAmount).toLocaleString('en-IN') : '0'}</span>
+                                </div>
+                                {commission && (
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Commission</span>
+                                        <span className="font-bold">₹{Number(commission).toLocaleString('en-IN')}</span>
+                                    </div>
+                                )}
+                                <div className="border-t border-gray-200 pt-3 mt-3">
+                                    <div className="flex justify-between font-bold">
+                                        <span>Total Value</span>
+                                        <span>₹{dealAmount ? Number(dealAmount).toLocaleString('en-IN') : '0'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 space-y-4">
+                            <Button
+                                label="Save Deal Information"
+                                variant="outline"
+                                classNameC="w-full justify-center py-3"
+                                onClick={handleSaveDeal}
+                            />
+                            
+                            <Button
+                                label="Generate & Download Certificate"
+                                variant="theme2"
+                                classNameC="w-full justify-center py-3 text-lg font-semibold"
+                                onClick={handleGenerateCertificate}
+                            />
+
+                            <Button
+                                label="Back to Property"
+                                variant="ghost"
+                                classNameC="w-full justify-center py-3"
+                                onClick={() => router.push(`/property/viewproperty/${propertyId}`)}
+                            />
+                        </div>
+
+                        {/* Quick Info */}
+                        <div className="bg-purple-50 rounded-2xl border border-purple-200 p-6">
+                            <h4 className="font-bold text-purple-900 mb-3">Certificate Includes:</h4>
+                            <ul className="space-y-2 text-sm text-purple-800">
+                                <li className="flex items-center gap-2">
+                                    <Check size={16} />
+                                    Property ownership transfer
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <Check size={16} />
+                                    Transaction details
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <Check size={16} />
+                                    Digital signatures
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <Check size={16} />
+                                    Legal validity proof
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <Check size={16} />
+                                    ZState authentication
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Certificate Modal */}
+            <Modal
+                title={<div className="text-xl font-bold text-purple-700">ZState Certificate</div>}
+                open={showCertificate}
+                onCancel={() => setShowCertificate(false)}
+                width={800}
+                footer={null}
+                centered
+            >
+                <div id="certificate-content" className="p-4">
+                    <div className="text-center mb-6">
+                        <div className="text-2xl font-bold text-purple-700">ZSTATE PROPERTY CERTIFICATE</div>
+                        <div className="text-gray-600 mt-2">Certificate ID: {certificateData?.certificateId}</div>
+                    </div>
+                    
+                    <div className="space-y-6">
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold mb-2">Property Details</h4>
+                            <p><strong>Title:</strong> {property?.title}</p>
+                            <p><strong>Location:</strong> {property?.location}, {property?.city}</p>
+                            <p><strong>Transaction Type:</strong> {property?.propertyStatus === 'sold' ? 'Sale' : 'Rental'}</p>
+                        </div>
+                        
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-bold mb-2">Parties Involved</h4>
+                            <p><strong>{property?.propertyStatus === 'sold' ? 'Buyer' : 'Tenant'}:</strong> {customerName}</p>
+                            <p><strong>Owner:</strong> {property?.ownerName}</p>
+                            <p><strong>Agent:</strong> {agentName}</p>
+                        </div>
+                        
+                        <div className="flex justify-center gap-4 mt-8">
+                            <Button
+                                label="Print Certificate"
+                                variant="outline"
+                                icon={<Printer size={18} />}
+                                onClick={handlePrintCertificate}
+                            />
+                            <Button
+                                label="Download PDF"
+                                variant="theme2"
+                                icon={<Download size={18} />}
+                                onClick={handleDownloadPDF}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </Modal>
+        </div>
+    )
+}
+
+// Helper Check component
+const Check = ({ size = 16 }: { size?: number }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+)
