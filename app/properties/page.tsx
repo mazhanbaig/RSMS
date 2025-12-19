@@ -115,6 +115,14 @@ export default function PropertiesPage() {
                             key={p.id}
                             className="group relative bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500"
                         >
+                            {p.dealCompleted && (
+                                <div className="absolute top-3 right-3 z-10">
+                                    <span className="px-3 py-1 text-xs font-bold text-white bg-green-600 rounded-full shadow">
+                                        SOLD
+                                    </span>
+                                </div>
+                            )}
+
                             {/* Content */}
                             <div className="p-5">
                                 <div className="flex justify-between items-start mb-3">

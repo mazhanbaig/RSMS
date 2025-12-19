@@ -100,37 +100,8 @@ interface ClassicZStateCertificateProps {
 export default function ClassicZStateCertificate({ dealType, property, formData }: ClassicZStateCertificateProps) {
     const certificateRef = useRef<HTMLDivElement>(null)
 
-    const downloadAsPDF = () => {
-        if (certificateRef.current) {
-            html2canvas(certificateRef.current, {
-                scale: 3,
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff'
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png')
-                const pdf = new jsPDF('landscape', 'mm', 'a4')
-                const imgWidth = 297
-                const imgHeight = (canvas.height * imgWidth) / canvas.width
-
-                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
-                pdf.save(`ZState-Classic-Certificate-${formData.certificateId}.pdf`)
-            })
-        }
-    }
-
     return (
         <>
-            <div className="flex justify-center mb-6">
-                <button
-                    onClick={downloadAsPDF}
-                    className="px-6 py-2 bg-black text-[#D4AF37] border-2 border-[#D4AF37] rounded-lg font-bold hover:bg-gray-900 transition-colors flex items-center gap-2"
-                >
-                    <Award size={18} />
-                    Download This Design
-                </button>
-            </div>
-
             {/* Classic Certificate Design */}
             <div
                 ref={certificateRef}
@@ -212,7 +183,7 @@ export default function ClassicZStateCertificate({ dealType, property, formData 
                                 <div className="flex items-center gap-2">
                                     <DollarSign size={16} className="text-[#D4AF37]" />
                                     <span className="text-sm text-gray-700">
-                                        {formData.certificateId}
+                                        {formData.certificateId || ''}
                                     </span>
                                 </div>
                             </div>

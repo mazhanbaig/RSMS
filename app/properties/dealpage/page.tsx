@@ -12,7 +12,7 @@ import {
     FileText, Home, MapPin, Building, Download,
     ArrowRight, CheckCircle, Shield, Hash
 } from "lucide-react"
-import { getData } from "@/FBConfig/fbFunctions"
+import { getData, updateData } from "@/FBConfig/fbFunctions"
 import { message } from "antd"
 import ZStateCertificate from "@/components/ZStateCertificate"
 import ZStateCanvaCertificate from "@/components/ZStateCertificate"
@@ -72,121 +72,130 @@ export default function DealPage() {
     // In your handleDownloadCertificate function:
 
     const handleDownloadCertificate = async () => {
+        if (property.dealCompleted) {
+            message.info("Certificate already downloaded. Property is already sold.")
+            return
+        }
+
         setIsDownloading(true)
 
-        // Create a temporary container
         const container = document.createElement('div')
         container.style.position = 'absolute'
         container.style.left = '-9999px'
         container.style.top = '-9999px'
         container.style.width = '1056px'
         container.style.height = '768px'
-        container.style.backgroundColor = 'white'
-        container.style.border = '8px solid black'
-        container.style.padding = '80px'
-        container.style.fontFamily = 'Arial, sans-serif'
         container.style.background = 'linear-gradient(135deg, #fefefe 0%, #f8f9fa 100%)'
+        container.style.border = '8px solid black'
+        container.style.fontFamily = 'Arial, sans-serif'
+        container.style.boxSizing = 'border-box'
 
-        // Add gold corners
-        const addCorner = (position: string) => {
-            const corner = document.createElement('div')
-            corner.style.position = 'absolute'
-            corner.style.width = '60px'
-            corner.style.height = '60px'
-            corner.style.border = '2px solid #D4AF37'
-            corner.style.transform = 'rotate(45deg)'
+        container.innerHTML = `
+    <div style="padding:80px; height:100%; display:flex; flex-direction:column; justify-content:space-between; position:relative;">
 
-            switch (position) {
-                case 'tl':
-                    corner.style.top = '30px'
-                    corner.style.left = '30px'
-                    break
-                case 'tr':
-                    corner.style.top = '30px'
-                    corner.style.right = '30px'
-                    break
-                case 'bl':
-                    corner.style.bottom = '30px'
-                    corner.style.left = '30px'
-                    break
-                case 'br':
-                    corner.style.bottom = '30px'
-                    corner.style.right = '30px'
-                    break
-            }
-            container.appendChild(corner)
-        }
-
-        // Create certificate content using YOUR component's exact design
-        const certificateHTML = renderToStaticMarkup(
-            <ZStateCertificate
-                dealType={property.propertyStatus}
-                property={property}
-                formData={formData}
-            />
-        );
-
-        container.innerHTML = certificateHTML
-
-        // Add gold corners
-        addCorner('tl')
-        addCorner('tr')
-        addCorner('bl')
-        addCorner('br')
-
-        // Add gold seal
-        const goldSeal = document.createElement('div')
-        goldSeal.style.position = 'absolute'
-        goldSeal.style.bottom = '40px'
-        goldSeal.style.right = '40px'
-        goldSeal.style.width = '100px'
-        goldSeal.style.height = '100px'
-        goldSeal.style.background = 'radial-gradient(circle, #D4AF37 0%, #FFD700 100%)'
-        goldSeal.style.borderRadius = '50%'
-        goldSeal.style.display = 'flex'
-        goldSeal.style.alignItems = 'center'
-        goldSeal.style.justifyContent = 'center'
-        goldSeal.style.boxShadow = '0 8px 25px rgba(212, 175, 55, 0.3)'
-
-        goldSeal.innerHTML = `
-        <div style="width: 84px; height: 84px; background: white; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Playfair Display', serif;">
-            <div style="font-size: 32px; font-weight: 900; color: #D4AF37; line-height: 1;">Z</div>
-            <div style="font-size: 12px; font-weight: 700; color: #000000; letter-spacing: 0.1em; margin-top: 5px;">STATE</div>
+        <!-- Header -->
+        <div style="text-align:center;">
+            <h1 style="font-size:72px; font-weight:900; letter-spacing:0.3em; margin-bottom:20px;">
+                CERTIFICATE
+            </h1>
+            <div style="height:4px; width:260px; margin:0 auto 24px; background:linear-gradient(to right,#D4AF37,#FFD700);"></div>
+            <h2 style="font-size:28px; font-weight:700; letter-spacing:0.2em;">
+                OF ${property.propertyStatus === 'sold' ? 'PROPERTY SALE' : 'RENTAL AGREEMENT'}
+            </h2>
         </div>
+
+        <!-- Body -->
+        <div style="text-align:center;">
+            <p style="font-size:20px; color:#555; margin-bottom:40px;">
+                This certification is presented to:
+            </p>
+
+            <div style="display:inline-block; padding:24px 64px; border:4px solid #D4AF37; font-size:42px; font-weight:700; background:white; margin-bottom:40px;">
+                ${formData.customerName}
+            </div>
+
+            <div style="max-width:700px; margin:0 auto; font-size:18px; line-height:1.8; color:#333;">
+                For successfully completing the ${property.propertyStatus === 'sold' ? 'purchase' : 'rental'} of<br/>
+                <strong style="font-size:22px;">${property.title}</strong><br/>
+                located at ${property.location}, ${property.city}<br/><br/>
+
+                ${property.propertyStatus === 'sold' ? 'Total Amount:' : 'Rental Amount:'}
+                <strong style="color:#D4AF37; font-size:22px;">
+                    ₹${Number(formData.dealAmount).toLocaleString('en-IN')}
+                </strong>
+                ${property.propertyStatus === 'rented' ? `for ${formData.agreementDuration}` : ''}
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-bottom:40px;">
+                <div style="text-align:center;">
+                    <div style="height:2px; width:180px; background:linear-gradient(to right,#D4AF37,transparent); margin:0 auto 10px;"></div>
+                    <p style="font-size:14px; color:#666;">Property Owner</p>
+                    <strong>${property.ownerName}</strong>
+                </div>
+
+                <div style="text-align:center;">
+                    <div style="height:2px; width:180px; background:linear-gradient(to right,#D4AF37,transparent); margin:0 auto 10px;"></div>
+                    <p style="font-size:14px; color:#666;">ZState Agent</p>
+                    <strong>${formData.agentName}</strong>
+                </div>
+            </div>
+
+            <div style="border-top:1px solid #ccc; padding-top:16px; text-align:center; font-size:14px; color:#555;">
+                ${property.propertyType} • 
+                ${new Date(formData.dealDate).toLocaleDateString('en-IN')} • 
+                ${formData.certificateId}
+            </div>
+        </div>
+
+        <!-- Gold Corners -->
+        ${['top:30px;left:30px', 'top:30px;right:30px', 'bottom:30px;left:30px', 'bottom:30px;right:30px']
+                .map(pos => `
+            <div style="position:absolute; ${pos}; width:50px; height:50px; border:2px solid #D4AF37; transform:rotate(45deg);"></div>
+        `).join('')}
+
+        <!-- Gold Seal -->
+        <div style="position:absolute; bottom:40px; right:40px; width:100px; height:100px; border-radius:50%;
+            background:radial-gradient(circle,#FFD700,#D4AF37);
+            display:flex; align-items:center; justify-content:center;">
+            <div style="width:80px; height:80px; background:white; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div style="font-size:30px; font-weight:900; color:#D4AF37;">Z</div>
+                <div style="font-size:12px; font-weight:700; letter-spacing:2px;">STATE</div>
+            </div>
+        </div>
+
+    </div>
     `
 
-        container.appendChild(goldSeal)
         document.body.appendChild(container)
 
         try {
-            // Generate PDF
-            const canvas = await html2canvas(container, {
-                scale: 2,
-                backgroundColor: '#ffffff',
-                width: 1056,
-                height: 768,
-                useCORS: true,
-                logging: false
-            })
-
+            const canvas = await html2canvas(container, { scale: 2 })
             const pdf = new jsPDF('landscape', 'mm', 'a4')
+
             const imgWidth = 297
             const imgHeight = (canvas.height * imgWidth) / canvas.width
 
-            pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, imgWidth, imgHeight)
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight)
             pdf.save(`ZState-Certificate-${formData.certificateId}.pdf`)
 
             message.success("Certificate downloaded successfully!")
-        } catch (error) {
-            console.error('Error generating certificate:', error)
-            message.error("Failed to generate certificate. Please try again.")
+
+            const updatedProp = { ...property, dealCompleted: true }
+            setProperty(updatedProp)
+            await updateData(`properties/${property.id}`, updatedProp)
+
+        } catch (err) {
+            console.error(err)
+            message.error("Failed to generate certificate")
         } finally {
             setIsDownloading(false)
-            if (document.body.contains(container)) {
-                document.body.removeChild(container)
-            }
+            document.body.removeChild(container)
         }
     }
+
 
     // Add this helper function after your existing functions:
     const formatCurrency = (amount: string) => {
@@ -201,6 +210,7 @@ export default function DealPage() {
     return (
         <div className="min-h-screen bg-gray-50">
             <Header userData={userInfo} />
+
 
             <div className="max-w-7xl mx-auto px-4 py-8">
                 {/* Header */}
@@ -263,7 +273,7 @@ export default function DealPage() {
                                                 <input
                                                     type="text"
                                                     className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none"
-                                                    value={property.ownerName}
+                                                    value={property.ownerName || ''}
                                                     onChange={(e) => handleInputChange('ownerName', e.target.value)}
                                                     placeholder="Property Owner Name"
                                                 />
@@ -276,7 +286,7 @@ export default function DealPage() {
                                                 <input
                                                     type="tel"
                                                     className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none"
-                                                    value={property.ownerContact}
+                                                    value={property.ownerContact || ''}
                                                     onChange={(e) => handleInputChange('ownerContact', e.target.value)}
                                                     placeholder="Owner contact number"
                                                 />
@@ -292,7 +302,7 @@ export default function DealPage() {
                                                 <input
                                                     type="text"
                                                     className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none"
-                                                    value={formData.customerName}
+                                                    value={formData.customerName || ''}
                                                     onChange={(e) => handleInputChange('customerName', e.target.value)}
                                                     placeholder="Customer Name"
                                                 />
@@ -304,7 +314,7 @@ export default function DealPage() {
                                                 <input
                                                     type="tel"
                                                     className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none"
-                                                    value={formData.customerContact}
+                                                    value={formData.customerContact || ''}
                                                     onChange={(e) => handleInputChange('customerContact', e.target.value)}
                                                     placeholder="03XX-XXXXXXX"
                                                 />
@@ -319,7 +329,7 @@ export default function DealPage() {
                                                 <input
                                                     type="number"
                                                     className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none"
-                                                    value={formData.dealAmount}
+                                                    value={formData.dealAmount || ''}
                                                     onChange={(e) => handleInputChange('dealAmount', e.target.value)}
                                                     placeholder="Enter deal amount"
                                                 />
@@ -331,7 +341,7 @@ export default function DealPage() {
                                                 <input
                                                     type="date"
                                                     className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none"
-                                                    value={formData.dealDate}
+                                                    value={formData.dealDate || ''}
                                                     onChange={(e) => handleInputChange('dealDate', e.target.value)}
                                                 />
                                             </div>
@@ -342,7 +352,7 @@ export default function DealPage() {
                                                 <input
                                                     type="text"
                                                     className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none"
-                                                    value={userInfo?.name??''}
+                                                    value={userInfo?.name || ''}
                                                     onChange={(e) => handleInputChange('customerName', e.target.value)}
                                                     placeholder="Customer Name"
                                                 />
@@ -357,7 +367,7 @@ export default function DealPage() {
                                                 </label>
                                                 <select
                                                     className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none"
-                                                    value={formData.agreementDuration}
+                                                    value={formData.agreementDuration || ''}
                                                     onChange={(e) => handleInputChange('agreementDuration', e.target.value)}
                                                 >
                                                     <option value="6 months">6 Months</option>
