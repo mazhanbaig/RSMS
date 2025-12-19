@@ -432,7 +432,7 @@ export default function DealPage() {
 
                                         <div className="mt-8 text-center">
                                             <button
-                                                onClick={() => router.push(`/property/viewproperty/${propertyId}`)}
+                                                onClick={() => router.push(`/properties/viewproperty/${propertyId}`)}
                                                 className="text-purple-600 hover:text-purple-800 font-medium"
                                             >
                                                 ← Back to Property

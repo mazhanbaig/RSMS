@@ -48,7 +48,7 @@ export default function PropertiesPage() {
                 if (allProps) {
                     const propertiesArray = Object.entries(allProps)
                         .map(([id, value]) => ({ id, ...value }))
-                        .filter((p) => p.ownerUid === userRes.uid);
+                        .filter((p) => p.agentUid === userRes.uid);
 
                     setProperties(propertiesArray.reverse());
                 }
@@ -58,13 +58,15 @@ export default function PropertiesPage() {
         };
 
         loadData();
-    }, []);
+    }, [properties]);
 
 
     if (!userInfo) {
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-        </div>
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            </div>
+        )
     }
 
     return (
