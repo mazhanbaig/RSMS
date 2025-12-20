@@ -182,7 +182,9 @@ export default function ClientsPage() {
                                         <td className="p-3">{client.bedrooms}</td>
                                         <td className="p-3">{client.minBudget} - {client.maxBudget}</td>
                                         <td className="p-3">{client.source}</td>
-                                        <td className="p-3 capitalize">{client.status}</td>
+                                        <td className={`p-3 capitalize ${client.status === "active" ? "text-green-500" : client.status === "closed" ? 'text-purple-500' : 'text-red-500'}`}>
+                                            {client.status}
+                                        </td>
                                         <td className="p-3 flex gap-2">
                                             <Button
                                                 onClick={(e: any) => {

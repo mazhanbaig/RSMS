@@ -128,7 +128,7 @@ export default function OwnersPage() {
                                         <td className="p-3">{owner.firstName} {owner.lastName}</td>
                                         <td className="p-3">{owner.email || "-"}</td>
                                         <td className="p-3">{owner.phone}</td>
-                                        <td className={`p-3 capitalize ${owner.status === "active" ? "text-green-500" : owner.status === "closed" ? 'text-red-500' : 'text-purple-500'}`}>
+                                        <td className={`p-3 capitalize ${owner.status === "active" ? "text-green-500" : owner.status === "closed" ? 'text-purple-500' : 'text-red-500'}`}>
                                             {owner.status}
                                         </td>
                                         <td className="p-3 flex gap-2">

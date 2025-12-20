@@ -55,7 +55,7 @@ export default function Hero({ userData }: { userData?: UserInfo }) {
             <div className="relative max-w-6xl mx-auto text-center flex flex-col items-center gap-4 sm:gap-6">
 
                 {/* Greeting */}
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
+                <h1 className="text-4xl sm:text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
                     {greeting},{" "}
                     <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                         {firstName}
