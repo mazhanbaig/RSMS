@@ -31,10 +31,15 @@ export default function Hero({ userData }: { userData?: UserInfo }) {
         if (userData?.uid) {
             getData("properties/").then((res: any) => {
                 const list = Object.values(res || {}).filter(
-                    (p: any) => p.ownerUid === userData.uid
+                    (p: any) =>
+                        p.agentUid === userData.uid &&
+                        p.propertyStatus !== "sold" &&
+                        p.propertyStatus !== "rented"
                 );
+
                 setOwnerProperties(list);
             });
+
 
             getData("clients/").then((res: any) => {
                 const list = Object.values(res || {}).filter(

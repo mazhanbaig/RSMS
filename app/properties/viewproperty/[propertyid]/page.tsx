@@ -38,6 +38,7 @@ interface PropertyFormData {
     hasSecurity: boolean;
     images?: string[];
     propertyStatus: 'available' | 'rented' | 'sold' | 'under-Negotiation'
+    dealType:'sold' | 'rented'
 }
 
 export default function ViewPropertyPage() {

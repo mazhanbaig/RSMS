@@ -181,6 +181,7 @@ export default function AddPropertyPage() {
             ...formData,
             agentUid: userInfo.uid,
             agentName: userInfo.name,
+            propertyStatus: "available",
             images: uploadedUrls,
             createdAt: new Date().toISOString(),
             id: crypto.randomUUID()
