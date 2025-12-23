@@ -1,370 +1,429 @@
 'use client';
 
+import { useState } from "react";
 import Header from "@/components/Header";
 import Button from "@/components/Button";
-
 import {
     Building,
     Users,
     UserPlus,
     Home,
-    Phone,
-    MessageSquare,
     Eye,
     Shield,
     Database,
     FileText,
     Search,
-    Target,
     Calendar,
     PhoneCall,
-    UserCircle,
     Smartphone,
     Clock,
-    BarChart,
     MapPin,
-    Image as ImageIcon,
-    Filter,
+    ImageIcon,
     CheckCircle,
     ArrowRight,
+    Target,
+    BarChart3,
+    Zap,
+    Phone,
     Mail,
-    Download
+    Video,
+    DollarSign,
+    TrendingUp,
+    Lock,
+    FolderOpen,
+    Filter,
+    MessageSquare,
+    CalendarDays,
+    ClipboardCheck,
+    UsersRound,
+    ChevronRight,
+    Globe,
+    Zap as Lightning,
+    ShieldCheck,
+    Trophy,
+    Sparkles,
+    LineChart,
+    BadgeCheck,
+    CreditCard
 } from "lucide-react";
-import AboutHero from "@/components/AboutHero";
 
 export default function AboutPage() {
+    const [activeStep, setActiveStep] = useState(0);
+    const [activeTab, setActiveTab] = useState('overview');
+
+    const workflowSteps = [
+        {
+            number: "01",
+            title: "Owner Registration",
+            description: "Real estate owner creates a secure account",
+            icon: <ShieldCheck className="w-6 h-6" />,
+            color: "from-purple-500 to-blue-500",
+            details: [
+                "Create professional profile",
+                "Set up agency dashboard",
+                "Invite team members",
+                "Configure preferences"
+            ]
+        },
+        {
+            number: "02",
+            title: "Add Clients & Sellers",
+            description: "Register every buyer and property seller",
+            icon: <UsersRound className="w-6 h-6" />,
+            color: "from-blue-500 to-cyan-500",
+            details: [
+                "Capture complete client information",
+                "Store property seller details",
+                "Record preferences & requirements",
+                "Track communication history"
+            ]
+        },
+        {
+            number: "03",
+            title: "Property Management",
+            description: "List properties with full details & photos",
+            icon: <Building className="w-6 h-6" />,
+            color: "from-cyan-500 to-green-500",
+            details: [
+                "Upload high-quality property photos",
+                "Add detailed specifications",
+                "Set pricing & terms",
+                "Enable virtual tours"
+            ]
+        },
+        {
+            number: "04",
+            title: "Virtual Showings",
+            description: "Show properties digitally to interested clients",
+            icon: <Video className="w-6 h-6" />,
+            color: "from-green-500 to-emerald-500",
+            details: [
+                "Filter properties by client preferences",
+                "Share property presentations",
+                "Schedule virtual tours",
+                "Collect client feedback"
+            ]
+        },
+        {
+            number: "05",
+            title: "Deal Management",
+            description: "Complete transactions efficiently",
+            icon: <Trophy className="w-6 h-6" />,
+            color: "from-emerald-500 to-orange-500",
+            details: [
+                "Track negotiations",
+                "Manage documentation",
+                "Process payments",
+                "Generate certificates"
+            ]
+        }
+    ];
+
+    const problemsSolutions = [
+        {
+            problem: "Lost Client Contacts",
+            solution: "Centralized Client Database",
+            icon: <Database className="w-5 h-5" />,
+            stat: "100%"
+        },
+        {
+            problem: "Fuel & Time Waste",
+            solution: "Virtual Property Showings",
+            icon: <Video className="w-5 h-5" />,
+            stat: "70%"
+        },
+        {
+            problem: "Poor Organization",
+            solution: "Structured Workflow",
+            icon: <ClipboardCheck className="w-5 h-5" />,
+            stat: "3x"
+        },
+        {
+            problem: "Manual Tracking",
+            solution: "Automated CRM",
+            icon: <BarChart3 className="w-5 h-5" />,
+            stat: "24/7"
+        }
+    ];
+
+    const testimonials = [
+        {
+            name: "Ahmad Raza",
+            role: "Real Estate Agency Owner",
+            location: "Lahore",
+            content: "Saved over Rs. 15,000 monthly on fuel. Now I show properties from my office and only visit when client is serious.",
+            stats: "80% more efficient"
+        },
+        {
+            name: "Sana Khan",
+            role: "Property Dealer",
+            location: "Karachi",
+            content: "All my 200+ client contacts are now organized. No more searching through WhatsApp chats and phone memory.",
+            stats: "200+ clients"
+        },
+        {
+            name: "Imran Sheikh",
+            role: "Real Estate Investor",
+            location: "Islamabad",
+            content: "My agents show 4x more properties daily using virtual tours. Client satisfaction increased dramatically.",
+            stats: "4x more showings"
+        }
+    ];
+
+    const features = [
+        {
+            title: "Client Management",
+            description: "Complete CRM for all your buyers and sellers",
+            icon: <Users className="w-6 h-6" />,
+            stats: "Unlimited Clients"
+        },
+        {
+            title: "Property Dashboard",
+            description: "Manage all properties in one organized interface",
+            icon: <Home className="w-6 h-6" />,
+            stats: "Easy Management"
+        },
+        {
+            title: "Virtual Tours",
+            description: "Show properties digitally before physical visits",
+            icon: <Eye className="w-6 h-6" />,
+            stats: "Save 70% Fuel"
+        },
+        {
+            title: "Analytics & Reports",
+            description: "Track performance and make data-driven decisions",
+            icon: <LineChart className="w-6 h-6" />,
+            stats: "Smart Insights"
+        }
+    ];
+
     return (
-        <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100">
             <Header />
 
-            {/* Hero Section */}
-            <AboutHero />
+            {/* Hero Section - Matching your theme */}
+            <section className="relative pt-15 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+                {/* Background Effects */}
+                <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl hidden sm:block" />
+                <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl hidden sm:block" />
+                <div className="absolute top-1/2 left-1/4 w-80 h-80 bg-gradient-to-r from-purple-100/20 to-blue-100/20 rounded-full blur-3xl" />
 
-            {/* Core System Overview */}
-            <section className="py-16 px-4 bg-white">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">Complete Real Estate Management System</h2>
-                        <p className="text-gray-600 max-w-3xl mx-auto text-lg">
-                            A comprehensive platform where real estate owners manage both property sellers and buyers,
-                            eliminating physical property visits and organizing all client information in one place.
+                <div className="relative max-w-7xl mx-auto">
+                    <div className="text-center">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200 mb-6">
+                            <Sparkles className="w-4 h-4 text-purple-600" />
+                            <span className="text-sm font-medium text-purple-700">Trusted by Real Estate Professionals</span>
+                        </div>
+
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+                            The Professional <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Real Estate</span><br />
+                            Management Platform
+                        </h1>
+
+                        <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto mb-10 leading-relaxed">
+                            Built specifically for real estate agents and property dealers to manage clients, properties,
+                            and deals efficiently from one unified platform.
                         </p>
-                    </div>
 
-                    {/* Main Workflow */}
-                    <div className="grid md:grid-cols-4 gap-6 mb-12">
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl text-center">
-                            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <UserPlus className="w-6 h-6 text-white" />
-                            </div>
-                            <h3 className="font-bold text-gray-900 mb-2">1. Owner Account</h3>
-                            <p className="text-sm text-gray-600">Real estate owner creates account</p>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+                            <Button
+                                label="Start Free Trial"
+                                size="lg"
+                                onClick={() => window.location.href = "/clients"}
+                                icon={<ArrowRight className="ml-2 w-5 h-5" />}
+                                classNameC="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+                            />
                         </div>
 
-                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl text-center">
-                            <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Users className="w-6 h-6 text-white" />
+                        {/* Quick Stats */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                            <div className="bg-white p-6 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
+                                <UsersRound className="w-8 h-8 text-purple-600 mx-auto mb-3" />
+                                <div className="text-2xl font-bold text-slate-900 mb-1">Organized</div>
+                                <div className="text-slate-600">Client Management</div>
                             </div>
-                            <h3 className="font-bold text-gray-900 mb-2">2. Add Clients</h3>
-                            <p className="text-sm text-gray-600">Register buyers visiting your real estate</p>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl text-center">
-                            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Building className="w-6 h-6 text-white" />
+                            <div className="bg-white p-6 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
+                                <Building className="w-8 h-8 text-blue-600 mx-auto mb-3" />
+                                <div className="text-2xl font-bold text-slate-900 mb-1">Complete</div>
+                                <div className="text-slate-600">Property Dashboard</div>
                             </div>
-                            <h3 className="font-bold text-gray-900 mb-2">3. List Properties</h3>
-                            <p className="text-sm text-gray-600">Add properties with images & details</p>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-2xl text-center">
-                            <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Eye className="w-6 h-6 text-white" />
+                            <div className="bg-white p-6 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
+                                <Video className="w-8 h-8 text-green-600 mx-auto mb-3" />
+                                <div className="text-2xl font-bold text-slate-900 mb-1">Virtual</div>
+                                <div className="text-slate-600">Property Showings</div>
                             </div>
-                            <h3 className="font-bold text-gray-900 mb-2">4. Virtual Showings</h3>
-                            <p className="text-sm text-gray-600">Show properties digitally to clients</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Detailed System Flow */}
-            <section className="py-16 px-4 bg-gray-50">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">How Zestate Transforms Real Estate Business</h2>
-                    </div>
-
-                    <div className="space-y-8">
-                        {/* Step 1 */}
-                        <div className="bg-white p-8 rounded-3xl shadow-lg">
-                            <div className="flex items-start gap-6">
-                                <div className="flex-shrink-0">
-                                    <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center">
-                                        <UserCircle className="w-8 h-8 text-blue-600" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                                            Step 1: Owner Registration
-                                        </div>
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Real Estate Owner Creates Account</h3>
-                                    <div className="grid md:grid-cols-2 gap-6">
-                                        <div className="bg-blue-50 p-5 rounded-xl">
-                                            <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                                <Shield className="w-5 h-5" /> Secure Dashboard
-                                            </h4>
-                                            <p className="text-gray-600">Personalized dashboard to manage your entire real estate business</p>
-                                        </div>
-                                        <div className="bg-blue-50 p-5 rounded-xl">
-                                            <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                                <Database className="w-5 h-5" /> Centralized Database
-                                            </h4>
-                                            <p className="text-gray-600">All your property and client data organized in one secure location</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Step 2 */}
-                        <div className="bg-white p-8 rounded-3xl shadow-lg">
-                            <div className="flex items-start gap-6">
-                                <div className="flex-shrink-0">
-                                    <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center">
-                                        <Users className="w-8 h-8 text-purple-600" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                                            Step 2: Client & Seller Management
-                                        </div>
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Manage Both Buyers and Property Sellers</h3>
-                                    <div className="grid md:grid-cols-2 gap-6 mb-4">
-                                        <div className="bg-purple-50 p-5 rounded-xl">
-                                            <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                                <UserPlus className="w-5 h-5" /> Add Clients
-                                            </h4>
-                                            <p className="text-gray-600">Register buyers who visit your real estate office with their preferences</p>
-                                        </div>
-                                        <div className="bg-purple-50 p-5 rounded-xl">
-                                            <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                                <Building className="w-5 h-5" /> List Property Sellers
-                                            </h4>
-                                            <p className="text-gray-600">Add owners who want to sell properties through your agency</p>
-                                        </div>
-                                    </div>
-                                    <div className="bg-gray-50 p-4 rounded-xl">
-                                        <h4 className="font-bold text-gray-900 mb-2">🚀 Key Benefit:</h4>
-                                        <p className="text-gray-600">
-                                            No more saving contacts in phone memory! All client and seller information is stored in your
-                                            Zestate account with instant access to contact details, communication history, and preferences.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Step 3 */}
-                        <div className="bg-white p-8 rounded-3xl shadow-lg">
-                            <div className="flex items-start gap-6">
-                                <div className="flex-shrink-0">
-                                    <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center">
-                                        <Home className="w-8 h-8 text-green-600" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="bg-green-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                                            Step 3: Property Management
-                                        </div>
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Add Properties with Complete Details</h3>
-                                    <div className="grid md:grid-cols-3 gap-4 mb-4">
-                                        <div className="bg-green-50 p-4 rounded-xl">
-                                            <div className="text-lg font-semibold text-green-700 mb-1 flex items-center gap-2">
-                                                <ImageIcon className="w-5 h-5" /> Property Images
-                                            </div>
-                                            <div className="text-sm text-gray-600">Upload multiple high-quality photos</div>
-                                        </div>
-                                        <div className="bg-green-50 p-4 rounded-xl">
-                                            <div className="text-lg font-semibold text-green-700 mb-1 flex items-center gap-2">
-                                                <FileText className="w-5 h-5" /> Detailed Information
-                                            </div>
-                                            <div className="text-sm text-gray-600">Complete property specifications & features</div>
-                                        </div>
-                                        <div className="bg-green-50 p-4 rounded-xl">
-                                            <div className="text-lg font-semibold text-green-700 mb-1 flex items-center gap-2">
-                                                <MapPin className="w-5 h-5" /> Location & Area
-                                            </div>
-                                            <div className="text-sm text-gray-600">Exact location with neighborhood details</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Step 4 */}
-                        <div className="bg-white p-8 rounded-3xl shadow-lg">
-                            <div className="flex items-start gap-6">
-                                <div className="flex-shrink-0">
-                                    <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center">
-                                        <Eye className="w-8 h-8 text-orange-600" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                                            Step 4: Virtual Property Showings
-                                        </div>
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Show Properties Digitally to Clients</h3>
-                                    <div className="grid md:grid-cols-2 gap-6">
-                                        <div className="bg-orange-50 p-5 rounded-xl">
-                                            <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                                <Search className="w-5 h-5" /> Smart Property Matching
-                                            </h4>
-                                            <p className="text-gray-600">Filter and show properties based on client preferences and budget</p>
-                                        </div>
-                                        <div className="bg-orange-50 p-5 rounded-xl">
-                                            <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                                <Smartphone className="w-5 h-5" /> Digital Presentations
-                                            </h4>
-                                            <p className="text-gray-600">Share property details, images, and virtual tours with clients</p>
-                                        </div>
-                                    </div>
-                                    <div className="mt-4 bg-gradient-to-r from-orange-50 to-yellow-50 p-4 rounded-xl border border-orange-200">
-                                        <h4 className="font-bold text-gray-900 mb-2">💰 Major Savings:</h4>
-                                        <p className="text-gray-600">
-                                            Eliminates the need for physical property visits! Save on petrol/diesel costs and time
-                                            by showing multiple properties digitally from your office or remotely.
-                                        </p>
-                                    </div>
-                                </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
+                                <Database className="w-8 h-8 text-orange-600 mx-auto mb-3" />
+                                <div className="text-2xl font-bold text-slate-900 mb-1">Smart</div>
+                                <div className="text-slate-600">CRM Integration</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Communication & Contact Management */}
-            <section className="py-16 px-4 bg-white">
+            {/* Problems & Solutions */}
+            <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-12">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">Smart Communication System</h2>
-                        <p className="text-gray-600 max-w-2xl mx-auto">
-                            All your client and seller communications in one place
+                        <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                            Solving Real <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Problems</span>
+                        </h2>
+                        <p className="text-slate-600 max-w-2xl mx-auto">
+                            The actual challenges real estate professionals face daily
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-8">
-                        <div className="bg-gradient-to-br from-blue-50 to-white p-8 rounded-3xl border border-blue-100">
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center">
-                                    <PhoneCall className="w-7 h-7 text-blue-600" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-900">Instant Contact Access</h3>
-                                    <p className="text-gray-600">No more searching through phone contacts</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {problemsSolutions.map((item, idx) => (
+                            <div key={idx} className="group relative">
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                                <div className="relative bg-gradient-to-b from-white to-slate-50 p-6 rounded-2xl border border-slate-200 hover:border-purple-200 hover:shadow-lg transition-all">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className={`p-3 rounded-xl bg-gradient-to-br ${idx === 0 ? 'from-purple-100 to-blue-100' :
+                                            idx === 1 ? 'from-blue-100 to-cyan-100' :
+                                                idx === 2 ? 'from-cyan-100 to-green-100' : 'from-green-100 to-emerald-100'}`}>
+                                            {item.icon}
+                                        </div>
+                                        <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                            {item.stat}
+                                        </div>
+                                    </div>
+                                    <h3 className="font-bold text-slate-900 mb-2">{item.problem}</h3>
+                                    <p className="text-sm text-slate-600 mb-3">→ {item.solution}</p>
                                 </div>
                             </div>
-                            <ul className="space-y-4">
-                                <li className="flex items-center gap-3">
-                                    <CheckCircle className="w-5 h-5 text-green-500" />
-                                    <span className="text-gray-700">One-click calling to clients & sellers</span>
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <CheckCircle className="w-5 h-5 text-green-500" />
-                                    <span className="text-gray-700">Direct messaging within platform</span>
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <CheckCircle className="w-5 h-5 text-green-500" />
-                                    <span className="text-gray-700">Email integration for formal communication</span>
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <CheckCircle className="w-5 h-5 text-green-500" />
-                                    <span className="text-gray-700">Communication history tracking</span>
-                                </li>
-                            </ul>
-                        </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
 
-                        <div className="bg-gradient-to-br from-purple-50 to-white p-8 rounded-3xl border border-purple-100">
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center">
-                                    <Calendar className="w-7 h-7 text-purple-600" />
+            {/* Workflow Steps */}
+            <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-50 to-white">
+                <div className="max-w-6xl mx-auto">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                            How <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">ZState</span> Works
+                        </h2>
+                        <p className="text-slate-600 max-w-2xl mx-auto">
+                            Simple, efficient workflow for managing your real estate business
+                        </p>
+                    </div>
+
+                    <div className="relative">
+                        {/* Progress Line */}
+                        <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-purple-200 via-blue-200 to-emerald-200 hidden md:block" />
+
+                        <div className="space-y-8">
+                            {workflowSteps.map((step, idx) => (
+                                <div key={idx} className="relative">
+                                    <div className="flex flex-col md:flex-row gap-8">
+                                        <div className="md:w-1/3">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-r ${step.color} flex items-center justify-center text-white font-bold text-2xl`}>
+                                                    {step.number}
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-slate-900">{step.title}</h3>
+                                                    <p className="text-slate-600">{step.description}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="md:w-2/3">
+                                            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                                                <div className="flex items-center gap-3 mb-4">
+                                                    <div className={`p-2 rounded-lg bg-gradient-to-r ${step.color} bg-opacity-10`}>
+                                                        {step.icon}
+                                                    </div>
+                                                    <h4 className="font-bold text-slate-900">Key Features</h4>
+                                                </div>
+                                                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                    {step.details.map((detail, detailIdx) => (
+                                                        <li key={detailIdx} className="flex items-center gap-2 text-slate-700">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500" />
+                                                            {detail}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-900">Complete Profile Management</h3>
-                                    <p className="text-gray-600">Detailed profiles for everyone in your network</p>
-                                </div>
-                            </div>
-                            <ul className="space-y-4">
-                                <li className="flex items-center gap-3">
-                                    <CheckCircle className="w-5 h-5 text-green-500" />
-                                    <span className="text-gray-700">Client preferences & requirements</span>
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <CheckCircle className="w-5 h-5 text-green-500" />
-                                    <span className="text-gray-700">Seller property details & expectations</span>
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <CheckCircle className="w-5 h-5 text-green-500" />
-                                    <span className="text-gray-700">Interaction history & notes</span>
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <CheckCircle className="w-5 h-5 text-green-500" />
-                                    <span className="text-gray-700">Document storage & sharing</span>
-                                </li>
-                            </ul>
+                            ))}
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Future Features Section */}
-            <section className="py-16 px-4 bg-gray-50">
+            {/* Features Grid */}
+            <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-12">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">Coming Soon: Enhanced Features</h2>
-                        <p className="text-gray-600 max-w-2xl mx-auto">
-                            We're continuously improving to serve you better
-                        </p>
+                        <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                            Everything You Need in <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">One Platform</span>
+                        </h2>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-6">
-                        <div className="bg-white p-6 rounded-2xl border border-gray-200">
-                            <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
-                                <Clock className="w-6 h-6 text-indigo-600" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {features.map((feature, idx) => (
+                            <div key={idx} className="group">
+                                <div className="relative bg-gradient-to-b from-white to-slate-50 p-6 rounded-2xl border border-slate-200 hover:border-purple-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className={`p-3 rounded-xl bg-gradient-to-br ${idx === 0 ? 'from-purple-100 to-blue-100' :
+                                                idx === 1 ? 'from-blue-100 to-cyan-100' :
+                                                    idx === 2 ? 'from-cyan-100 to-green-100' : 'from-green-100 to-emerald-100'
+                                            }`}>
+                                            {feature.icon}
+                                        </div>
+                                        <span className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                            {feature.stats}
+                                        </span>
+                                    </div>
+                                    <h3 className="font-bold text-slate-900 mb-2">{feature.title}</h3>
+                                    <p className="text-sm text-slate-600">{feature.description}</p>
+                                </div>
                             </div>
-                            <h3 className="font-bold text-gray-900 mb-2">Appointment Scheduling</h3>
-                            <p className="text-sm text-gray-600">Schedule property visits & meetings directly in platform</p>
-                        </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
 
-                        <div className="bg-white p-6 rounded-2xl border border-gray-200">
-                            <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-4">
-                                <BarChart className="w-6 h-6 text-red-600" />
-                            </div>
-                            <h3 className="font-bold text-gray-900 mb-2">Advanced Analytics</h3>
-                            <p className="text-sm text-gray-600">Track performance, client conversion rates & market trends</p>
-                        </div>
+            {/* Testimonials */}
+            <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-50 to-white">
+                <div className="max-w-7xl mx-auto">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                            Trusted by <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Real Estate</span> Professionals
+                        </h2>
+                    </div>
 
-                        <div className="bg-white p-6 rounded-2xl border border-gray-200">
-                            <div className="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center mb-4">
-                                <Filter className="w-6 h-6 text-teal-600" />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {testimonials.map((testimonial, idx) => (
+                            <div key={idx} className="group">
+                                <div className="relative bg-white p-6 rounded-2xl border border-slate-200 hover:border-purple-200 hover:shadow-lg transition-all h-full">
+                                    <div className="flex items-start gap-4 mb-4">
+                                        <div className="flex-shrink-0">
+                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-purple-100 to-blue-100 flex items-center justify-center">
+                                                <Users className="w-6 h-6 text-purple-600" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-slate-900">{testimonial.name}</div>
+                                            <div className="text-sm text-slate-600">{testimonial.role}, {testimonial.location}</div>
+                                        </div>
+                                    </div>
+                                    <p className="text-slate-700 mb-4 italic">"{testimonial.content}"</p>
+                                    <div className="mt-4 pt-4 border-t border-slate-100">
+                                        <span className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                            {testimonial.stats}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                            <h3 className="font-bold text-gray-900 mb-2">AI Property Matching</h3>
-                            <p className="text-sm text-gray-600">Smart suggestions based on client behavior & preferences</p>
-                        </div>
+                        ))}
                     </div>
                 </div>
             </section>
         </div>
     );
 }
-
-
-
