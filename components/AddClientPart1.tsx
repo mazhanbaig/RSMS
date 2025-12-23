@@ -81,7 +81,7 @@ export default function AddClientPart1({ formData, handleChange }: PersonalInfoP
                         className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     >
                         <option value="active">Active</option>
-                        <option value="closed">Closed</option>
+                        <option value="deal-Done">Deal Done</option>
                         <option value="lost">Lost</option>
 
                     </select>

@@ -6,7 +6,6 @@ import { getData, updateData } from "@/FBConfig/fbFunctions";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Phone, Mail, MapPin, Home, DollarSign, Bed, Bath, Car, AlertCircle, CheckCircle, Clock, Edit, ArrowLeft, User, Calendar, Plus, Trash2, Search, MessageSquare, PhoneCall } from "lucide-react";
-import { message } from "antd";
 
 export default function ViewClientPage() {
     interface UserInfo {
@@ -64,7 +63,7 @@ export default function ViewClientPage() {
 
         const fetchClient = async () => {
             try {
-                const clientData: any = await getData(`clients/${id}`);
+                const clientData:any = await getData(`clients/${id}`);
                 if (clientData) {
                     setClient(clientData);
                 } else {
@@ -116,18 +115,6 @@ export default function ViewClientPage() {
             default: return null;
         }
     };
-
-    const handleStatusChange = (e: any) => {
-        const newStatus = e.target.value
-        updateData(`clients/${id}`, { clientStatus: newStatus })
-            .then((res: any) => {
-                setClient(prev => prev ? { ...prev, clientStatus: newStatus } : prev)
-                message.success(`Property marked as ${newStatus}`)
-            })
-            .catch((err) => {
-                message.error('Failed to chnage Status of Property')
-            })
-    }
 
     if (loading) {
         return (
@@ -344,13 +331,12 @@ export default function ViewClientPage() {
                     {/* Quick Actions Card */}
                     <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 h-fit">
                         <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-2 sm:mb-4">Quick Actions</h3>
-                        <div className=" flex gap-3 flex-wrap">
+                        <div className="space-y-2 sm:space-y-3">
                             <Button
                                 label="Send Email"
                                 variant="theme2"
                                 icon={<Mail className="w-4 h-4" />}
                                 size="sm"
-                                classNameC="max-h-[28px]"
                                 onClick={() => window.location.href = `mailto:${client.email}`}
                             />
                             <Button
@@ -358,24 +344,8 @@ export default function ViewClientPage() {
                                 variant="theme"
                                 icon={<PhoneCall className="w-4 h-4" />}
                                 size="sm"
-                                classNameC="max-h-[28px]"
                                 onClick={() => window.location.href = `tel:${client.phone}`}
                             />
-                            {/* Status Dropdown */}
-                            <div className="flex flex-col gap-2">
-                                <label className="text-black font-medium">Client Status</label>
-                                <select
-                                    // value={property.propertyStatus}
-                                    onChange={(e) => {
-                                        // handleStatusChange(e)
-                                    }}
-                                    className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                >
-                                    <option value="active">Active</option>
-                                    <option value="closed">Closed</option>
-                                    <option value="lost">lost</option>
-                                </select>
-                            </div>
                         </div>
                     </div>
                 </div>
