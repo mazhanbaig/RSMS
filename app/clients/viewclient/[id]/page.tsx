@@ -150,11 +150,11 @@ export default function ViewClientPage() {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pb-20">
             <Header userData={userInfo} />
 
-            <div className="max-w-6xl mx-auto mt-16 px-4 sm:px-6 md:px-6 lg:px-6">
+            <div className="max-w-6xl mx-auto mt-16 px-3 sm:px-4 md:px-3 lg:px-3">
 
                 {/* Client Header */}
                 <div className="mb-8 text-center sm:text-left">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-bold text-gray-900 mb-2">
+                    <h1 className="text-4xl sm:text-4xl md:text-4xl lg:text-[40px] font-bold text-gray-900 mb-2">
                         Client{" "}
                         <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-transparent bg-clip-text">
                             Details
