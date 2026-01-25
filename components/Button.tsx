@@ -44,7 +44,7 @@ export default function Button({
             onClick={onClick}
             disabled={disabled}
             className={`
-                rounded-xl text-center flex justify-center font-medium transition flex items-center gap-2
+                rounded-xl text-center flex justify-center font-medium transition  gap-2
                 ${styles[variant]}
                 ${sizes[size]}
                 ${disabled ? "opacity-50 cursor-not-allowed" : ""}

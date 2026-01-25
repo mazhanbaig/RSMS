@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     "Real Estate Platform",
   ],
   authors: [{ name: "ZState Team" }],
-  creator: "ZState",
+  creator: "Muhammad Azhan Baig",
   publisher: "ZState",
 
   robots: {
