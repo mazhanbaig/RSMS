@@ -759,65 +759,97 @@ export default function AdminDashboardPage() {
             <Header userData={userInfo} />
 
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                {/* Welcome Section */}
-                <div className="mb-10">
-                    {/* Dashboard Tag */}
-                    {/* <div className="mt-5 ml-2 inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg shadow-purple-100/30 mb-6">
-                        <LayoutDashboard className="h-5 w-5 text-purple-600" />
-                        <span className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-blue-600 text-transparent bg-clip-text">
-                            ZState Dashboard
-                        </span>
-                        <div className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 animate-pulse"></div>
-                    </div> */}
-
+                {/* Minimalist Elegant Welcome Section */}
+                <div className="mb-10 ml-2 sm:ml-0">
                     <div className="relative">
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mt-10">
-                            {/* Left Header */}
-                            <div className="flex items-center gap-4">
-                                {/* Text Section */}
-                                <div>
-                                    <div className="flex items-center gap-3 md:-mt-5 ml-2.5">
-                                        <div className="flex items-center gap-2">
-                                            <Crown className="h-9 sm:h-6 md:h-5 w-9 sm:w-6 md:w-5 text-amber-500" />
-                                            <p className="text-gray-700 text-2xl sm:text-xl md:text-3xl">
-                                                Welcome, <span className="font-semibold text-gray-900">{userInfo?.name || "Admin"}</span>
-                                            </p>
-                                        </div>
-                                        <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-                                        <span className="hidden sm:block text-xs font-medium px-3 py-1 rounded-full 
-                                                            bg-gradient-to-r from-purple-600 to-blue-600 text-transparent bg-clip-text border border-sky-200/50">
-                                            Admin Manager
-                                        </span>
+                        {/* Background Pattern */}
+                        {/* <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-purple-50 rounded-2xl -m-4"></div> */}
+                        {/* <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-200/20 to-blue-200/20 rounded-full -mt-16 -mr-16 blur-2xl"></div> */}
+
+                        <div className="relative">
+                            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
+                                {/* Left Side - Welcome Message */}
+                                <div className="flex-1">
+                                    {/* Subtle Welcome Indicator */}
+                                    <div className="flex items-center gap-2 mb-6 mt-6 sm:mt-3">
+                                        <div className="w-6 h-px bg-gradient-to-r from-purple-500 to-blue-500"></div>
+                                        <span className="text-xs font-medium text-gray-500 uppercase tracking-widest">Dashboard</span>
+                                        <div className="w-6 h-px bg-gradient-to-r from-blue-500 to-cyan-500"></div>
                                     </div>
+
+                                    {/* Main Content */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="hidden sm:block p-2 rounded-xl bg-gradient-to-br from-amber-400/10 to-orange-400/10">
+                                                <Crown className="h-6 w-6 text-amber-500" />
+                                            </div>
+                                            <div>
+                                                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                                                    Welcome back,{" "}
+                                                    <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                                        {userInfo?.name?.split(" ")[0] || "Admin"}
+                                                    </span>
+                                                </h1>
+                                                <p className="text-gray-600 mt-2 max-w-xl">
+                                                    Your real estate management hub. Track properties, connect with clients, and grow your business.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Quick Stats */}
+                                    {/* <div className="flex flex-wrap gap-6 mt-6 pt-6 border-t border-gray-100">
+                                        <div className="text-center">
+                                            <div className="text-2xl font-bold text-gray-900">{clients.length}</div>
+                                            <div className="text-xs text-gray-500 uppercase tracking-wide">Clients</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-2xl font-bold text-gray-900">{properties.length}</div>
+                                            <div className="text-xs text-gray-500 uppercase tracking-wide">Properties</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-2xl font-bold text-gray-900">{owners.length}</div>
+                                            <div className="text-xs text-gray-500 uppercase tracking-wide">Owners</div>
+                                        </div>
+                                    </div> */}
                                 </div>
-                            </div>
 
-                            {/* Right Header Controls */}
-                            <div className="hidden sm:block w-max bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 px-4 py-2 shadow-xl shadow-sky-100/20">
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100">
-                                            <Clock className="h-4 w-4 text-blue-600" />
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-gray-500">Current Time</p>
-                                            <p className="text-sm font-semibold text-gray-800">
-                                                {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </p>
-                                        </div>
-                                    </div>
+                                {/* Right Side - Time/Date */}
+                                <div className="lg:w-64">
+                                    <div className=" rounded-xl -mt-5 sm:mt-0 p-5">
+                                        <div className="space-y-2 flex justify-start items-center gap-2 sm:block">
+                                            {/* Time */}
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="p-1.5 rounded-lg bg-blue-50">
+                                                        <Clock className="h-3.5 w-3.5 text-blue-600" />
+                                                    </div>
+                                                    <span className="text-xs font-medium text-gray-500">Current Time</span>
+                                                </div>
+                                                <div className="text-lg font-bold text-gray-900">
+                                                    {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </div>
 
-                                    <div className="h-8 w-px bg-gray-200/50"></div>
+                                            {/* Separator */}
+                                            <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
 
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100">
-                                            <Calendar className="h-4 w-4 text-purple-600" />
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-gray-500">Today</p>
-                                            <p className="text-sm font-semibold text-gray-800">
-                                                {new Date().getDate()} {new Date().toLocaleDateString('en-US', { month: 'short' })}
-                                            </p>
+                                            {/* Date */}
+                                            <div className="relative -top-1.5 space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="p-1.5 rounded-lg bg-purple-50">
+                                                        <Calendar className="h-3.5 w-3.5 text-purple-600" />
+                                                    </div>
+                                                    <span className="text-xs font-medium text-gray-500">Today's Date</span>
+                                                </div>
+                                                <div className="text-lg font-bold text-gray-900">
+                                                    {new Date().toLocaleDateString('en-US', {
+                                                        weekday: 'short',
+                                                        month: 'short',
+                                                        day: 'numeric'
+                                                    })}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -825,6 +857,8 @@ export default function AdminDashboardPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Continue with the rest... */}
                 {/* Stats Grid - Compact Elegant */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
                     {stats.map((stat, idx) => (
