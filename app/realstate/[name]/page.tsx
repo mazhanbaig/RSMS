@@ -762,16 +762,16 @@ export default function AdminDashboardPage() {
                 {/* Welcome Section */}
                 <div className="mb-10">
                     {/* Dashboard Tag */}
-                    <div className="mt-5 ml-2 inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg shadow-purple-100/30 mb-6">
+                    {/* <div className="mt-5 ml-2 inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg shadow-purple-100/30 mb-6">
                         <LayoutDashboard className="h-5 w-5 text-purple-600" />
                         <span className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-blue-600 text-transparent bg-clip-text">
                             ZState Dashboard
                         </span>
                         <div className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 animate-pulse"></div>
-                    </div>
+                    </div> */}
 
                     <div className="relative">
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mt-10">
                             {/* Left Header */}
                             <div className="flex items-center gap-4">
                                 {/* Text Section */}
@@ -779,7 +779,7 @@ export default function AdminDashboardPage() {
                                     <div className="flex items-center gap-3 md:-mt-5 ml-2.5">
                                         <div className="flex items-center gap-2">
                                             <Crown className="h-9 sm:h-6 md:h-5 w-9 sm:w-6 md:w-5 text-amber-500" />
-                                            <p className="text-gray-700 text-2xl sm:text-xl md:text-md">
+                                            <p className="text-gray-700 text-2xl sm:text-xl md:text-3xl">
                                                 Welcome, <span className="font-semibold text-gray-900">{userInfo?.name || "Admin"}</span>
                                             </p>
                                         </div>
@@ -793,7 +793,7 @@ export default function AdminDashboardPage() {
                             </div>
 
                             {/* Right Header Controls */}
-                            <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 px-4 py-2 shadow-xl shadow-sky-100/20">
+                            <div className="hidden sm:block w-max bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 px-4 py-2 shadow-xl shadow-sky-100/20">
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100">
@@ -829,7 +829,7 @@ export default function AdminDashboardPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
                     {stats.map((stat, idx) => (
                         <div key={idx} className="relative group">
-                            <div className="relative bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md hover:border-purple-200 transition-all duration-300">
+                            <div className="relative bg-white rounded-xl border border-gray-100 px-4 py-2 shadow-sm hover:shadow-md hover:border-purple-200 transition-all duration-300">
                                 {/* Floating Icon with White Background */}
                                 <div className="absolute -top-3 left-4">
                                     <div className="p-2 rounded-lg bg-white border border-gray-200 shadow-lg">
@@ -848,18 +848,11 @@ export default function AdminDashboardPage() {
                                         <p className="text-gray-600 text-xs mb-2">{stat.title}</p>
                                     </div>
 
-                                    {/* Trend Indicator */}
-                                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                                        <div className="flex items-center gap-1">
-                                            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                                            <span className="text-xs font-medium text-green-600">{stat.change}</span>
-                                        </div>
-                                        <div className="text-xs text-gray-500">vs last month</div>
-                                    </div>
+                                    
                                 </div>
 
                                 {/* Bottom Gradient Line */}
-                                <div className="absolute bottom-0 left-2 right-0 rounded-l-xl h-0.5 bg-gradient-to-r from-purple-600/0 via-purple-600/50 to-blue-600/0 group-hover:from-purple-600 via-purple-600 to-blue-600 transition-all duration-500 rounded-b-xl" />
+                                {/* <div className="absolute bottom-0 left-2 right-0 rounded-l-xl h-0.5 bg-gradient-to-r from-purple-600/0 via-purple-600/50 to-blue-600/0 group-hover:from-purple-600 via-purple-600 to-blue-600 transition-all duration-500 rounded-b-xl" /> */}
                             </div>
                         </div>
                     ))}
@@ -920,58 +913,72 @@ export default function AdminDashboardPage() {
                                 />
                             </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-4 grid grid-cols-1 sm:grid-cols-2">
                                 {recentProperties.length > 0 ? (
                                     recentProperties.map((property) => (
                                         <div
                                             key={property.id}
-                                            className="flex items-center justify-between p-4 rounded-xl border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300 cursor-pointer"
                                             onClick={() => router.push(`/properties/${property.id}`)}
+                                            className="group flex items-center justify-between px-3 py-2
+      rounded-xl border border-gray-200 bg-white
+      hover:border-purple-300 hover:shadow-md transition-all cursor-pointer"
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 text-lg sm:text-xl bg-transparent rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent flex items-center justify-center font-semibold shadow-md">
-                                                    <Home className="h-5 w-5 text-purple-600" />
+                                            {/* Left */}
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                {/* Icon */}
+                                                <div className="p-2 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 text-white">
+                                                    <Home className="h-4 w-4" />
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <span className="font-semibold text-gray-900 text-sm">{property.title || property.address}</span>
-                                                    <span className="text-xs text-gray-500">
-                                                        {property.address}
-                                                    </span>
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <span className="text-xs px-2 py-1 bg-gray-100 rounded">
-                                                            <Bed className="h-3 w-3 inline mr-1" /> {property.bedrooms || 'N/A'}
+
+                                                {/* Title */}
+                                                <div className="truncate">
+                                                    <p className="text-sm font-medium text-gray-900 truncate">
+                                                        {property.title || property.address}
+                                                    </p>
+
+                                                    {/* Meta icons */}
+                                                    <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-500">
+                                                        <span className="flex items-center gap-1">
+                                                            <Bed className="h-3 w-3" />
+                                                            {property.bedrooms || '—'}
                                                         </span>
-                                                        <span className="text-xs px-2 py-1 bg-gray-100 rounded">
-                                                            <Bath className="h-3 w-3 inline mr-1" /> {property.bathrooms || 'N/A'}
+                                                        <span className="flex items-center gap-1">
+                                                            <Bath className="h-3 w-3" />
+                                                            {property.bathrooms || '—'}
                                                         </span>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-2">
-                                                <div className="text-right">
-                                                    <div className="text-lg font-bold text-gray-900">
-                                                        ${property.price?.toLocaleString() || '0'}
-                                                    </div>
-                                                    <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(property.status)}`}>
-                                                        {property.status || 'active'}
-                                                    </span>
-                                                </div>
-                                                <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
+                                            {/* Right */}
+                                            <div className="flex items-center gap-3 shrink-0">
+                                                <span className="text-sm font-semibold text-gray-900">
+                                                    ${property.price?.toLocaleString() || '0'}
+                                                </span>
+
+                                                <span
+                                                    className={`text-[10px] px-2 py-0.5 rounded-full font-medium
+          ${getStatusColor(property.status)}`}
+                                                >
+                                                    {property.status || 'active'}
+                                                </span>
+
+                                                <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-purple-600 transition-colors" />
                                             </div>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="text-center py-8">
-                                        <Home className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                                        <p className="text-gray-600 mb-4">No properties listed yet</p>
+                                    <div className="text-center py-6">
+                                        <Home className="h-10 w-10 text-gray-300 mx-auto mb-3" />
                                         <Button
-                                            label="Add First Property"
+                                            label="Add Property"
+                                            size="sm"
                                             variant="theme"
                                             onClick={() => router.push('/properties/add')}
                                         />
                                     </div>
                                 )}
+
                             </div>
                         </div>
                     </div>
@@ -1116,7 +1123,7 @@ export default function AdminDashboardPage() {
                                         className="flex items-center justify-between px-3 py-1 rounded-xl border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300 cursor-pointer group"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 text-lg sm:text-xl bg-gradient-to-br ${event.color} rounded-lg flex items-center justify-center font-semibold shadow-md text-white`}>
+                                            <div className={`w-10 h-10 text-lg sm:text-xl bg-black rounded-lg flex items-center justify-center font-semibold shadow-md text-white`}>
                                                 {event.date.split(' ')[0]}
                                             </div>
                                             <div className="flex flex-col">
