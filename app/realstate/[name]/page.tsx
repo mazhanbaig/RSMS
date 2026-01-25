@@ -564,6 +564,7 @@ import { onAuthStateChanged } from "firebase/auth"
 import Loader from "@/components/Loader"
 import Header from "@/components/Header"
 import Button from "@/components/Button"
+import React from "react"
 
 export default function AdminDashboardPage() {
     const [loading, setLoading] = useState(true)
@@ -648,28 +649,24 @@ export default function AdminDashboardPage() {
             value: clients?.length || 0,
             icon: <Users className="h-5 w-5 text-blue-600" />,
             change: "+12% this month",
-            color: "from-blue-500 to-cyan-500"
         },
         {
             title: "Property Owners",
             value: owners?.length || 0,
             icon: <Building className="h-5 w-5 text-purple-600" />,
             change: "+5 new owners",
-            color: "from-purple-500 to-pink-500"
         },
         {
             title: "Listed Properties",
             value: properties?.length || 0,
             icon: <Home className="h-5 w-5 text-green-600" />,
             change: "+8 properties",
-            color: "from-green-500 to-emerald-500"
         },
         {
             title: "Total Value",
             value: `$${properties.reduce((sum, p) => sum + (p.price || 0), 0).toLocaleString()}`,
             icon: <DollarSign className="h-5 w-5 text-amber-600" />,
             change: "+15% growth",
-            color: "from-amber-500 to-orange-500"
         }
     ]
 
@@ -828,31 +825,41 @@ export default function AdminDashboardPage() {
                         </div>
                     </div>
                 </div>
-
-                {/* Stats Grid */}
+                {/* Stats Grid - Compact Elegant */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
                     {stats.map((stat, idx) => (
                         <div key={idx} className="relative group">
-                            <div className="relative flex items-center justify-between overflow-hidden rounded-xl bg-white border border-gray-200 p-4
-                shadow-md shadow-gray-200/20 backdrop-blur-sm
-                group-hover:shadow-lg group-hover:shadow-purple-100/20 transition-all duration-300">
-                                {/* Left: Icon + Title */}
-                                <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-xl bg-gradient-to-br ${stat.color}`}>
-                                        <div className="text-white">
-                                            {stat.icon}
+                            <div className="relative bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md hover:border-purple-200 transition-all duration-300">
+                                {/* Floating Icon with White Background */}
+                                <div className="absolute -top-3 left-4">
+                                    <div className="p-2 rounded-lg bg-white border border-gray-200 shadow-lg">
+                                        <div className={stat.icon.props.className}>
+                                            {React.cloneElement(stat.icon, {
+                                                className: stat.icon.props.className.replace("text-", "").split(" ")[0] + " " + stat.icon.props.className
+                                            })}
                                         </div>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <p className="text-xs font-medium text-gray-900">{stat.title}</p>
-                                        <div className="mt-1 w-12 h-1 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 opacity-40" />
                                     </div>
                                 </div>
 
-                                {/* Right: Value + Change */}
-                                <div className="flex items-center gap-2">
-                                    <h3 className="text-2xl font-bold text-gray-900">{stat.value}</h3>
+                                <div className="-mt-1">
+                                    {/* Value and Title */}
+                                    <div className="text-right">
+                                        <h3 className="text-2xl font-bold text-gray-900 mb-0.5">{stat.value}</h3>
+                                        <p className="text-gray-600 text-xs mb-2">{stat.title}</p>
+                                    </div>
+
+                                    {/* Trend Indicator */}
+                                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                                        <div className="flex items-center gap-1">
+                                            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                                            <span className="text-xs font-medium text-green-600">{stat.change}</span>
+                                        </div>
+                                        <div className="text-xs text-gray-500">vs last month</div>
+                                    </div>
                                 </div>
+
+                                {/* Bottom Gradient Line */}
+                                <div className="absolute bottom-0 left-2 right-0 rounded-l-xl h-0.5 bg-gradient-to-r from-purple-600/0 via-purple-600/50 to-blue-600/0 group-hover:from-purple-600 via-purple-600 to-blue-600 transition-all duration-500 rounded-b-xl" />
                             </div>
                         </div>
                     ))}
