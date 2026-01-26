@@ -33,7 +33,7 @@ export default function LoginPage() {
                         <div className="mb-6">
                             <div className="relative inline-block mb-4">
                                 <h1 className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 bg-clip-text text-transparent"
-                                    style={{ fontFamily: "'Baloo 2', cursive" }}>
+                                    >
                                     ZState
                                 </h1>
 

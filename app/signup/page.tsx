@@ -46,8 +46,7 @@ export default function Signup() {
           <div className="lg:w-1/2 p-8 sm:bg-gradient-to-br from-blue-50 to-cyan-50 flex flex-col justify-center">
             <div className="mb-6">
               <div className="relative inline-block mb-4">
-                <h1 className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 bg-clip-text text-transparent"
-                  style={{ fontFamily: "'Baloo 2', cursive" }}>
+                <h1 className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 bg-clip-text text-transparent">
                   ZState
                 </h1>
 
