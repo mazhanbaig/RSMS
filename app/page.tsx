@@ -98,6 +98,7 @@ import {
   BadgeCheck,
   CreditCard
 } from "lucide-react";
+import HomeHeader from "@/components/HomeHeader";
 
 export default function HomePage() {
   const router = useRouter();
@@ -118,8 +119,8 @@ export default function HomePage() {
         try {
           const storedUser = localStorage.getItem('userInfo');
           if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
-            const userData = await getData(`users/${parsedUser.uid}`);
+            const parsedUser:any = JSON.parse(storedUser);
+            const userData:any = await getData(`users/${parsedUser.uid}`);
             setUserInfo(userData);
             router.replace(`/realstate/${userData.name}`);
           }
@@ -145,13 +146,13 @@ export default function HomePage() {
 
   // If not authenticated, show the about/home page
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100">
-      <Header />
+    <div className="min-h-screen bg-white">
+      <HomeHeader />
 
       {/* Hero Section */}
       <section className="relative pt-15 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
         {/* Background Effects */}
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl hidden sm:block" />
+        {/* <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl hidden sm:block" /> */}
         <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl hidden sm:block" />
         <div className="absolute top-1/2 left-1/4 w-80 h-80 bg-gradient-to-r from-purple-100/20 to-blue-100/20 rounded-full blur-3xl" />
 
@@ -176,40 +177,31 @@ export default function HomePage() {
               <Button
                 label="Get Started Free"
                 size="lg"
+                variant="theme2"
                 onClick={() => router.push("/signup")}
                 icon={<ArrowRight className="ml-2 w-5 h-5" />}
                 classNameC="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
-              />
-              <Button
-                label="Learn More"
-                size="lg"
-                variant="theme"
-                onClick={() => {
-                  const featuresSection = document.getElementById('features');
-                  featuresSection?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                classNameC="border border-purple-200 hover:border-purple-300"
               />
             </div>
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-              <div className="bg-white p-6 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
+              <div className="bg-white px-6 py-3 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
                 <UsersRound className="w-8 h-8 text-purple-600 mx-auto mb-3" />
                 <div className="text-2xl font-bold text-slate-900 mb-1">Organized</div>
                 <div className="text-slate-600">Client Management</div>
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
+              <div className="bg-white px-6 py-3 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
                 <Building className="w-8 h-8 text-blue-600 mx-auto mb-3" />
                 <div className="text-2xl font-bold text-slate-900 mb-1">Complete</div>
                 <div className="text-slate-600">Property Dashboard</div>
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
+              <div className="bg-white px-6 py-3 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
                 <Video className="w-8 h-8 text-green-600 mx-auto mb-3" />
                 <div className="text-2xl font-bold text-slate-900 mb-1">Virtual</div>
                 <div className="text-slate-600">Property Showings</div>
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
+              <div className="bg-white px-6 py-3 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
                 <Database className="w-8 h-8 text-orange-600 mx-auto mb-3" />
                 <div className="text-2xl font-bold text-slate-900 mb-1">Smart</div>
                 <div className="text-slate-600">CRM Integration</div>
@@ -260,7 +252,7 @@ export default function HomePage() {
             ].map((item, idx) => (
               <div key={idx} className="group relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
-                <div className="relative bg-gradient-to-b from-white to-slate-50 p-6 rounded-2xl border border-slate-200 hover:border-purple-200 hover:shadow-lg transition-all">
+                <div className="relative bg-gradient-to-b from-white to-slate-50 px-6 py-3 rounded-2xl border border-slate-200 hover:border-purple-200 hover:shadow-lg transition-all">
                   <div className="flex items-start justify-between mb-4">
                     <div className={`p-3 rounded-xl bg-gradient-to-br ${idx === 0 ? 'from-purple-100 to-blue-100' :
                       idx === 1 ? 'from-blue-100 to-cyan-100' :
@@ -320,7 +312,7 @@ export default function HomePage() {
               }
             ].map((feature, idx) => (
               <div key={idx} className="group">
-                <div className="relative bg-gradient-to-b from-white to-slate-50 p-6 rounded-2xl border border-slate-200 hover:border-purple-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
+                <div className="relative bg-gradient-to-b from-white to-slate-50 px-6 py-3 rounded-2xl border border-slate-200 hover:border-purple-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
                   <div className="flex items-center justify-between mb-4">
                     <div className={`p-3 rounded-xl bg-gradient-to-br ${idx === 0 ? 'from-purple-100 to-blue-100' :
                       idx === 1 ? 'from-blue-100 to-cyan-100' :
@@ -459,21 +451,12 @@ export default function HomePage() {
             <Button
               label="Start Free Trial"
               size="lg"
+              variant="theme"
               onClick={() => router.push("/signup")}
               classNameC="bg-white text-purple-600 hover:bg-purple-50 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
               icon={<ArrowRight className="ml-2 w-5 h-5" />}
             />
-            <Button
-              label="Book a Demo"
-              size="lg"
-              variant="theme"
-              onClick={() => router.push("/contact")}
-              classNameC="bg-transparent border-2 border-white text-white hover:bg-white/10"
-            />
           </div>
-          <p className="text-sm text-purple-200 mt-6">
-            No credit card required • 14-day free trial • Cancel anytime
-          </p>
         </div>
       </section>
     </div>
