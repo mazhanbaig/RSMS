@@ -6,13 +6,11 @@ import { getData, deleleData, auth } from "@/FBConfig/fbFunctions";
 import { message } from "antd";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useCallback, useState } from "react";
 import {
-    Users, Search, Filter, Plus, MoreVertical,
-    Mail, Phone, MapPin, Calendar, UserCheck,
-    UserX, TrendingUp, Download, Eye, Edit,
-    Trash2, ChevronRight, Home, Building,
-    DollarSign, Clock
+    Users, Eye, Edit,
+    Trash2, DollarSign, TrendingUp,
+    UserCheck
 } from "lucide-react";
 import React from "react";
 import Loader from "@/components/Loader";
@@ -32,6 +30,7 @@ export default function ClientsPage() {
     const [activeFilter, setActiveFilter] = useState<string>("all");
     const [loading, setLoading] = useState<boolean>(true);
 
+    // Optimized auth check - only runs once
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (!user) {
@@ -39,9 +38,9 @@ export default function ClientsPage() {
             }
         });
         return () => unsubscribe();
-    }, []);
+    }, [router]);
 
-    // Load userInfo from localStorage once
+    // Optimized user info loading - memoized parsing
     useEffect(() => {
         const stored = localStorage.getItem('userInfo');
         if (stored) {
@@ -60,9 +59,10 @@ export default function ClientsPage() {
         }
     }, []);
 
-    // Fetch clients once userInfo is available
+    // Optimized clients fetch - only when userInfo.uid changes
     useEffect(() => {
         if (userInfo?.uid) {
+            setLoading(true);
             getData('clients/')
                 .then((res: any) => {
                     if (res) {
@@ -76,25 +76,25 @@ export default function ClientsPage() {
                         );
 
                         setClients(ownerClients);
-                        setLoading(false);
                     } else {
                         setClients([]);
-                        setLoading(false);
                     }
                 })
                 .catch(err => {
                     console.log(err);
+                })
+                .finally(() => {
                     setLoading(false);
                 });
         }
-    }, [userInfo]);
+    }, [userInfo?.uid]); // Only re-run when uid changes
 
-    // Delete client
-    const deleteClient = (id: string) => {
+    // Optimized delete function with useCallback
+    const deleteClient = useCallback((id: string) => {
         if (confirm("Are you sure you want to delete this client?")) {
             deleleData(`clients/${id}`)
                 .then(() => {
-                    setClients(clients.filter(client => client.id !== id));
+                    setClients(prev => prev.filter(client => client.id !== id));
                     message.success("Client deleted successfully");
                 })
                 .catch(err => {
@@ -102,25 +102,27 @@ export default function ClientsPage() {
                     message.error("Failed to delete client");
                 });
         }
-    };
+    }, []);
 
-    // Filter clients based on search input and active filter
-    const filteredClients = clients.filter(client => {
-        const matchesSearch =
-            client.firstName?.toLowerCase().includes(searchVal.toLowerCase()) ||
-            client.lastName?.toLowerCase().includes(searchVal.toLowerCase()) ||
-            client.email?.toLowerCase().includes(searchVal.toLowerCase()) ||
-            client.phone?.includes(searchVal);
+    // Optimized filter with useMemo - prevents re-calculation on every render
+    const filteredClients = useMemo(() => {
+        return clients.filter(client => {
+            const matchesSearch =
+                client.firstName?.toLowerCase().includes(searchVal.toLowerCase()) ||
+                client.lastName?.toLowerCase().includes(searchVal.toLowerCase()) ||
+                client.email?.toLowerCase().includes(searchVal.toLowerCase()) ||
+                client.phone?.includes(searchVal);
 
-        const matchesFilter =
-            activeFilter === "all" ||
-            client.status?.toLowerCase() === activeFilter;
+            const matchesFilter =
+                activeFilter === "all" ||
+                client.status?.toLowerCase() === activeFilter;
 
-        return matchesSearch && matchesFilter;
-    });
+            return matchesSearch && matchesFilter;
+        });
+    }, [clients, searchVal, activeFilter]);
 
-    // Stats data
-    const clientStats = [
+    // Optimized stats with useMemo
+    const clientStats = useMemo(() => [
         {
             title: "Total Clients",
             value: clients.length,
@@ -157,17 +159,17 @@ export default function ClientsPage() {
             color: "from-amber-600 to-amber-500",
             bgColor: "bg-gradient-to-br from-amber-50 to-amber-100"
         }
-    ];
+    ], [clients]);
 
-    // Status filters
-    const statusFilters = [
+    // Optimized status filters with useMemo
+    const statusFilters = useMemo(() => [
         { id: "all", label: "All Clients", count: clients.length },
         { id: "active", label: "Active", count: clients.filter(c => c.status === 'active').length },
         { id: "new", label: "New", count: clients.filter(c => c.status === 'new').length },
         { id: "converted", label: "Converted", count: clients.filter(c => c.status === 'converted').length },
         { id: "lost", label: "Lost", count: clients.filter(c => c.status === 'lost').length }
-    ];
-    
+    ], [clients]);
+
     const calculateClientsGrowth = useMemo(() => {
         if (!clients || clients.length === 0) return 0;
 
@@ -186,7 +188,8 @@ export default function ClientsPage() {
         return percentage;
     }, [clients]);
 
-    const getStatusColor = (status: string) => {
+    // Optimized status color function with useCallback
+    const getStatusColor = useCallback((status: string) => {
         switch (status?.toLowerCase()) {
             case 'active': return 'bg-green-100 text-green-800 border-green-200';
             case 'new': return 'bg-blue-100 text-blue-800 border-blue-200';
@@ -194,16 +197,35 @@ export default function ClientsPage() {
             case 'lost': return 'bg-red-100 text-red-800 border-red-200';
             default: return 'bg-gray-100 text-gray-800 border-gray-200';
         }
-    };
+    }, []);
 
-    if (loading) {
-        return (
-            <Loader />
-        );
-    }
+    // Optimized handler functions
+    const handleAddClient = useCallback(() => {
+        router.push("/clients/addclient");
+    }, [router]);
 
-    if (!userInfo) {
-        return null;
+    const handleViewClient = useCallback((id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        router.push(`/clients/viewclient/${id}`);
+    }, [router]);
+
+    const handleEditClient = useCallback((client: any, e: React.MouseEvent) => {
+        e.stopPropagation();
+        router.push(`/clients/addclient?clientData=${encodeURIComponent(JSON.stringify(client))}`);
+    }, [router]);
+
+    const handleDeleteClient = useCallback((id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        deleteClient(id);
+    }, [deleteClient]);
+
+    const handleRowClick = useCallback((id: string) => {
+        router.push(`/clients/viewclient/${id}`);
+    }, [router]);
+
+    // Early returns for loading states
+    if (loading || !userInfo) {
+        return <Loader />;
     }
 
     return (
@@ -260,13 +282,13 @@ export default function ClientsPage() {
                         <div className="flex flex-wrap gap-3">
                             <Button
                                 label="+ Add Client"
-                                onClick={() => router.push("/clients/addclient")}
+                                onClick={handleAddClient}
                                 variant="theme2"
                                 size="md"
                             />
                             <Button
                                 label="Import Client"
-                                onClick={() => router.push("/clients/addclient")}
+                                onClick={handleAddClient}
                                 variant="theme"
                                 size="md"
                             />
@@ -277,15 +299,34 @@ export default function ClientsPage() {
                                 type="text"
                                 value={searchVal}
                                 placeholder="Search clients..."
-                                className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="md:min-w-80 border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 onChange={(e) => setSearchVal(e.target.value)}
                             />
                         </div>
                     </div>
+
+                    {/* Status Filters */}
+                    <div className="flex flex-wrap gap-2 mt-4">
+                        {statusFilters.map((filter) => (
+                            <button
+                                key={filter.id}
+                                onClick={() => setActiveFilter(filter.id)}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${activeFilter === filter.id
+                                    ? 'bg-purple-600 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                            >
+                                {filter.label}
+                                <span className="ml-1.5 bg-white/20 px-1.5 py-0.5 rounded text-xs">
+                                    {filter.count}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
-                {/* Table View Toggle (Optional) */}
-                <div className="mt-9">
+                {/* Table View */}
+                <div className="mt-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-bold text-gray-900">All Clients</h2>
                         <div className="text-sm text-gray-600">
@@ -307,84 +348,86 @@ export default function ClientsPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {filteredClients.slice(0, 5).map((client: any) => (
-                                        <tr
-                                            key={client.id}
-                                            className="hover:bg-gray-50 cursor-pointer"
-                                            onClick={() => router.push(`/clients/viewclient/${client.id}`)}
-                                        >
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
-                                                        <span className="font-bold text-purple-600">
-                                                            {client.firstName?.charAt(0)}{client.lastName?.charAt(0)}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-medium text-gray-900">
-                                                            {client.firstName} {client.lastName}
+                                    {filteredClients.length > 0 ? (
+                                        filteredClients.map((client: any) => (
+                                            <tr
+                                                key={client.id}
+                                                className="hover:bg-gray-50 cursor-pointer"
+                                                onClick={() => handleRowClick(client.id)}
+                                            >
+                                                <td className="px-4 py-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
+                                                            <span className="font-bold text-purple-600 px-2">
+                                                                {client.firstName?.charAt(0)}{client.lastName?.charAt(0)}
+                                                            </span>
                                                         </div>
-                                                        <div className="text-sm text-gray-500">
-                                                            Added: {new Date(client.createdAt).toLocaleDateString()}
+                                                        <div>
+                                                            <div className="font-medium text-gray-900">
+                                                                {client.firstName} {client.lastName}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="space-y-1">
-                                                    <div className="text-sm text-gray-900">{client.email}</div>
-                                                    <div className="text-sm text-gray-500">{client.phone}</div>
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="space-y-1">
-                                                    <div className="text-sm text-gray-900">{client.propertyType}</div>
-                                                    <div className="text-sm text-gray-500">{client.bedrooms} Beds • {client.preferredLocations}</div>
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="text-sm font-medium text-gray-900">
-                                                    ${client.minBudget} - ${client.maxBudget}
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(client.status)}`}>
-                                                    {client.status || 'New'}
-                                                </span>
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            router.push(`/clients/viewclient/${client.id}`);
-                                                        }}
-                                                        className="p-2 hover:bg-blue-50 rounded-lg text-blue-600"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            router.push(`/clients/addclient?clientData=${encodeURIComponent(JSON.stringify(client))}`);
-                                                        }}
-                                                        className="p-2 hover:bg-purple-50 rounded-lg text-purple-600"
-                                                    >
-                                                        <Edit className="h-4 w-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            deleteClient(client.id);
-                                                        }}
-                                                        className="p-2 hover:bg-red-50 rounded-lg text-red-600"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </button>
-                                                </div>
+                                                </td>
+                                                <td className="px-4 py-2">
+                                                    <div className="space-y-1">
+                                                        <div className="text-sm text-gray-900">{client.email}</div>
+                                                        <div className="text-sm text-gray-500">{client.phone}</div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-2">
+                                                    <div className="space-y-1">
+                                                        <div className="text-sm text-gray-900">{client.propertyType}</div>
+                                                        <div className="text-sm text-gray-500">{client.bedrooms} Beds • {client.preferredLocations}</div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-2">
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                        ${client.minBudget} - ${client.maxBudget}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-2">
+                                                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(client.status)}`}>
+                                                        {client.status || 'New'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={(e) => handleViewClient(client.id, e)}
+                                                            className="p-2 hover:bg-blue-50 rounded-lg text-blue-600"
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => handleEditClient(client, e)}
+                                                            className="p-2 hover:bg-purple-50 rounded-lg text-purple-600"
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => handleDeleteClient(client.id, e)}
+                                                            className="p-2 hover:bg-red-50 rounded-lg text-red-600"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={6} className="p-8 text-center">
+                                                <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                                                <p className="text-gray-600">No clients found</p>
+                                                <p className="text-sm text-gray-500 mt-2">
+                                                    {searchVal || activeFilter !== 'all'
+                                                        ? 'Try changing your search or filter'
+                                                        : 'Click "Add Client" to add your first client'}
+                                                </p>
                                             </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>
