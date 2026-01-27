@@ -1,224 +1,3 @@
-// 'use client';
-
-// import Button from "@/components/Button";
-// import Header from "@/components/Header";
-// import { getData, deleleData, auth } from "@/FBConfig/fbFunctions";
-// import { message } from "antd";
-// import { onAuthStateChanged } from "firebase/auth";
-// import { useRouter } from "next/navigation";
-// import { useEffect, useState } from "react";
-
-// export default function ClientsPage() {
-//     interface UserInfo {
-//         uid: string;
-//         email?: string;
-//         name?: string;
-//         [key: string]: any;
-//     }
-
-//     const router = useRouter();
-//     const [clients, setClients] = useState<any[]>([]);
-//     const [searchVal, setSearchVal] = useState<string>('');
-//     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-
-//     useEffect(() => {
-//         const unsubscribe = onAuthStateChanged(auth, (user) => {
-//             if (!user) {
-//                 router.replace("/login");
-//             }
-//         });
-//         return () => unsubscribe();
-//     }, [])
-
-
-//     // Load userInfo from localStorage once
-//     useEffect(() => {
-//         const stored = localStorage.getItem('userInfo');
-//         if (stored) {
-//             try {
-//                 const parsed: UserInfo = JSON.parse(stored);
-//                 getData(`users/${parsed.uid}`)
-//                     .then((res: any) => {
-//                         setUserInfo(res)
-//                     })
-//                     .catch((err: any) => {
-//                         console.error(err.message);
-//                     })
-//                 setUserInfo(parsed);
-//             } catch (err) {
-//                 console.error("Failed to parse userInfo:", err);
-//             }
-//         }
-//     }, []);
-
-//     // Fetch clients once userInfo is available
-//     useEffect(() => {
-//         getData('clients/')
-//             .then((res: any) => {
-//                 if (res) {
-//                     const clientsArray = Object.values(res);
-
-//                     const ownerClients = clientsArray.filter(
-//                         (client: any) => client.ownerUid === userInfo?.uid
-//                     );
-
-//                     setClients(ownerClients);
-//                     console.log('Fetched clients:', ownerClients);
-//                 } else {
-//                     setClients([]);
-//                 }
-//             })
-//             .catch(err => console.log(err));
-//     }, [userInfo]);
-
-//     // Delete client
-//     const deleteClient = (i: number) => {
-//         const client = clients[i];
-//         deleleData(`clients/${client.id}`)
-//             .then(() => {
-//                 const updated = [...clients];
-//                 updated.splice(i, 1);
-//                 setClients(updated);
-//             })
-//             .catch(err => console.log(err));
-//     };
-
-//     // Filter clients based on search input
-//     const filteredClients = clients.filter(client =>
-//         client.firstName.toLowerCase().includes(searchVal.toLowerCase())
-//     );
-
-//     if (!userInfo) {
-//         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-//             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-//         </div>
-//     }
-
-//     return (
-//         <div className="min-h-screen bg-gray-50">
-//             <Header userData={userInfo} />
-
-//             <div className="p-6 max-w-7xl mx-auto">
-//                 {/* Page Header with Stats */}
-//                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-//                     <h1 className="text-3xl font-bold text-gray-900">Clients</h1>
-
-//                     <div className="flex gap-6">
-//                         <div className="text-center">
-//                             <div className="text-2xl font-bold text-gray-900">{clients.length}</div>
-//                             <div className="text-sm text-gray-600">Total Clients</div>
-//                         </div>
-//                         <div className="text-center">
-//                             <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-//                                 {clients.filter(c => c.status === 'active').length}
-//                             </div>
-//                             <div className="text-sm text-gray-600">Active</div>
-//                         </div>
-//                     </div>
-//                 </div>
-
-// {/* Action Bar */}
-// <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-//     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-//         <div className="flex flex-wrap gap-3">
-//             <Button
-//                 label="+ Add Client"
-//                 onClick={() => router.push("/clients/addclient")}
-//                 variant="theme2"
-//                 size="md"
-//             />
-//             <Button
-//                 label="Import Client"
-//                 onClick={() => router.push("/clients/addclient")}
-//                 variant="theme"
-//                 size="md"
-//             />
-//         </div>
-
-//         <div className="flex flex-wrap gap-3">
-//             <input
-//                 type="text"
-//                 value={searchVal}
-//                 placeholder="Search clients..."
-//                 className="border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-//                 onChange={(e) => setSearchVal(e.target.value)}
-//             />
-//         </div>
-//     </div>
-// </div>
-
-//                 {/* Clients Table */}
-//                 <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
-//                     <table className="w-full min-w-[800px]">
-//                         <thead className="bg-gray-100">
-//                             <tr>
-//                                 <th className="text-left p-3 font-semibold text-gray-900">#</th>
-//                                 <th className="text-left p-3 font-semibold text-gray-900">Client Name</th>
-//                                 <th className="text-left p-3 font-semibold text-gray-900">Email</th>
-//                                 <th className="text-left p-3 font-semibold text-gray-900">Phone</th>
-//                                 <th className="text-left p-3 font-semibold text-gray-900">Property Type</th>
-//                                 <th className="text-left p-3 font-semibold text-gray-900">Preferred Locations</th>
-//                                 <th className="text-left p-3 font-semibold text-gray-900">Bedrooms</th>
-//                                 <th className="text-left p-3 font-semibold text-gray-900">Budget</th>
-//                                 <th className="text-left p-3 font-semibold text-gray-900">Source</th>
-//                                 <th className="text-left p-3 font-semibold text-gray-900">Status</th>
-//                                 <th className="text-left p-3 font-semibold text-gray-900">Actions</th>
-//                             </tr>
-//                         </thead>
-//                         <tbody className="divide-y divide-gray-200">
-//                             {filteredClients.length > 0 ? (
-//                                 filteredClients.map((client: any, index: number) => (
-//                                     <tr
-//                                         onClick={() => {
-//                                             router.push(`/clients/viewclient/${client.id}`)
-//                                         }}
-//                                         key={index} className="hover:bg-gray-50">
-//                                         <td className="p-3">{index + 1}</td>
-//                                         <td className="p-3">{client.firstName} {client.lastName}</td>
-//                                         <td className="p-3">{client.email}</td>
-//                                         <td className="p-3">{client.phone}</td>
-//                                         <td className="p-3">{client.propertyType}</td>
-//                                         <td className="p-3">{client.preferredLocations}</td>
-//                                         <td className="p-3">{client.bedrooms}</td>
-//                                         <td className="p-3">{client.minBudget} - {client.maxBudget}</td>
-//                                         <td className="p-3">{client.source}</td>
-//                                         <td className={`p-3 capitalize ${client.status === "active" ? "text-green-500" : client.status === "lost" ? 'text-red-500' : 'text-purple-500'}`}>
-//                                             {client.status}
-//                                         </td>
-//                                         <td className="p-3 flex gap-2">
-//                                             <Button
-//                                                 onClick={(e: any) => {
-//                                                     e.stopPropagation()
-//                                                     router.push(`/clients/addclient?clientData=${encodeURIComponent(JSON.stringify(client))}`)
-//                                                 }}
-//                                                 label='Edit'
-//                                                 size="sm"
-//                                                 variant="theme2"
-//                                             />
-//                                             <Button onClick={(e: any) => {
-//                                                 e.stopPropagation()
-//                                                 deleteClient(index)
-//                                             }} label='Delete' size="sm" variant="theme" />
-//                                         </td>
-//                                     </tr>
-//                                 ))
-//                             ) : (
-//                                 <tr>
-//                                     <td colSpan={12} className="p-8 text-center text-gray-500">
-//                                         No clients found. Click "Add Client" to get started.
-//                                     </td>
-//                                 </tr>
-//                             )}
-//                         </tbody>
-//                     </table>
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// }
-
-
-
 'use client';
 
 import Button from "@/components/Button";
@@ -390,8 +169,22 @@ export default function ClientsPage() {
     ];
     
     const calculateClientsGrowth = useMemo(() => {
+        if (!clients || clients.length === 0) return 0;
 
-    }, [clients])
+        const now = new Date();
+        const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const thisMonthCount = clients.filter((client: any) => {
+            if (!client.createdAt) return false;
+            return new Date(client.createdAt) >= thisMonthStart;
+        }).length;
+
+        const percentage = Math.round(
+            (thisMonthCount / clients.length) * 100
+        );
+
+        return percentage;
+    }, [clients]);
 
     const getStatusColor = (status: string) => {
         switch (status?.toLowerCase()) {
@@ -446,13 +239,13 @@ export default function ClientsPage() {
 
                         {/* Right Side - Quick Stats */}
                         <div className="lg:w-80">
-                            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-5 border border-purple-100  mt-6 sm:mt-3">
-                                <div className="flex items-center justify-between mb-4">
+                            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl px-5 py-4 border border-purple-100  mt-6 sm:mt-3">
+                                <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
                                         <Users className="h-5 w-5 text-purple-600" />
                                         <span className="text-sm font-medium text-gray-700">Client Growth</span>
                                     </div>
-                                    <span className="text-sm font-medium text-green-600">+{18}% this month</span>
+                                    <span className="text-sm font-medium text-green-600">+{calculateClientsGrowth}% this month</span>
                                 </div>
                                 <div className="text-2xl font-bold text-gray-900">{clients.length} Clients</div>
                                 <div className="text-sm text-gray-600 mt-1">Total in your portfolio</div>

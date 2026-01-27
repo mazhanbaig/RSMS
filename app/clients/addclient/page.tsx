@@ -9,6 +9,7 @@ import Button from "@/components/Button";
 import { getData, saveData, updateData } from "@/FBConfig/fbFunctions";
 import { useRouter, useSearchParams } from "next/navigation";
 import { message } from "antd";
+import { Timestamp } from "firebase/firestore";
 
 interface UserInfo {
     uid: string;
@@ -65,7 +66,7 @@ export default function AddClientPage() {
                     .then((res: any) => {
                         setUserInfo(res)
                     })
-                    .catch((err:any) => {
+                    .catch((err: any) => {
                         console.error(err.message);
                     })
                 setUserInfo(parsed);
@@ -92,7 +93,7 @@ export default function AddClientPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = async(e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!userInfo) {
@@ -107,7 +108,7 @@ export default function AddClientPage() {
             return;
         }
 
-        const clientFullData = { ...formData, ownerUid: userInfo.uid };
+        const clientFullData = { ...formData, createdAt: new Date().toISOString(), ownerUid: userInfo.uid };
 
         if (formData.id) {
             // Edit existing client
@@ -120,14 +121,11 @@ export default function AddClientPage() {
         } else {
             // Add new client
             const newId = crypto.randomUUID();
-            await saveData(`clients/${newId}`, {
-                ...clientFullData,
-                id: newId,
-                createdAt: new Date()
-            }).then(() => {
-                message.success("Saved Successfully");
-                router.push("/clients");
-            })
+            saveData(`clients/${newId}`, { ...clientFullData, id: newId })
+                .then(() => {
+                    message.success("Saved Successfully");
+                    router.push("/clients");
+                })
                 .catch(err => console.log(err));
 
             setFormData({
@@ -182,7 +180,7 @@ export default function AddClientPage() {
                             />
                             {activeSection !== "additional" ? (
                                 <Button
-                                    onClick={(e:any) => {
+                                    onClick={(e: any) => {
                                         e.preventDefault()
                                         const idx = sections.indexOf(activeSection);
                                         if (idx < sections.length - 1) setActiveSection(sections[idx + 1]);
