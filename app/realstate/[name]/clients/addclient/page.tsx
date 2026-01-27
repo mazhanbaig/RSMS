@@ -124,7 +124,7 @@ export default function AddClientPage() {
             saveData(`clients/${newId}`, { ...clientFullData, id: newId })
                 .then(() => {
                     message.success("Saved Successfully");
-                    router.push("/clients");
+                    router.push(`/realstate/${userInfo?.uid}/clients`);
                 })
                 .catch(err => console.log(err));
 

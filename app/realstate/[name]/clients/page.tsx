@@ -201,17 +201,17 @@ export default function ClientsPage() {
 
     // Optimized handler functions
     const handleAddClient = useCallback(() => {
-        router.push("/clients/addclient");
+        router.push(`/realstate/${userInfo?.uid}/clients/addclient`);
     }, [router]);
 
     const handleViewClient = useCallback((id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        router.push(`/clients/viewclient/${id}`);
+        router.push(`/realstate/${ userInfo?.uid}/clients/viewclient/${id}`);
     }, [router]);
 
     const handleEditClient = useCallback((client: any, e: React.MouseEvent) => {
         e.stopPropagation();
-        router.push(`/clients/addclient?clientData=${encodeURIComponent(JSON.stringify(client))}`);
+        router.push(`/realstate/${userInfo?.uid}/clients/addclient?clientData=${encodeURIComponent(JSON.stringify(client))}`);
     }, [router]);
 
     const handleDeleteClient = useCallback((id: string, e: React.MouseEvent) => {
@@ -220,7 +220,7 @@ export default function ClientsPage() {
     }, [deleteClient]);
 
     const handleRowClick = useCallback((id: string) => {
-        router.push(`/clients/viewclient/${id}`);
+        router.push(`/realstate/${userInfo?.uid}/clients/viewclient/${id}`);
     }, [router]);
 
     // Early returns for loading states
