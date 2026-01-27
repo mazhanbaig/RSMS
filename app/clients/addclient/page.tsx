@@ -1,176 +1,3 @@
-// "use client";
-
-// import { useContext, useEffect, useState } from "react";
-// import Header from "@/components/Header";
-// import AddClientPart1 from "@/components/AddClientPart1"; // Personal Info
-// import AddClientPart2 from "@/components/AddClientPart2"; // Property Info
-// import AddClientPart3 from "@/components/AddClientPart3"; // Additional Info
-// import Button from "@/components/Button";
-// import { UserContext } from "@/app/context/UserContext";
-// import { saveData, updateData } from "@/FBConfig/fbFunctions";
-// import { useRouter, useSearchParams } from "next/navigation";
-// import { message } from "antd";
-// import router from "next/router";
-
-// export default function AddClientPage() {
-//     interface FormData {
-//         id?: string,
-//         firstName: string,
-//         lastName?: string,
-//         email?: string,
-//         phone: string,
-//         propertyType: string,
-//         minBudget: string,
-//         maxBudget: string,
-//         preferredLocations?: string,
-//         bedrooms: string,
-//         source?: string,
-//         status: string,
-//         notes?: string
-//     }
-
-//     const [formData, setFormData] = useState<FormData>({
-//         id: "",
-//         firstName: "",
-//         lastName: "",
-//         email: "",
-//         phone: "",
-//         propertyType: "",
-//         minBudget: "",
-//         maxBudget: "",
-//         preferredLocations: "",
-//         bedrooms: "",
-//         source: "",
-//         status: "active",
-//         notes: "",
-//     });
-
-//     const [activeSection, setActiveSection] = useState("personal");
-//     const sections = ["personal", "property", "additional"];
-//     const searchParams = useSearchParams();
-//     const userInfo = useContext(UserContext);
-//     let router=useRouter()
-
-//     // Pre-fill form for editing
-//     useEffect(() => {
-//         const clientData = searchParams.get("clientData");
-//         if (clientData) {
-//             const parsedData = JSON.parse(clientData);
-//             setFormData(prev => ({ ...prev, ...parsedData })); // merge to keep id
-//         }
-//     }, [searchParams]);
-
-//     const handleChange = (e: any) => setFormData({ ...formData, [e.target.name]: e.target.value });
-
-//     const handleSubmit = (e: React.FormEvent) => {
-//         e.preventDefault();
-
-//         if (!userInfo) {
-//             message.error("Error User Not Detected!");
-//             return;
-//         }
-
-//         const requiredFields: (keyof FormData)[] = ["firstName", "phone", "propertyType", "minBudget", 'maxBudget', 'bedrooms', 'status'];
-//         const emptyFields = requiredFields.filter(field => !formData[field]?.trim());
-//         if (emptyFields.length > 0) {
-//             alert(`Please fill in: ${emptyFields.join(", ")}`);
-//             return;
-//         }
-
-//         const clientFullData = { ...formData, ownerUid: userInfo?.uid ?? '' };
-
-//         if (formData.id) {
-//             // Editing existing client
-//             updateData(`clients/${formData.id}`, clientFullData)
-//                 .then(() => {
-//                     message.success("Edited Successfully");
-//                     router.push("/owners");
-//                 })
-//                 .catch(err => console.log(err));
-//         } else {
-//             // New client
-//             const newId = crypto.randomUUID();
-//             saveData(`clients/${newId}`, { ...clientFullData, id: newId })
-//                 .then(() => {
-//                     message.success('Saved Successfully')
-//                     router.push("/clients");
-//                 })
-//                 .catch(err => console.log(err));
-
-//             // Reset only after saving new client
-//             setFormData({
-//                 id: "",
-//                 firstName: "",
-//                 lastName: "",
-//                 email: "",
-//                 phone: "",
-//                 propertyType: "",
-//                 minBudget: "",
-//                 maxBudget: "",
-//                 preferredLocations: "",
-//                 bedrooms: "",
-//                 source: "",
-//                 status: "lead",
-//                 notes: "",
-//             });
-//             setActiveSection("personal");
-//         }
-//     };
-
-//     if (!userInfo) return <div className="animate-pulse p-6 min-h-screen flex justify-center items-center text-center">Loading…</div>;
-
-//     return (
-//         <div className="min-h-screen bg-gray-50">
-//             <Header />
-//             <div className="max-w-5xl mx-auto p-6">
-//                 <div className="text-center mb-8 flex-col justify-start items-center">
-//                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Add / Edit Client</h1>
-//                     <p className="text-gray-600">Enter client details step by step</p>
-//                 </div>
-
-//                 <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6">
-//                     <form onSubmit={handleSubmit} className="space-y-6">
-//                         {activeSection === "personal" && <AddClientPart1 formData={formData} handleChange={handleChange} />}
-//                         {activeSection === "property" && <AddClientPart2 formData={formData} handleChange={handleChange} />}
-//                         {activeSection === "additional" && <AddClientPart3 formData={formData} handleChange={handleChange} />}
-
-//                         <div className="flex justify-between mt-6">
-//                             <Button
-//                                 label='Previous'
-//                                 onClick={() => {
-//                                     const idx = sections.indexOf(activeSection);
-//                                     if (idx > 0) setActiveSection(sections[idx - 1]);
-//                                 }}
-//                                 variant="secondary"
-//                                 classNameC="rounded w-23"
-//                                 size="md"
-//                             />
-
-//                             {activeSection !== "additional" ? (
-//                                 <Button
-//                                     onClick={() => {
-//                                         const idx = sections.indexOf(activeSection);
-//                                         if (idx < sections.length - 1) setActiveSection(sections[idx + 1]);
-//                                     }}
-//                                     label="Next"
-//                                     size="md"
-//                                     variant="theme"
-//                                 />
-//                             ) : (
-//                                 <Button
-//                                     label={"Save Client"}
-//                                     type="submit"
-//                                     size="md"
-//                                     variant="theme2"
-//                                 />
-//                             )}
-//                         </div>
-//                     </form>
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// }
 "use client";
 
 import { ChangeEvent, useEffect, useState } from "react";
@@ -265,7 +92,7 @@ export default function AddClientPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async(e: React.FormEvent) => {
         e.preventDefault();
 
         if (!userInfo) {
@@ -293,11 +120,14 @@ export default function AddClientPage() {
         } else {
             // Add new client
             const newId = crypto.randomUUID();
-            saveData(`clients/${newId}`, { ...clientFullData, id: newId })
-                .then(() => {
-                    message.success("Saved Successfully");
-                    router.push("/clients");
-                })
+            await saveData(`clients/${newId}`, {
+                ...clientFullData,
+                id: newId,
+                createdAt: new Date()
+            }).then(() => {
+                message.success("Saved Successfully");
+                router.push("/clients");
+            })
                 .catch(err => console.log(err));
 
             setFormData({

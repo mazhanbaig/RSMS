@@ -813,46 +813,6 @@ export default function AdminDashboardPage() {
                                         </div>
                                     </div> */}
                                 </div>
-
-                                {/* Right Side - Time/Date */}
-                                <div className="lg:w-64">
-                                    <div className=" rounded-xl -mt-5 sm:mt-0 p-5">
-                                        <div className="space-y-2 flex justify-start items-center gap-2 sm:block">
-                                            {/* Time */}
-                                            <div className="space-y-1">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="p-1.5 rounded-lg bg-blue-50">
-                                                        <Clock className="h-3.5 w-3.5 text-blue-600" />
-                                                    </div>
-                                                    <span className="text-xs font-medium text-gray-500">Current Time</span>
-                                                </div>
-                                                <div className="text-lg font-bold text-gray-900">
-                                                    {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                </div>
-                                            </div>
-
-                                            {/* Separator */}
-                                            <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
-
-                                            {/* Date */}
-                                            <div className="relative -top-1.5 space-y-1">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="p-1.5 rounded-lg bg-purple-50">
-                                                        <Calendar className="h-3.5 w-3.5 text-purple-600" />
-                                                    </div>
-                                                    <span className="text-xs font-medium text-gray-500">Today's Date</span>
-                                                </div>
-                                                <div className="text-lg font-bold text-gray-900">
-                                                    {new Date().toLocaleDateString('en-US', {
-                                                        weekday: 'short',
-                                                        month: 'short',
-                                                        day: 'numeric'
-                                                    })}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>

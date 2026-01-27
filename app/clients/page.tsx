@@ -227,7 +227,7 @@ import { getData, deleleData, auth } from "@/FBConfig/fbFunctions";
 import { message } from "antd";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     Users, Search, Filter, Plus, MoreVertical,
     Mail, Phone, MapPin, Calendar, UserCheck,
@@ -388,6 +388,10 @@ export default function ClientsPage() {
         { id: "converted", label: "Converted", count: clients.filter(c => c.status === 'converted').length },
         { id: "lost", label: "Lost", count: clients.filter(c => c.status === 'lost').length }
     ];
+    
+    const calculateClientsGrowth = useMemo(() => {
+
+    }, [clients])
 
     const getStatusColor = (status: string) => {
         switch (status?.toLowerCase()) {
@@ -442,13 +446,13 @@ export default function ClientsPage() {
 
                         {/* Right Side - Quick Stats */}
                         <div className="lg:w-80">
-                            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-5 border border-purple-100">
+                            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-5 border border-purple-100  mt-6 sm:mt-3">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
                                         <Users className="h-5 w-5 text-purple-600" />
                                         <span className="text-sm font-medium text-gray-700">Client Growth</span>
                                     </div>
-                                    <span className="text-sm font-medium text-green-600">+18% this month</span>
+                                    <span className="text-sm font-medium text-green-600">+{18}% this month</span>
                                 </div>
                                 <div className="text-2xl font-bold text-gray-900">{clients.length} Clients</div>
                                 <div className="text-sm text-gray-600 mt-1">Total in your portfolio</div>
