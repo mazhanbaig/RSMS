@@ -16,7 +16,7 @@ export default function HomeHeader() {
     ];
 
     return (
-        <nav className="relative z-50 top-5 right-5 left-5 w-[95%] max-w-6xl bg-white/80 backdrop-blur-lg shadow-lg px-6 py-3 flex justify-between items-center rounded-xl border border-gray-100">
+        <nav className="relative z-50 top-5 left-5 w-[95%] max-w-6xl bg-white/80 backdrop-blur-lg shadow-lg px-6 py-3 flex justify-between items-center rounded-xl border border-gray-100">
             {/* Logo */}
             <Link href="/" className="text-2xl font-extrabold text-gray-900 uppercase hover:opacity-80 transition-opacity">
                 Zstate
