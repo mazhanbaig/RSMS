@@ -210,7 +210,7 @@ export default function HomePage() {
               <div className="relative h-[500px] lg:h-[600px] w-full rounded-3xl overflow-hidden shadow-2xl">
                 {/* Image placeholder - Replace with your actual image */}
                 <Image
-                  src="/images/realstatepic.jpg"
+                  src="/images/realstatepicture.jpg"
                   alt="Modern real estate building"
                   fill
                   className="object-cover"
