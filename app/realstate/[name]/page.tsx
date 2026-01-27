@@ -965,7 +965,7 @@ export default function AdminDashboardPage() {
                                     label="View All"
                                     variant="theme2"
                                     size="sm"
-                                    onClick={() => navigateTo('/properties')}
+                                    onClick={() => navigateTo(`/realstate/${userInfo?.uid}/properties`)}
                                 />
                             </div>
 
@@ -1048,7 +1048,7 @@ export default function AdminDashboardPage() {
                                     label="View All"
                                     variant="theme2"
                                     size="sm"
-                                    onClick={() => navigateTo('/clients')}
+                                    onClick={() => navigateTo(`/realstate/${userInfo?.uid}/clients`)}
                                 />
                             </div>
 
@@ -1104,7 +1104,7 @@ export default function AdminDashboardPage() {
                                     label="View All"
                                     variant="theme2"
                                     size="sm"
-                                    onClick={() => navigateTo('/owners')}
+                                    onClick={() => navigateTo(`/realstate/${userInfo?.uid}/owners`)}
                                 />
                             </div>
 

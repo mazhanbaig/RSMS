@@ -19,15 +19,11 @@ export default function Header({ userData }: { userData?: Partial<UserInfo> | nu
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const router = useRouter();
 
-    const cleanName = userData?.name
-        ? userData.name.trim().toLowerCase().replace(/\s+/g, "-")
-        : "user";
-
     const navLinks = [
-        { label: "Dashboard", href: `/realstate/${cleanName}` },
-        { label: "Properties", href: "/properties" },
-        { label: "Clients", href: "/clients" },
-        { label: "Owners", href: "/owners" },
+        { label: "Dashboard", href: `/realstate/${userData?.uid}` },
+        { label: "Properties", href: `/realstate/${userData?.uid}/properties` },
+        { label: "Clients", href: `/realstate/${userData?.uid}/clients` },
+        { label: "Owners", href: `/realstate/${userData?.uid}/owners` },
     ];
 
     return (

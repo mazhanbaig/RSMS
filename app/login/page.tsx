@@ -14,7 +14,20 @@ export default function LoginPage() {
     const handleGoogleLogin = async () => {
         setLoading(true);
         try {
-            await signInWithGoogle();
+            const res:any = await signInWithGoogle();
+            message.success('Login Successful!');
+
+            localStorage.setItem(
+                "userInfo",
+                JSON.stringify({
+                    uid: res.user.uid,
+                    email: res.user.email,
+                    name: res.user.displayName,
+                })
+            );
+
+            window.location.replace(`/realstate/${res.user.uid}`);
+
         } catch (err: any) {
             console.error("Google login error:", err);
             message.error(err?.message || "Login failed");

@@ -111,11 +111,9 @@ export default function HomePage() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        // User is not authenticated, show home page
         setIsAuthenticated(false);
         setLoading(false);
       } else {
-        // User is authenticated, get their info and redirect
         setIsAuthenticated(true);
         try {
           const storedUser = localStorage.getItem('userInfo');

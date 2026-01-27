@@ -25,10 +25,7 @@ export default function Signup() {
         })
       );
       message.success('Account Created Successfully');
-
-      const userName = res.user.displayName || "user";
-      const cleanName = userName.trim().toLowerCase().replace(/\s+/g, "-");
-      window.location.replace(`/realstate/${cleanName}`);
+      window.location.replace(`/realstate/${res.user.uid}`);
     } catch (err: any) {
       console.log("Google signup error:", err.message);
       message.error('Error While Signup');
