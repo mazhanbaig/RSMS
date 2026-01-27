@@ -31,7 +31,7 @@
 //         getData(`users/${userInfo.uid}`)
 //         .then((res:any)=>{
 
-          
+
 //           router.replace(`/realstate/${res.name}`)
 //         })
 //       }
@@ -99,6 +99,7 @@ import {
   CreditCard
 } from "lucide-react";
 import HomeHeader from "@/components/HomeHeader";
+import Image from "next/image";
 
 export default function HomePage() {
   const router = useRouter();
@@ -119,8 +120,8 @@ export default function HomePage() {
         try {
           const storedUser = localStorage.getItem('userInfo');
           if (storedUser) {
-            const parsedUser:any = JSON.parse(storedUser);
-            const userData:any = await getData(`users/${parsedUser.uid}`);
+            const parsedUser: any = JSON.parse(storedUser);
+            const userData: any = await getData(`users/${parsedUser.uid}`);
             setUserInfo(userData);
             router.replace(`/realstate/${userData.name}`);
           }
@@ -149,63 +150,76 @@ export default function HomePage() {
     <div className="min-h-screen bg-white">
       <HomeHeader />
 
-      {/* Hero Section */}
-      <section className="relative pt-15 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        {/* Background Effects */}
-        {/* <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl hidden sm:block" /> */}
-        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl hidden sm:block" />
-        <div className="absolute top-1/2 left-1/4 w-80 h-80 bg-gradient-to-r from-purple-100/20 to-blue-100/20 rounded-full blur-3xl" />
-
+      {/* Hero Section with Image */}
+      <section className="relative pt-10 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <div className="relative max-w-7xl mx-auto">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200 mb-6">
-              <Sparkles className="w-4 h-4 text-purple-600" />
-              <span className="text-sm font-medium text-purple-700">Trusted by Real Estate Professionals</span>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column - Text Content */}
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200 mb-6">
+                <Sparkles className="w-4 h-4 text-purple-600" />
+                <span className="text-sm font-medium text-purple-700">Trusted by Real Estate Professionals</span>
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+                The Professional <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Real Estate</span> Management Platform
+              </h1>
+
+              <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+                Built specifically for real estate agents and property dealers to manage clients, properties,
+                and deals efficiently from one unified platform. Save time, reduce costs, and grow your business.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 mb-10">
+                <Button
+                  label="Get Started Free"
+                  size="lg"
+                  variant="theme2"
+                  onClick={() => router.push("/signup")}
+                  icon={<ArrowRight className="ml-2 w-5 h-5" />}
+                  classNameC="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+                />
+                <Button
+                  label="View Demo"
+                  size="lg"
+                  variant="theme2"
+                  onClick={() => router.push("/tutorial")}
+                />
+              </div>
+
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-10">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-slate-900 mb-1">24/7</div>
+                  <div className="text-sm text-slate-600">Access</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-slate-900 mb-1">100%</div>
+                  <div className="text-sm text-slate-600">Cloud Based</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-slate-900 mb-1">$0</div>
+                  <div className="text-sm text-slate-600">Startup Cost</div>
+                </div>
+              </div>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-              The Professional <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Real Estate</span><br />
-              Management Platform
-            </h1>
-
-            <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto mb-10 leading-relaxed">
-              Built specifically for real estate agents and property dealers to manage clients, properties,
-              and deals efficiently from one unified platform.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-              <Button
-                label="Get Started Free"
-                size="lg"
-                variant="theme2"
-                onClick={() => router.push("/signup")}
-                icon={<ArrowRight className="ml-2 w-5 h-5" />}
-                classNameC="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
-              />
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-              <div className="bg-white px-6 py-3 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
-                <UsersRound className="w-8 h-8 text-purple-600 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-slate-900 mb-1">Organized</div>
-                <div className="text-slate-600">Client Management</div>
+            {/* Right Column - Image */}
+            <div className="relative hidden lg:block">
+              {/* Main Image Container */}
+              <div className="relative h-[500px] lg:h-[600px] w-full rounded-3xl overflow-hidden shadow-2xl">
+                {/* Image placeholder - Replace with your actual image */}
+                <Image
+                  src="/images/realstatepic.jpg"
+                  alt="Modern real estate building"
+                  fill
+                  className="object-cover"
+                  priority
+                />
               </div>
-              <div className="bg-white px-6 py-3 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
-                <Building className="w-8 h-8 text-blue-600 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-slate-900 mb-1">Complete</div>
-                <div className="text-slate-600">Property Dashboard</div>
-              </div>
-              <div className="bg-white px-6 py-3 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
-                <Video className="w-8 h-8 text-green-600 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-slate-900 mb-1">Virtual</div>
-                <div className="text-slate-600">Property Showings</div>
-              </div>
-              <div className="bg-white px-6 py-3 rounded-2xl shadow-lg text-center hover:shadow-xl transition-shadow border border-slate-100">
-                <Database className="w-8 h-8 text-orange-600 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-slate-900 mb-1">Smart</div>
-                <div className="text-slate-600">CRM Integration</div>
-              </div>
+              {/* Decorative Elements */}
+              <div className="absolute -top-4 -right-4 w-32 h-32 bg-gradient-to-r from-purple-200 to-blue-200 rounded-full blur-2xl -z-10" />
+              <div className="absolute -bottom-4 -left-4 w-40 h-40 bg-gradient-to-r from-blue-100 to-cyan-100 rounded-full blur-2xl -z-10" />
             </div>
           </div>
         </div>
