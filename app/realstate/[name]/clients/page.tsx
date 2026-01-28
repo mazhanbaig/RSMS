@@ -10,7 +10,9 @@ import { useEffect, useMemo, useCallback, useState } from "react";
 import {
     Users, Eye, Edit,
     Trash2, DollarSign, TrendingUp,
-    UserCheck
+    UserCheck,
+    Import,
+    Layers
 } from "lucide-react";
 import React from "react";
 import Loader from "@/components/Loader";
@@ -281,13 +283,15 @@ export default function ClientsPage() {
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div className="flex flex-wrap gap-3">
                             <Button
-                                label="+ Add Client"
+                                label="Add Client"
+                                icon={<Layers className="w-4 h-4" />}
                                 onClick={handleAddClient}
                                 variant="theme2"
                                 size="md"
                             />
                             <Button
                                 label="Import Client"
+                                icon={<Import className="w-4 h-4" />}
                                 onClick={handleAddClient}
                                 variant="theme"
                                 size="md"

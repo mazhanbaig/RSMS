@@ -115,7 +115,7 @@ export default function AddClientPage() {
             updateData(`clients/${formData.id}`, clientFullData)
                 .then(() => {
                     message.success("Edited Successfully");
-                    router.push("/clients");
+                    router.push(`/realstate/${userInfo?.uid}/clients`);
                 })
                 .catch(err => console.log(err));
         } else {

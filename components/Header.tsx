@@ -20,6 +20,7 @@ export default function Header({ userData }: { userData?: Partial<UserInfo> | nu
     const router = useRouter();
 
     const navLinks = [
+        // { label: "Home", href: `/` },
         { label: "Dashboard", href: `/realstate/${userData?.uid}` },
         { label: "Properties", href: `/realstate/${userData?.uid}/properties` },
         { label: "Clients", href: `/realstate/${userData?.uid}/clients` },

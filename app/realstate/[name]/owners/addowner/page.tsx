@@ -70,12 +70,12 @@ export default function AddOwnerPage() {
 
         if (formData.id) {
             updateData(`owners/${formData.id}`, ownerFullData)
-                .then(() => { message.success("Edited Successfully"); router.push("/owners"); })
+                .then(() => { message.success("Edited Successfully"); router.push(`/realstate/${userInfo?.uid}/owners`); })
                 .catch(console.log);
         } else {
             const newId = crypto.randomUUID();
             saveData(`owners/${newId}`, { ...ownerFullData, id: newId })
-                .then(() => { message.success("Saved Successfully"); router.push("/owners"); })
+                .then(() => { message.success("Saved Successfully"); router.push(`/realstate/${userInfo?.uid}/owners`); })
                 .catch(console.log);
         }
     };

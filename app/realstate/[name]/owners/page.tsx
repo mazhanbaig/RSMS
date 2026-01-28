@@ -200,8 +200,11 @@ import Loader from "@/components/Loader";
 import {
     Users, Search, Eye, Edit, Trash2,
     Mail, Phone, Home, DollarSign, Calendar,
-    TrendingUp, UserCheck, Building
+    TrendingUp, UserCheck, Building,
+    Import,
+    Layers
 } from "lucide-react";
+import { message } from "antd";
 
 export default function OwnersPage() {
     const router = useRouter();
@@ -260,7 +263,7 @@ export default function OwnersPage() {
                     }
                 })
                 .catch(err => {
-                    console.log("Error fetching owners:", err);
+                    message.error('Error ccured')
                     setLoading(false);
                 });
         }
@@ -272,7 +275,9 @@ export default function OwnersPage() {
                 .then(() => {
                     setOwners(prev => prev.filter(owner => owner.id !== id));
                 })
-                .catch(console.error);
+                .catch((error) => {
+                    message.error('Error while deleleting owner')
+                });
         }
     };
 
@@ -292,7 +297,7 @@ export default function OwnersPage() {
             return matchesSearch && matchesFilter;
         });
     }, [owners, searchVal, activeFilter]);
-    
+
     // Status filters
     const statusFilters = [
         { id: "all", label: "All Owners", count: owners.length },
@@ -386,14 +391,16 @@ export default function OwnersPage() {
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div className="flex flex-wrap gap-3">
                             <Button
-                                label="+ Add Owner"
-                                onClick={() => router.push("/owners/addowner")}
+                                label="Add Owner"
+                                icon={<Layers className="w-4 h-4" />}
+                                onClick={() => router.push(`/realstate/${userInfo?.uid}/owners/addowner`)}
                                 variant="theme2"
                                 size="md"
                             />
                             <Button
-                                label="+ Import Owner"
-                                onClick={() => router.push("/owners/addowner")}
+                                label="Import Owner"
+                                icon={<Import className="w-4 h-4" />}
+                                onClick={() => router.push(`/realstate/${userInfo?.uid}/owners/addowner`)}
                                 variant="theme"
                                 size="md"
                             />
@@ -417,8 +424,8 @@ export default function OwnersPage() {
                                 key={filter.id}
                                 onClick={() => setActiveFilter(filter.id)}
                                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${activeFilter === filter.id
-                                        ? 'bg-purple-600 text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-purple-600 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                             >
                                 {filter.label}
@@ -457,7 +464,7 @@ export default function OwnersPage() {
                                             <tr
                                                 key={owner.id}
                                                 className="hover:bg-gray-50 cursor-pointer"
-                                                onClick={() => router.push(`/owners/viewowner/${owner.id}`)}
+                                                onClick={() => router.push(`/realstate/${userInfo?.uid}/owners/viewowner/${owner.id}`)}
                                             >
                                                 <td className="px-4 py-2">
                                                     <div className="flex items-center gap-3">
@@ -469,9 +476,6 @@ export default function OwnersPage() {
                                                         <div>
                                                             <div className="font-medium text-gray-900">
                                                                 {owner.firstName} {owner.lastName}
-                                                            </div>
-                                                            <div className="text-sm text-gray-500">
-                                                                Added: {owner.createdAt ? new Date(owner.createdAt).toLocaleDateString() : 'N/A'}
                                                             </div>
                                                         </div>
                                                     </div>
