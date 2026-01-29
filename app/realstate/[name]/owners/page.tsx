@@ -357,7 +357,7 @@ export default function OwnersPage() {
                                     <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
                                         Owner's{' '}
                                         <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                                            Portfolio
+                                            Directory
                                         </span>
                                     </h1>
                                     <p className="text-gray-600 mt-2 max-w-xl">

@@ -377,7 +377,7 @@ export default function ViewClientPage() {
                                     <div>
                                         <h3 className="text-xl font-semibold text-gray-900 mb-4">Client Overview</h3>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="px-4 py-2 rounded-lg bg-gray-50">
+                                            <div className="px-4 pt-2 pb-2 rounded-lg bg-gray-50">
                                                 <div className="flex items-center gap-3 mb-3">
                                                     <div className="p-2 bg-purple-100 rounded-lg">
                                                         <DollarSign className="w-4 h-4 text-purple-600" />
@@ -390,7 +390,7 @@ export default function ViewClientPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="px-4 py-2  rounded-lg bg-gray-50">
+                                            <div className="px-4 pt-2 pb-2  rounded-lg bg-gray-50">
                                                 <div className="flex items-center gap-3 mb-3">
                                                     <div className="p-2 bg-blue-100 rounded-lg">
                                                         <Home className="w-4 h-4 text-blue-600" />
@@ -401,7 +401,7 @@ export default function ViewClientPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="px-4 py-2  rounded-lg bg-gray-50">
+                                            <div className="px-4 pt-2 pb-2  rounded-lg bg-gray-50">
                                                 <div className="flex items-center gap-3 mb-3">
                                                     <div className="p-2 bg-green-100 rounded-lg">
                                                         <Bed className="w-4 h-4 text-green-600" />
@@ -412,7 +412,7 @@ export default function ViewClientPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="px-4 py-2  rounded-lg bg-gray-50">
+                                            <div className="px-4 pt-2 pb-2  rounded-lg bg-gray-50">
                                                 <div className="flex items-center gap-3 mb-3">
                                                     <div className="p-2 bg-amber-100 rounded-lg">
                                                         <Layers className="w-4 h-4 text-amber-600" />
@@ -428,7 +428,7 @@ export default function ViewClientPage() {
 
                                     <div>
                                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Property Preferences</h3>
-                                        <div className="p-4 rounded-lg border border-gray-200">
+                                        <div className="px-4 py-1 rounded-lg border border-gray-200">
                                             <div className="flex items-center gap-3 mb-3">
                                                 <MapPin className="w-5 h-5 text-blue-600" />
                                                 <div>
@@ -502,7 +502,7 @@ export default function ViewClientPage() {
                                             onClick={async () => {
                                                 if (newNote.trim()) {
                                                     try {
-                                                        const updatedNotes = client.notes ? `${client.notes}\n\n${newNote}` : newNote;
+                                                        const updatedNotes =`${newNote}`;
                                                         await updateData(`clients/${id}`, { ...client, notes: updatedNotes });
                                                         setClient(prev => prev ? { ...prev, notes: updatedNotes } : null);
                                                         setNewNote('');
@@ -521,7 +521,7 @@ export default function ViewClientPage() {
                                             onChange={(e) => setNewNote(e.target.value)}
                                             placeholder="Add a new note..."
                                             className="w-full h-32 p-4 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors resize-none"
-                                            rows={4}
+                                            rows={3}
                                         />
                                     </div>
 
@@ -538,7 +538,7 @@ export default function ViewClientPage() {
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="text-center py-8 text-gray-500">
+                                        <div className="text-center py-1 text-gray-500">
                                             <MessageSquare className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                                             <p>No notes yet. Add your first note above.</p>
                                         </div>

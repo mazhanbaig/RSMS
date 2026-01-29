@@ -208,7 +208,7 @@ export default function ClientsPage() {
 
     const handleViewClient = useCallback((id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        router.push(`/realstate/${ userInfo?.uid}/clients/viewclient/${id}`);
+        router.push(`/realstate/${userInfo?.uid}/clients/viewclient/${id}`);
     }, [router]);
 
     const handleEditClient = useCallback((client: any, e: React.MouseEvent) => {
@@ -249,9 +249,9 @@ export default function ClientsPage() {
                             <div className="space-y-3">
                                 <div>
                                     <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                                        Client {''}
+                                        Client's {''}
                                         <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                                            Portfolio
+                                            Directory
                                         </span>
                                     </h1>
                                     <p className="text-gray-600 mt-2 max-w-xl">

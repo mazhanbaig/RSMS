@@ -121,7 +121,7 @@ export default function HomePage() {
             const parsedUser: any = JSON.parse(storedUser);
             const userData: any = await getData(`users/${parsedUser.uid}`);
             setUserInfo(userData);
-            router.replace(`/realstate/${userData.name}`);
+            router.replace(`/realstate/${userData.uid}`);
           }
         } catch (error) {
           console.error("Error fetching user data:", error);

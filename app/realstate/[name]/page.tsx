@@ -135,7 +135,7 @@ export default function AdminDashboardPage() {
             description: "Register new clients",
             textColor: "text-blue-600",
             bgColor: "bg-gradient-to-br from-blue-100 to-blue-50",
-            path: '/clients/addclient',
+            path: `/realstate/${userInfo?.uid}/clients/addclient`,
         },
         {
             icon: <Building className="h-6 w-6" />,
@@ -143,7 +143,7 @@ export default function AdminDashboardPage() {
             description: "Add property owners",
             textColor: "text-purple-600",
             bgColor: "bg-gradient-to-br from-purple-100 to-purple-50",
-            path: '/owners/addowner',
+            path: `/realstate/${userInfo?.uid}/owners/addowner`,
         },
         {
             icon: <Home className="h-6 w-6" />,
@@ -151,7 +151,7 @@ export default function AdminDashboardPage() {
             description: "List new properties",
             textColor: "text-green-600",
             bgColor: "bg-gradient-to-br from-green-100 to-green-50",
-            path: '/properties/addproperty',
+            path: `/realstate/${userInfo?.uid}/properties/addproperty`,
         },
         {
             icon: <DollarSign className="h-6 w-6" />,
@@ -159,7 +159,7 @@ export default function AdminDashboardPage() {
             description: "View performance insights",
             textColor: "text-amber-600",
             bgColor: "bg-gradient-to-br from-amber-100 to-amber-50",
-            path: '/analytics',
+            path: '',
         },
     ], []);
 
@@ -213,15 +213,15 @@ export default function AdminDashboardPage() {
     }, [router]);
 
     const navigateToClient = useCallback((id: string) => {
-        router.push(`/clients/viewclient/${id}`);
+        router.push(`/realstate/${userInfo?.uid}/clients/viewclient/${id}`);        
     }, [router]);
 
     const navigateToProperty = useCallback((id: string) => {
-        router.push(`/properties/viewproperty/${id}`);
+        router.push(`/realstate/${userInfo?.uid}/properties/viewproperty/${id}`);
     }, [router]);
 
     const navigateToOwner = useCallback((id: string) => {
-        router.push(`/owners/viewowner/${id}`);
+        router.push(`/realstate/${userInfo?.uid}/owners/viewowner/${id}`);
     }, [router]);
 
     // Quick action handler
