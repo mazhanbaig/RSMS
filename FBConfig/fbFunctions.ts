@@ -1,5 +1,5 @@
 import { app } from '@/FBConfig/config'
-import { getAuth, signOut, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, signOut, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "firebase/auth";
 import { getDatabase, ref, set, get, remove, update } from "firebase/database";
 
 export const auth = getAuth(app);
@@ -34,6 +34,14 @@ const signInWithGoogle = () => {
 
 let logout = () => {
   return signOut(auth);
+};
+
+const checkUserSession = () => {
+  return new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+      resolve(user ? user : null);
+    });
+  });
 };
 
 // ---------------- GET DATA ----------------
@@ -108,6 +116,7 @@ const uploadImagesToCloudinary = async (files: File[]) => {
 export {
   signInWithGoogle,
   logout,
+  checkUserSession,
   getData,
   saveData,
   deleleData,

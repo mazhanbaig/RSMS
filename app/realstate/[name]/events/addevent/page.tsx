@@ -341,7 +341,7 @@ export default function AddEventPage() {
               {/* Event Type Selection */}
               <div className="bg-white rounded-lg border border-gray-200 px-5 py-4 shadow-sm">
                 <label className="flex items-center gap-3 text-lg font-semibold text-gray-900 mb-4">
-                  <span><ListFilter size={22} className="text-gray-700" />
+                  <span><ListFilter size={22} className="w-5 h-5 text-purple-600" />
 </span>
                   <span>Select Event Type</span>
                 </label>
@@ -371,7 +371,7 @@ export default function AddEventPage() {
               {/* Client Selection */}
               <div className="bg-white rounded-lg border border-gray-200 px-5 py-4 shadow-sm">
                 <label className="flex items-center gap-3 text-lg font-semibold text-gray-900 mb-3">
-                  <User size={22} className="text-gray-700" />
+                  <User size={22} className="w-5 h-5 text-purple-600" />
                   <span>Select Client</span>
                   {selectedClient && (
                     <span className="ml-2 text-sm text-gray-600">
@@ -425,7 +425,7 @@ export default function AddEventPage() {
               <div className="bg-white rounded-lg border border-gray-200 px-5 py-4 shadow-sm">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 text-lg font-semibold text-gray-900 mb-4">
-                    <PenLine size={22} className="text-gray-700" />
+                    <PenLine size={22} className="w-5 h-5 text-purple-600" />
                     <span>Event Description</span>
                   </div>
                   <div>
@@ -437,7 +437,7 @@ export default function AddEventPage() {
                       value={formData.title}
                       onChange={(e) => handleInputChange('title', e.target.value)}
                       placeholder="e.g., Property Viewing - Luxury Villa"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors"
+                      className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors"
                       required
                     />
                   </div>
@@ -453,7 +453,7 @@ export default function AddEventPage() {
                         value={formData.propertyAddress}
                         onChange={(e) => handleInputChange('propertyAddress', e.target.value)}
                         placeholder="Enter full property address"
-                        className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors"
+                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors"
                         required
                       />
                     </div>
@@ -468,7 +468,7 @@ export default function AddEventPage() {
                       onChange={(e) => handleInputChange('description', e.target.value)}
                       placeholder="Brief description of the event..."
                       rows={3}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors resize-none"
+                      className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors resize-none"
                     />
                   </div>
                 </div>
@@ -576,7 +576,7 @@ export default function AddEventPage() {
                     onChange={(e) => handleInputChange('notes', e.target.value)}
                     placeholder="Add any special instructions, requirements, or notes for this event..."
                     rows={4}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors resize-none"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors resize-none"
                   />
                 </div>
               </div>

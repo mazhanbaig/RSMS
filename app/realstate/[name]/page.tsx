@@ -6,7 +6,7 @@ import {
     Users, Home, DollarSign, Building, PhoneCall,
     MessageSquare, Mail, ChevronRight, Bed, Bath, Crown
 } from "lucide-react"
-import { auth, getData } from "@/FBConfig/fbFunctions"
+import { auth, checkUserSession, getData } from "@/FBConfig/fbFunctions"
 import { onAuthStateChanged } from "firebase/auth"
 import Loader from "@/components/Loader"
 import Header from "@/components/Header"
@@ -37,8 +37,10 @@ export default function AdminDashboardPage() {
 
     // Optimized auth check
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        const checkAuth = async () => {
+            let user = await checkUserSession()
             if (!user) {
+                message.error('Please Login First')
                 router.replace('/login');
             } else {
                 try {
@@ -52,9 +54,8 @@ export default function AdminDashboardPage() {
                     message.error('Error occurred')
                 }
             }
-        });
+        }
 
-        return () => unsubscribe();
     }, [router]);
 
     // Optimized data fetching with single call
@@ -213,7 +214,7 @@ export default function AdminDashboardPage() {
     }, [router]);
 
     const navigateToClient = useCallback((id: string) => {
-        router.push(`/realstate/${userInfo?.uid}/clients/viewclient/${id}`);        
+        router.push(`/realstate/${userInfo?.uid}/clients/viewclient/${id}`);
     }, [router]);
 
     const navigateToProperty = useCallback((id: string) => {

@@ -50,11 +50,9 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import Header from "@/components/Header";
 import Button from "@/components/Button";
 import Loader from "@/components/Loader";
-import { auth, getData } from "@/FBConfig/fbFunctions";
-import { onAuthStateChanged } from "firebase/auth";
+import { checkUserSession, getData } from "@/FBConfig/fbFunctions";
 import { useRouter } from "next/navigation";
 import {
   Building,
@@ -109,29 +107,39 @@ export default function HomePage() {
 
   // Check authentication status
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const checkAuth = async () => {
+      setLoading(true);
+
+      const user = await checkUserSession();
+
       if (!user) {
         setIsAuthenticated(false);
         setLoading(false);
-      } else {
-        setIsAuthenticated(true);
-        try {
-          const storedUser = localStorage.getItem('userInfo');
-          if (storedUser) {
-            const parsedUser: any = JSON.parse(storedUser);
-            const userData: any = await getData(`users/${parsedUser.uid}`);
-            setUserInfo(userData);
-            router.replace(`/realstate/${userData.uid}`);
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-          setLoading(false);
-        }
+        return;
       }
-    });
 
-    return () => unsubscribe();
+      setIsAuthenticated(true);
+
+      try {
+        const storedUser = localStorage.getItem("userInfo");
+
+        if (storedUser) {
+          const parsedUser: any = JSON.parse(storedUser);
+          const userData: any = await getData(`users/${parsedUser.uid}`);
+
+          setUserInfo(userData);
+          router.replace(`/realstate/${userData.uid}`);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
   }, [router]);
+
 
   // If loading, show loader
   if (loading) {
