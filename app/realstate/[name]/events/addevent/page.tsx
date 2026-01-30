@@ -7,7 +7,10 @@ import {
   Calendar, Clock, MapPin, Users, Home, DollarSign,
   ArrowLeft, Plus, X, PhoneCall, Mail, MessageSquare,
   Building, Target, Eye, Key, Bell, FileText,
-  User, HomeIcon, Briefcase, Layers
+  User, HomeIcon, Briefcase, Layers,
+  Presentation,
+  ListFilter,
+  PenLine
 } from "lucide-react";
 import Header from "@/components/Header";
 import Button from "@/components/Button";
@@ -301,16 +304,6 @@ export default function AddEventPage() {
                 </p>
               </div>
             </div>
-
-            <div className="flex items-center gap-3">
-              <Button
-                label="Fill Example"
-                variant="theme2"
-                size="sm"
-                onClick={fillExampleData}
-                disabled={clients.length === 0}
-              />
-            </div>
           </div>
 
           {/* Progress Steps */}
@@ -346,9 +339,11 @@ export default function AddEventPage() {
             {/* Left Column */}
             <div className="space-y-6">
               {/* Event Type Selection */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                <label className="block text-lg font-semibold text-gray-900 mb-4">
-                  Select Event Type
+              <div className="bg-white rounded-lg border border-gray-200 px-5 py-4 shadow-sm">
+                <label className="flex items-center gap-3 text-lg font-semibold text-gray-900 mb-4">
+                  <span><ListFilter size={22} className="text-gray-700" />
+</span>
+                  <span>Select Event Type</span>
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {eventTypes.map((type) => (
@@ -374,9 +369,10 @@ export default function AddEventPage() {
               </div>
 
               {/* Client Selection */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                <label className="block text-lg font-semibold text-gray-900 mb-3">
-                  Select Client
+              <div className="bg-white rounded-lg border border-gray-200 px-5 py-4 shadow-sm">
+                <label className="flex items-center gap-3 text-lg font-semibold text-gray-900 mb-3">
+                  <User size={22} className="text-gray-700" />
+                  <span>Select Client</span>
                   {selectedClient && (
                     <span className="ml-2 text-sm text-gray-600">
                       • {selectedClient.firstName} {selectedClient.lastName}
@@ -426,10 +422,11 @@ export default function AddEventPage() {
               </div>
 
               {/* Title & Description */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+              <div className="bg-white rounded-lg border border-gray-200 px-5 py-4 shadow-sm">
                 <div className="space-y-4">
-                  <div className="block text-lg font-semibold text-gray-900 mb-4">
-                    Event Description
+                  <div className="flex items-center gap-3 text-lg font-semibold text-gray-900 mb-4">
+                    <PenLine size={22} className="text-gray-700" />
+                    <span>Event Description</span>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -481,7 +478,7 @@ export default function AddEventPage() {
             {/* Right Column */}
             <div className="space-y-6">
               {/* Schedule Section */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+              <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-purple-600" />
                   Schedule & Timing
@@ -559,39 +556,12 @@ export default function AddEventPage() {
                         ))}
                       </select>
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4" />
-                          Status
-                        </div>
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {[
-                          { value: 'scheduled', label: 'Scheduled', color: 'text-blue-600', bg: 'bg-blue-50' },
-                          { value: 'confirmed', label: 'Confirmed', color: 'text-green-600', bg: 'bg-green-50' }
-                        ].map((status) => (
-                          <button
-                            key={status.value}
-                            type="button"
-                            onClick={() => handleInputChange('status', status.value as any)}
-                            className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${formData.status === status.value
-                              ? `${status.bg} ${status.color} border ${status.color.replace('text', 'border')}-200`
-                              : 'border border-gray-200 text-gray-600 hover:border-gray-300'
-                              }`}
-                          >
-                            {status.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Notes Section */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+              <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
                   <MessageSquare className="w-5 h-5 text-purple-600" />
                   Additional Notes
@@ -614,7 +584,7 @@ export default function AddEventPage() {
           </div>
 
           {/* Action Buttons - Full Width at Bottom */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+          <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
               <Button
                 label="Cancel"
