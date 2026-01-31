@@ -5,8 +5,8 @@ export type PropertyType = 'apartmentl' | 'house' | 'villa' | 'commercial' | 'la
 export interface Client {
   id: string
   createdAt:any
-  ownerUid: string
-
+  agentUid: string
+  agentName: string
   firstName: string
   lastName: string
   phone: string

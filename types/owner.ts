@@ -1,5 +1,7 @@
 export interface Owner{
     id: string,
+    agentUid: string,
+    agentName: string,
     firstName: string,
     lastName: string,
     email: string,

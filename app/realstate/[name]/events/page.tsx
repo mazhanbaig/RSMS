@@ -1,19 +1,23 @@
 'use client';
 
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback, useMemo } from "react";
 import { message } from "antd";
 import {
     Calendar, Clock, MapPin, Users, Home, DollarSign,
     ArrowLeft, Plus, Filter, Search, ChevronRight,
     PhoneCall, Mail, MessageSquare, CheckCircle,
     XCircle, Building, Key, Target, Zap,
-    Bell
+    Bell, Star, TrendingUp, Eye, Grid, CalendarDays,
+    ChevronDown, MoreVertical, Edit, Trash2,
+    User, Sparkles, Crown, Bed, Bath,
+    Check, X, AlertCircle, ExternalLink,
+    Layers
 } from "lucide-react";
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import Loader from "@/components/Loader";
-import { getData, updateData } from "@/FBConfig/fbFunctions";
+import { checkUserSession, getData } from "@/FBConfig/fbFunctions";
 
 interface UserInfo {
     uid: string;
@@ -26,173 +30,176 @@ interface EventData {
     id: string;
     title: string;
     description: string;
-    eventType: 'viewing' | 'meeting' | 'closing' | 'inspection' | 'followup';
-    clientName: string;
-    clientId: string;
-    propertyAddress: string;
+    eventType: 'property-viewing' | 'client-meeting' | 'closing-session' | 'property-inspection' | 'follow-up-call';
+    clientIds: string[];
+    address: string;
     date: string;
     startTime: string;
     endTime: string;
-    status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
     notes?: string;
-    participants: string[];
+    reminderTime: string;
+    agentUid: string;
+    agentName: string;
     reminderSent: boolean;
     createdAt: string;
-    updatedAt: string;
 }
 
-interface ClientData {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-}
-
-export default function UpcomingEventsPage() {
+export default function ElegantEventsPage() {
     const router = useRouter();
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
     const [events, setEvents] = useState<EventData[]>([]);
-    const [clients, setClients] = useState<ClientData[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState<string>('all');
     const [filterStatus, setFilterStatus] = useState<string>('all');
-    const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
-    // Initialize with sample data for immediate display
-    const sampleEvents: EventData[] = useMemo(() => [
-        {
-            id: '1',
-            title: 'Property Viewing - Luxury Villa',
-            description: 'First viewing with potential buyers',
-            eventType: 'viewing',
-            clientName: 'John Smith',
-            clientId: 'client1',
-            propertyAddress: '123 Luxury Lane, Beverly Hills',
-            date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-            startTime: '14:00',
-            endTime: '15:00',
-            status: 'confirmed',
-            participants: ['John Smith', 'Sarah Smith'],
-            reminderSent: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        },
-        {
-            id: '2',
-            title: 'Closing Meeting - Downtown Apartment',
-            description: 'Final paperwork and key handover',
-            eventType: 'closing',
-            clientName: 'Emma Wilson',
-            clientId: 'client2',
-            propertyAddress: '456 City Center, Downtown',
-            date: new Date(Date.now() + 172800000).toISOString().split('T')[0],
-            startTime: '10:00',
-            endTime: '11:30',
-            status: 'scheduled',
-            participants: ['Emma Wilson', 'Legal Representative'],
-            reminderSent: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        },
-        {
-            id: '3',
-            title: 'Property Inspection',
-            description: 'Professional inspection before purchase',
-            eventType: 'inspection',
-            clientName: 'Michael Chen',
-            clientId: 'client3',
-            propertyAddress: '789 Suburban Street, Green Valley',
-            date: new Date(Date.now() + 259200000).toISOString().split('T')[0],
-            startTime: '09:00',
-            endTime: '12:00',
-            status: 'confirmed',
-            participants: ['Michael Chen', 'Inspector'],
-            reminderSent: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        },
-        {
-            id: '4',
-            title: 'Client Follow-up',
-            description: 'Discuss new property listings',
-            eventType: 'followup',
-            clientName: 'Robert Johnson',
-            clientId: 'client4',
-            propertyAddress: 'Virtual Meeting',
-            date: new Date(Date.now() + 432000000).toISOString().split('T')[0],
-            startTime: '16:00',
-            endTime: '16:30',
-            status: 'scheduled',
-            participants: ['Robert Johnson'],
-            reminderSent: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        }
-    ], []);
-
-    // Load user info - Immediate
-    useEffect(() => {
-        const stored = localStorage.getItem('userInfo');
-        if (stored) {
-            try {
-                const parsed: UserInfo = JSON.parse(stored);
-                setUserInfo(parsed);
-                // Show sample data immediately
-                setEvents(sampleEvents);
-                setLoading(false);
-            } catch (err) {
-                message.error('Error loading user info');
-            }
-        }
-    }, [sampleEvents]);
-
-    // Fetch events from Firebase - Lazy load
-    const fetchEvents = useCallback(async () => {
-        if (!userInfo?.uid) return;
-
-        try {
-            // In production, fetch from Firebase
-            // const eventsData = await getData(`events/${userInfo.uid}`);
-            // setEvents(eventsData || sampleEvents);
-
-            // Simulate API delay
-            setTimeout(() => {
-                // Keep sample events for now
-                setLoading(false);
-            }, 300);
-        } catch (error) {
-            console.error("Error fetching events:", error);
-            message.error('Failed to load events');
-            setLoading(false);
-        }
-    }, [userInfo?.uid]);
-
-    useEffect(() => {
-        if (userInfo?.uid) {
-            fetchEvents();
-        }
-    }, [fetchEvents, userInfo?.uid]);
-
-    // Event type configuration
+    // Event type configuration matching your theme
     const eventTypeConfig = useMemo(() => ({
-        viewing: { color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', icon: <Home className="w-4 h-4" /> },
-        meeting: { color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200', icon: <Users className="w-4 h-4" /> },
-        closing: { color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', icon: <Key className="w-4 h-4" /> },
-        inspection: { color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', icon: <Target className="w-4 h-4" /> },
-        followup: { color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-200', icon: <PhoneCall className="w-4 h-4" /> }
+        'property-viewing': {
+            label: 'Property Viewing',
+            icon: <Eye className="w-4 h-4" />,
+            color: 'text-blue-600',
+            bg: 'bg-gradient-to-br from-blue-50 to-blue-100',
+            border: 'border-blue-200'
+        },
+        'client-meeting': {
+            label: 'Client Meeting',
+            icon: <Users className="w-4 h-4" />,
+            color: 'text-purple-600',
+            bg: 'bg-gradient-to-br from-purple-50 to-purple-100',
+            border: 'border-purple-200'
+        },
+        'closing-session': {
+            label: 'Closing Session',
+            icon: <Key className="w-4 h-4" />,
+            color: 'text-green-600',
+            bg: 'bg-gradient-to-br from-green-50 to-green-100',
+            border: 'border-green-200'
+        },
+        'property-inspection': {
+            label: 'Property Inspection',
+            icon: <Target className="w-4 h-4" />,
+            color: 'text-amber-600',
+            bg: 'bg-gradient-to-br from-amber-50 to-amber-100',
+            border: 'border-amber-200'
+        },
+        'follow-up-call': {
+            label: 'Follow-up Call',
+            icon: <PhoneCall className="w-4 h-4" />,
+            color: 'text-indigo-600',
+            bg: 'bg-gradient-to-br from-indigo-50 to-indigo-100',
+            border: 'border-indigo-200'
+        }
     }), []);
+
+    // Get event status based on date/time
+    const getEventStatus = useCallback((event: EventData) => {
+        const now = new Date();
+        const eventDate = new Date(`${event.date}T${event.startTime}`);
+        const eventEndDate = new Date(`${event.date}T${event.endTime}`);
+
+        if (eventEndDate < now) {
+            return 'completed';
+        } else if (eventDate <= now && eventEndDate >= now) {
+            return 'in-progress';
+        } else {
+            return 'scheduled';
+        }
+    }, []);
 
     // Status configuration
     const statusConfig = useMemo(() => ({
-        scheduled: { color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', label: 'Scheduled' },
-        confirmed: { color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', label: 'Confirmed' },
-        completed: { color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200', label: 'Completed' },
-        cancelled: { color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', label: 'Cancelled' }
+        'scheduled': {
+            label: 'Scheduled',
+            color: 'text-blue-600',
+            bg: 'bg-gradient-to-r from-blue-50 to-blue-100',
+            border: 'border-blue-200',
+            icon: <Calendar className="w-3 h-3" />
+        },
+        'in-progress': {
+            label: 'In Progress',
+            color: 'text-amber-600',
+            bg: 'bg-gradient-to-r from-amber-50 to-amber-100',
+            border: 'border-amber-200',
+            icon: <AlertCircle className="w-3 h-3" />
+        },
+        'completed': {
+            label: 'Completed',
+            color: 'text-green-600',
+            bg: 'bg-gradient-to-r from-green-50 to-green-100',
+            border: 'border-green-200',
+            icon: <CheckCircle className="w-3 h-3" />
+        }
     }), []);
 
-    // Format date for display
+    // Load user info and events
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const user: any = await checkUserSession();
+                if (!user) {
+                    message.error('Please Login First');
+                    router.replace('/login');
+                    return;
+                }
+
+                const storedUser = localStorage.getItem('userInfo');
+                let userData;
+
+                if (storedUser) {
+                    userData = JSON.parse(storedUser);
+                } else {
+                    userData = await getData(`users/${user.uid}`);
+                    if (userData) {
+                        localStorage.setItem('userInfo', JSON.stringify({ uid: user.uid, ...userData }));
+                    }
+                }
+
+                if (userData) {
+                    setUserInfo({ uid: user.uid, ...userData });
+                    // Fetch events for this user
+                    await fetchEvents(user.uid);
+                }
+            } catch (err) {
+                console.error('Authentication error:', err);
+                message.error('Error occurred during authentication');
+                router.replace('/login');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        checkAuth();
+    }, [router]);
+
+    const fetchEvents = async (uid: string) => {
+        try {
+            setLoading(true);
+            const eventsData: any = await getData(`events/${uid}`);
+
+            if (eventsData) {
+                const eventsArray: EventData[] = Object.entries(eventsData)
+                    .map(([id, data]: [string, any]) => ({
+                        id,
+                        ...data,
+                        clientName: data.clientName || 'Client', // Fallback for client name
+                    }));
+                setEvents(eventsArray);
+            } else {
+                setEvents([]);
+            }
+        } catch (error) {
+            console.error('Error fetching events:', error);
+            message.error('Failed to fetch events');
+            setEvents([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Format helpers
     const formatDate = useCallback((dateString: string) => {
         const date = new Date(dateString);
         const today = new Date();
@@ -212,96 +219,95 @@ export default function UpcomingEventsPage() {
         }
     }, []);
 
-    // Format time for display
     const formatTime = useCallback((timeString: string) => {
-        const [hours, minutes] = timeString.split(':');
-        const hour = parseInt(hours);
-        const period = hour >= 12 ? 'PM' : 'AM';
-        const displayHour = hour % 12 || 12;
-        return `${displayHour}:${minutes} ${period}`;
+        return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
     }, []);
 
-    // Get relative time
-    const getRelativeTime = useCallback((dateString: string) => {
-        const eventDate = new Date(dateString);
+    const getTimeUntilEvent = useCallback((date: string, time: string) => {
+        const eventDateTime = new Date(`${date}T${time}`);
         const now = new Date();
-        const diffTime = eventDate.getTime() - now.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const diffMs = eventDateTime.getTime() - now.getTime();
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-        if (diffDays < 0) return 'Past';
-        if (diffDays === 0) return 'Today';
-        if (diffDays === 1) return 'Tomorrow';
-        if (diffDays <= 7) return `In ${diffDays} days`;
-        return 'Later';
+        if (diffMs < 0) return { text: 'Past', color: 'text-gray-500', bg: 'bg-gray-100' };
+        if (diffDays > 1) return { text: `${diffDays} days`, color: 'text-blue-600', bg: 'bg-blue-50' };
+        if (diffDays === 1) return { text: 'Tomorrow', color: 'text-green-600', bg: 'bg-green-50' };
+        if (diffHours > 0) return { text: `${diffHours} hours`, color: 'text-amber-600', bg: 'bg-amber-50' };
+        return { text: 'Today', color: 'text-red-600', bg: 'bg-red-50' };
     }, []);
 
     // Filter events
     const filteredEvents = useMemo(() => {
         return events.filter(event => {
-            const matchesSearch =
-                event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                event.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                event.propertyAddress.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesSearch = searchTerm === '' ||
+                event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                event.propertyAddress?.toLowerCase().includes(searchTerm.toLowerCase());
 
             const matchesType = filterType === 'all' || event.eventType === filterType;
-            const matchesStatus = filterStatus === 'all' || event.status === filterStatus;
+
+            // Get status for filtering
+            const eventStatus = getEventStatus(event);
+            const matchesStatus = filterStatus === 'all' || eventStatus === filterStatus;
 
             return matchesSearch && matchesType && matchesStatus;
         }).sort((a, b) => {
-            // Sort by date and time
             const dateA = new Date(`${a.date}T${a.startTime}`);
             const dateB = new Date(`${b.date}T${b.startTime}`);
             return dateA.getTime() - dateB.getTime();
         });
-    }, [events, searchTerm, filterType, filterStatus]);
+    }, [events, searchTerm, filterType, filterStatus, getEventStatus]);
 
-    // Get upcoming events (next 7 days)
-    const upcomingEvents = useMemo(() => {
-        const sevenDaysFromNow = new Date();
-        sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-
-        return filteredEvents.filter(event => {
-            const eventDate = new Date(event.date);
-            return eventDate <= sevenDaysFromNow && event.status !== 'completed' && event.status !== 'cancelled';
-        });
-    }, [filteredEvents]);
-
-    // Get event statistics
+    // Event statistics
     const eventStats = useMemo(() => ({
         total: events.length,
-        upcoming: upcomingEvents.length,
-        today: filteredEvents.filter(event => {
-            const today = new Date().toISOString().split('T')[0];
-            return event.date === today && event.status !== 'completed' && event.status !== 'cancelled';
+        upcoming: events.filter(e => {
+            const eventDate = new Date(`${e.date}T${e.startTime}`);
+            return eventDate > new Date();
         }).length,
-        confirmed: events.filter(event => event.status === 'confirmed').length
-    }), [events, filteredEvents, upcomingEvents]);
+        today: events.filter(e => e.date === new Date().toISOString().split('T')[0]).length,
+        completed: events.filter(e => getEventStatus(e) === 'completed').length
+    }), [events, getEventStatus]);
 
-    // Quick actions
-    const handleQuickAction = useCallback((action: string) => {
-        switch (action) {
-            case 'add':
-                router.push(`/realstate/${userInfo?.uid}/events/add`);
-                break;
-            case 'calendar':
-                setViewMode('calendar');
-                break;
-            case 'list':
-                setViewMode('list');
-                break;
-            case 'refresh':
-                fetchEvents();
-                message.success('Events refreshed');
-                break;
+    // Handlers
+    const handleDeleteEvent = async (eventId: string) => {
+        if (!window.confirm('Are you sure you want to delete this event?')) return;
+
+        setDeletingId(eventId);
+        try {
+            // TODO: Implement deleteData function
+            // await deleteData(`events/${userInfo?.uid}/${eventId}`);
+            setEvents(events.filter(event => event.id !== eventId));
+            message.success('Event deleted successfully');
+        } catch (error) {
+            message.error('Failed to delete event');
+        } finally {
+            setDeletingId(null);
         }
-    }, [router, userInfo?.uid, fetchEvents]);
+    };
+
+    const handleEditEvent = (eventId: string) => {
+        router.push(`/realstate/${userInfo?.uid}/events/edit/${eventId}`);
+    };
+
+    const handleViewEvent = (eventId: string) => {
+        router.push(`/realstate/${userInfo?.uid}/events/${eventId}`);
+    };
+
+    const handleCreateEvent = () => {
+        router.push(`/realstate/${userInfo?.uid}/events/addevent`);
+    };
 
     if (loading) {
         return <Loader />;
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white">
+        <div className="min-h-screen bg-gradient-to-br from-white via-white to-purple-50">
             <Header userData={userInfo} />
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -317,71 +323,89 @@ export default function UpcomingEventsPage() {
                         <div className="space-y-3">
                             <div>
                                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                                    Upcoming {''}
+                                    Schedule & {" "}
                                     <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                                         Events
                                     </span>
                                 </h1>
                                 <p className="text-gray-600 mt-2 max-w-xl">
-                                    Schedule viewings, manage appointments, and track property meetings with clients.
+                                    Manage property viewings, client meetings, and real estate appointments
                                 </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    Stats Overview
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-gray-600">Total Events</p>
-                                    <p className="text-2xl font-semibold text-gray-900">{eventStats.total}</p>
-                                </div>
-                                <div className="p-2 bg-purple-100 rounded-lg">
-                                    <Calendar className="w-5 h-5 text-purple-600" />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-gray-600">Upcoming</p>
-                                    <p className="text-2xl font-semibold text-gray-900">{eventStats.upcoming}</p>
-                                </div>
-                                <div className="p-2 bg-blue-100 rounded-lg">
-                                    <Clock className="w-5 h-5 text-blue-600" />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-gray-600">Today</p>
-                                    <p className="text-2xl font-semibold text-gray-900">{eventStats.today}</p>
-                                </div>
-                                <div className="p-2 bg-green-100 rounded-lg">
-                                    <Zap className="w-5 h-5 text-green-600" />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-gray-600">Confirmed</p>
-                                    <p className="text-2xl font-semibold text-gray-900">{eventStats.confirmed}</p>
-                                </div>
-                                <div className="p-2 bg-amber-100 rounded-lg">
-                                    <CheckCircle className="w-5 h-5 text-amber-600" />
-                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                {/* Stats Overview */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+                    {[
+                        {
+                            title: 'Total Events',
+                            value: eventStats.total,
+                            icon: <Calendar className="w-5 h-5 text-purple-600" />,
+                            color: 'purple'
+                        },
+                        {
+                            title: 'Upcoming',
+                            value: eventStats.upcoming,
+                            icon: <TrendingUp className="w-5 h-5 text-blue-600" />,
+                            color: 'blue'
+                        },
+                        {
+                            title: 'Today',
+                            value: eventStats.today,
+                            icon: <Clock className="w-5 h-5 text-green-600" />,
+                            color: 'green'
+                        },
+                        {
+                            title: 'Completed',
+                            value: eventStats.completed,
+                            icon: <CheckCircle className="w-5 h-5 text-amber-600" />,
+                            color: 'amber'
+                        }
+                    ].map((stat, idx) => (
+                        <div key={idx} className="relative group">
+                            <div className="relative bg-white rounded-xl border border-gray-100 px-4 py-2 shadow-sm hover:shadow-md hover:border-purple-200 transition-all duration-300">
+                                <div className="absolute -top-3 left-4">
+                                    <div className="p-2 rounded-lg bg-white border border-gray-200 shadow-lg">
+                                        {stat.icon}
+                                    </div>
+                                </div>
+
+                                <div className="-mt-1">
+                                    <div className="text-right">
+                                        <h3 className="text-2xl font-bold text-gray-900 mb-0.5">{stat.value}</h3>
+                                        <p className="text-gray-600 text-xs mb-2">{stat.title}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
                 {/* Search and Filter Bar */}
-                <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <div className="flex-1">
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 mb-6">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap gap-3">
+                            <Button
+                                label="Add Event"
+                                onClick={handleCreateEvent}
+                                variant="theme"
+                                icon={<Layers className="w-4 h-4" />}
+                                size="md"
+                            />
+                            <Button
+                                label={viewMode === 'grid' ? 'List View' : 'Grid View'}
+                                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                                variant="theme2"
+                                icon={viewMode === 'grid' ? <ListIcon className="w-4 h-4" /> : <Grid className="w-4 h-4" />}
+                                size="md"
+                            />
+                        </div>
+
+                        {/* Search Input */}
+                        <div className="flex flex-wrap gap-3">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                                 <input
@@ -389,183 +413,216 @@ export default function UpcomingEventsPage() {
                                     placeholder="Search events, clients, or properties..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors"
+                                    className="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors md:min-w-80"
                                 />
                             </div>
                         </div>
+                    </div>
 
-                        <div className="flex gap-3">
-                            <select
-                                value={filterType}
-                                onChange={(e) => setFilterType(e.target.value)}
-                                className="px-3 py-2.5 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors bg-white"
-                            >
-                                <option value="all">All Types</option>
-                                <option value="viewing">Viewing</option>
-                                <option value="meeting">Meeting</option>
-                                <option value="closing">Closing</option>
-                                <option value="inspection">Inspection</option>
-                                <option value="followup">Follow-up</option>
-                            </select>
-
-                            <select
-                                value={filterStatus}
-                                onChange={(e) => setFilterStatus(e.target.value)}
-                                className="px-3 py-2.5 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors bg-white"
-                            >
-                                <option value="all">All Status</option>
-                                <option value="scheduled">Scheduled</option>
-                                <option value="confirmed">Confirmed</option>
-                                <option value="completed">Completed</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-
-                            <Button
-                                label="Refresh"
-                                variant="theme2"
-                                size="sm"
-                                icon={<Zap className="w-4 h-4" />}
-                                onClick={() => handleQuickAction('refresh')}
-                            />
+                    {/* Filter Buttons */}
+                    <div className="flex flex-wrap gap-2 mt-4">
+                        {/* Event Type Filters */}
+                        <div className="flex flex-wrap gap-2">
+                            {[
+                                { id: 'all', label: 'All Types', count: events.length },
+                                ...Object.entries(eventTypeConfig).map(([key, config]) => ({
+                                    id: key,
+                                    label: config.label,
+                                    count: events.filter(e => e.eventType === key).length
+                                }))
+                            ].map((filter) => (
+                                <button
+                                    key={filter.id}
+                                    onClick={() => setFilterType(filter.id)}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filterType === filter.id
+                                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    {filter.label}
+                                    <span className={`ml-1.5 px-1.5 py-0.5 rounded text-xs ${filterType === filter.id
+                                        ? 'bg-white/20'
+                                        : 'bg-white'
+                                        }`}>
+                                        {filter.count}
+                                    </span>
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </div>
 
-                {/* View Mode Toggle */}
-                <div className="flex justify-center mb-6">
-                    <div className="bg-white rounded-xl border border-gray-200 p-1 inline-flex">
-                        <button
-                            onClick={() => setViewMode('list')}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${viewMode === 'list' ? 'bg-purple-50 text-purple-600' : 'text-gray-600 hover:text-gray-900'
-                                }`}
-                        >
-                            <List className="w-4 h-4" />
-                            List View
-                        </button>
-                        <button
-                            onClick={() => setViewMode('calendar')}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-purple-50 text-purple-600' : 'text-gray-600 hover:text-gray-900'
-                                }`}
-                        >
-                            <Calendar className="w-4 h-4" />
-                            Calendar View
-                        </button>
-                    </div>
-                </div>
-
-                {/* Events Grid - Optimized for performance */}
+                {/* Events Content */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Left Column - Today's Events */}
+                    {/* Events List */}
                     <div className="lg:col-span-2">
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-                            <div className="p-5 border-b border-gray-200">
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-lg font-semibold text-gray-900">
-                                        {viewMode === 'list' ? 'All Events' : 'Calendar View'}
-                                    </h2>
-                                    <span className="text-sm text-gray-600">
-                                        {filteredEvents.length} events found
-                                    </span>
-                                </div>
-                            </div>
+                        {viewMode === 'grid' ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {filteredEvents.length > 0 ? (
+                                    filteredEvents.map((event) => {
+                                        const typeConfig = eventTypeConfig[event.eventType];
+                                        const eventStatus = getEventStatus(event);
+                                        const statusConfigItem = statusConfig[eventStatus];
+                                        const timeUntil = getTimeUntilEvent(event.date, event.startTime);
 
-                            {viewMode === 'list' ? (
-                                <div className="divide-y divide-gray-100">
-                                    {filteredEvents.length > 0 ? (
-                                        filteredEvents.map((event) => {
-                                            const typeConfig = eventTypeConfig[event.eventType];
-                                            const statusConfigItem = statusConfig[event.status];
-
-                                            return (
-                                                <div
-                                                    key={event.id}
-                                                    className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                                                    onClick={() => router.push(`/realstate/${userInfo?.uid}/events/${event.id}`)}
-                                                >
-                                                    <div className="flex items-start gap-4">
-                                                        <div className={`p-3 rounded-lg ${typeConfig.bg}`}>
-                                                            {typeConfig.icon}
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-start justify-between mb-2">
-                                                                <div>
-                                                                    <h3 className="font-medium text-gray-900 truncate">
-                                                                        {event.title}
-                                                                    </h3>
-                                                                    <p className="text-sm text-gray-600 mt-1">
-                                                                        with {event.clientName} • {event.propertyAddress}
-                                                                    </p>
-                                                                </div>
-                                                                <div className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusConfigItem.bg} ${statusConfigItem.color}`}>
-                                                                    {statusConfigItem.label}
+                                        return (
+                                            <div
+                                                key={event.id}
+                                                className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group cursor-pointer"
+                                                onClick={() => handleViewEvent(event.id)}
+                                            >
+                                                {/* Event Header */}
+                                                <div className="p-4 border-b border-gray-100">
+                                                    <div className="flex items-start justify-between mb-3">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`p-2.5 rounded-lg ${typeConfig.bg}`}>
+                                                                <div className={typeConfig.color}>
+                                                                    {typeConfig.icon}
                                                                 </div>
                                                             </div>
-
-                                                            <div className="flex items-center gap-4 text-sm text-gray-600 mt-3">
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <Calendar className="w-4 h-4" />
-                                                                    <span>{formatDate(event.date)}</span>
-                                                                </div>
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <Clock className="w-4 h-4" />
-                                                                    <span>{formatTime(event.startTime)} - {formatTime(event.endTime)}</span>
-                                                                </div>
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <Users className="w-4 h-4" />
-                                                                    <span>{event.participants.length} participants</span>
-                                                                </div>
+                                                            <div>
+                                                                <h3 className="font-semibold text-gray-900 line-clamp-1">
+                                                                    {event.title}
+                                                                </h3>
+                                                                <p className="text-sm text-gray-600">
+                                                                    {typeConfig.label}
+                                                                </p>
                                                             </div>
-
-                                                            {event.notes && (
-                                                                <div className="mt-3 text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
-                                                                    {event.notes}
-                                                                </div>
-                                                            )}
                                                         </div>
-                                                        <ChevronRight className="w-5 h-5 text-gray-400" />
+                                                        <div className="flex items-center gap-1">
+                                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfigItem.bg} ${statusConfigItem.color}`}>
+                                                                {statusConfigItem.label}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Client Info */}
+                                                    {event.clientIds && event.clientIds.length > 0 && (
+                                                        <div className="flex items-center gap-3 mb-3 p-3 bg-gray-50 rounded-lg">
+                                                            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center text-white font-semibold">
+                                                                C
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="font-medium text-gray-900 truncate">
+                                                                    {event.clientIds.length} Client{event.clientIds.length > 1 ? 's' : ''}
+                                                                </p>
+                                                                <p className="text-xs text-gray-600">
+                                                                    {event.clientIds.length > 1 ? 'Multiple clients' : 'Client'}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Event Details */}
+                                                <div className="p-4">
+                                                    <div className="space-y-2.5 mb-4">
+                                                        <div className="flex items-center gap-3 text-sm">
+                                                            <Calendar className="w-4 h-4 text-gray-400" />
+                                                            <span className="text-gray-700">{formatDate(event.date)}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-3 text-sm">
+                                                            <Clock className="w-4 h-4 text-gray-400" />
+                                                            <span className="text-gray-700">{formatTime(event.startTime)} - {formatTime(event.endTime)}</span>
+                                                        </div>
+                                                        <div className="flex items-start gap-3 text-sm">
+                                                            <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+                                                            <span className="text-gray-700 line-clamp-2">{event.address}</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Time Indicator */}
+                                                    <div className="flex items-center justify-between">
+                                                        <div className={`px-2.5 py-1 rounded-lg text-xs font-medium ${timeUntil.bg} ${timeUntil.color}`}>
+                                                            {timeUntil.text}
+                                                        </div>
+                                                        <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-purple-600 transition-colors" />
                                                     </div>
                                                 </div>
-                                            );
-                                        })
-                                    ) : (
-                                        <div className="p-8 text-center">
-                                            <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                                            <h3 className="text-lg font-medium text-gray-900 mb-2">No events found</h3>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className="col-span-2">
+                                        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+                                            <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                                            <h3 className="text-lg font-semibold text-gray-900 mb-2">No events found</h3>
                                             <p className="text-gray-600 mb-4">Try adjusting your search or filters</p>
                                             <Button
                                                 label="Create New Event"
-                                                onClick={() => handleQuickAction('add')}
+                                                onClick={handleCreateEvent}
                                                 variant="theme"
-                                                size="sm"
                                                 icon={<Plus className="w-4 h-4" />}
                                             />
                                         </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="p-4">
-                                    <div className="aspect-video bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
-                                        <div className="text-center">
-                                            <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                                            <p className="text-gray-600">Calendar view coming soon</p>
-                                            <Button
-                                                label="Switch to List View"
-                                                onClick={() => setViewMode('list')}
-                                                variant="theme"
-                                                size="sm"
-                                                classNameC="mt-4"
-                                            />
-                                        </div>
                                     </div>
-                                </div>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        ) : (
+                            // List View
+                            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                                {filteredEvents.length > 0 ? (
+                                    filteredEvents.map((event) => {
+                                        const typeConfig = eventTypeConfig[event.eventType];
+                                        const eventStatus = getEventStatus(event);
+                                        const statusConfigItem = statusConfig[eventStatus];
+
+                                        return (
+                                            <div
+                                                key={event.id}
+                                                className="p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer flex items-center justify-between"
+                                                onClick={() => handleViewEvent(event.id)}
+                                            >
+                                                <div className="flex items-center gap-4 flex-1">
+                                                    <div className={`p-3 rounded-lg ${typeConfig.bg}`}>
+                                                        <div className={typeConfig.color}>
+                                                            {typeConfig.icon}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-3 mb-1">
+                                                            <h3 className="font-semibold text-gray-900 truncate">
+                                                                {event.title}
+                                                            </h3>
+                                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfigItem.bg} ${statusConfigItem.color}`}>
+                                                                {statusConfigItem.label}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                                                            <span className="flex items-center gap-1">
+                                                                <Calendar className="w-3 h-3" />
+                                                                {formatDate(event.date)}
+                                                            </span>
+                                                            <span className="flex items-center gap-1">
+                                                                <Clock className="w-3 h-3" />
+                                                                {formatTime(event.startTime)}
+                                                            </span>
+                                                            <span className="flex items-center gap-1 truncate max-w-xs">
+                                                                <MapPin className="w-3 h-3 flex-shrink-0" />
+                                                                {event.address}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <ChevronRight className="w-5 h-5 text-gray-400" />
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className="p-8 text-center">
+                                        <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No events found</h3>
+                                        <p className="text-gray-600 mb-4">Try adjusting your search or filters</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
-                    {/* Right Column - Quick Actions & Upcoming */}
+                    {/* Right Sidebar */}
                     <div className="space-y-6">
                         {/* Quick Actions */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                        <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
                             <div className="flex items-center gap-2 mb-4">
                                 <Zap className="w-5 h-5 text-amber-500" />
                                 <h3 className="font-semibold text-gray-900">Quick Actions</h3>
@@ -574,16 +631,16 @@ export default function UpcomingEventsPage() {
                                 <Button
                                     label="Schedule Viewing"
                                     variant="theme"
-                                    icon={<Home className="w-4 h-4" />}
+                                    icon={<Eye className="w-4 h-4" />}
                                     size="sm"
-                                    onClick={() => router.push(`/realstate/${userInfo?.uid}/events/add?type=viewing`)}
+                                    onClick={() => router.push(`/realstate/${userInfo?.uid}/add-event?type=property-viewing`)}
                                 />
                                 <Button
                                     label="Client Meeting"
                                     variant="theme2"
                                     icon={<Users className="w-4 h-4" />}
                                     size="sm"
-                                    onClick={() => router.push(`/realstate/${userInfo?.uid}/events/add?type=meeting`)}
+                                    onClick={() => router.push(`/realstate/${userInfo?.uid}/add-event?type=client-meeting`)}
                                 />
                                 <Button
                                     label="Send Reminders"
@@ -595,85 +652,73 @@ export default function UpcomingEventsPage() {
                             </div>
                         </div>
 
-                        {/* Upcoming This Week */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                        {/* Today's Events */}
+                        <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="font-semibold text-gray-900">This Week</h3>
-                                <span className="text-sm text-gray-600">{upcomingEvents.length} events</span>
+                                <h3 className="font-semibold text-gray-900">Today's Schedule</h3>
+                                <span className="text-sm text-gray-600">
+                                    {eventStats.today} event{eventStats.today !== 1 ? 's' : ''}
+                                </span>
                             </div>
-                            <div className="space-y-4">
-                                {upcomingEvents.slice(0, 3).map((event) => (
-                                    <div
-                                        key={event.id}
-                                        className="p-3 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors cursor-pointer"
-                                        onClick={() => router.push(`/realstate/${userInfo?.uid}/events/${event.id}`)}
-                                    >
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium text-gray-900 truncate">
-                                                {event.title}
-                                            </span>
-                                            <span className="text-xs text-gray-500">
-                                                {getRelativeTime(event.date)}
-                                            </span>
+                            <div className="space-y-3">
+                                {events
+                                    .filter(e => e.date === new Date().toISOString().split('T')[0])
+                                    .slice(0, 3)
+                                    .map((event) => (
+                                        <div
+                                            key={event.id}
+                                            className="p-3 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors cursor-pointer"
+                                            onClick={() => handleViewEvent(event.id)}
+                                        >
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-sm font-medium text-gray-900 truncate">
+                                                    {event.title}
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                    {formatTime(event.startTime)}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                                                <MapPin className="w-3.5 h-3.5" />
+                                                <span className="truncate">{event.propertyAddress}</span>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <Clock className="w-3.5 h-3.5" />
-                                            <span>{formatDate(event.date)} • {formatTime(event.startTime)}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                                            <MapPin className="w-3.5 h-3.5" />
-                                            <span className="truncate">{event.propertyAddress}</span>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))}
 
-                                {upcomingEvents.length === 0 && (
+                                {eventStats.today === 0 && (
                                     <div className="text-center py-4 text-gray-500">
                                         <Clock className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                                        <p className="text-sm">No events this week</p>
+                                        <p className="text-sm">No events today</p>
                                     </div>
-                                )}
-
-                                {upcomingEvents.length > 3 && (
-                                    <Button
-                                        label="View All Upcoming"
-                                        variant="theme"
-                                        size="sm"
-                                        onClick={() => {
-                                            setFilterStatus('scheduled,confirmed');
-                                            setViewMode('list');
-                                        }}
-                                    />
                                 )}
                             </div>
                         </div>
 
-                        {/* Event Stats */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                            <h3 className="font-semibold text-gray-900 mb-4">Event Distribution</h3>
-                            <div className="space-y-3">
-                                {Object.entries(eventTypeConfig).map(([type, config]) => {
-                                    const count = events.filter(e => e.eventType === type).length;
-                                    return (
-                                        <div key={type} className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <div className={`p-1.5 rounded ${config.bg}`}>
-                                                    {config.icon}
-                                                </div>
-                                                <span className="text-sm text-gray-700 capitalize">{type}</span>
-                                            </div>
-                                            <span className="text-sm font-medium text-gray-900">{count}</span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                        {/* Upcoming This Week */}
+                        <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white">
+                            <h2 className="text-xl font-bold mb-4">Upcoming This Week</h2>
+                            <p className="text-purple-100 mb-6">
+                                {events.filter(e => {
+                                    const eventDate = new Date(e.date);
+                                    const today = new Date();
+                                    const nextWeek = new Date(today);
+                                    nextWeek.setDate(nextWeek.getDate() + 7);
+                                    return eventDate >= today && eventDate <= nextWeek;
+                                }).length} events scheduled
+                            </p>
+                            <Button
+                                label="View Calendar"
+                                variant="theme"
+                                onClick={() => message.info('Calendar view coming soon')}
+                                classNameC="bg-white text-purple-600 hover:bg-gray-100"
+                            />
                         </div>
                     </div>
                 </div>
 
                 {/* Floating Action Button */}
                 <button
-                    onClick={() => handleQuickAction('add')}
+                    onClick={handleCreateEvent}
                     className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-shadow z-50"
                 >
                     <Plus className="w-6 h-6" />
@@ -683,9 +728,96 @@ export default function UpcomingEventsPage() {
     );
 }
 
-// List icon component
-const List = ({ className }: { className?: string }) => (
+// Custom List Icon Component
+const ListIcon = ({ className }: { className?: string }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
     </svg>
 );
+
+
+
+// 'use client'
+
+// import { checkUserSession, getData } from "@/FBConfig/fbFunctions";
+// import { message } from "antd";
+// import { useRouter } from "next/navigation"
+// import { useEffect, useMemo, useState } from "react"
+
+// export default function EventPage() {
+//     let router = useRouter()
+//     const [userInfo, setUserInfo] = useState<any>(null)
+//     const [loading, setLoading] = useState<boolean>(true)
+//     const [events, setEvents] = useState<any[]>([])
+
+//     // Check authentication and load data
+//     useEffect(() => {
+//         const checkAuth = async () => {
+//             try {
+//                 const user: any = await checkUserSession();
+//                 if (!user) {
+//                     message.error('Please Login First');
+//                     router.replace('/login');
+//                     return;
+//                 }
+
+//                 const storedUser: any = localStorage.getItem('userInfo')
+//                 const userData = JSON.parse(storedUser);
+//                 setUserInfo(userData);
+
+//             } catch (err) {
+//                 message.error('Error occurred during authentication');
+//                 router.replace('/login');
+//             } finally {
+//                 setLoading(false);
+//             }
+//         };
+
+//         checkAuth();
+//     }, [router]);
+
+//     useEffect(() => {
+//         fetchEvents()
+//         console.log(thisWeekEvents);
+        
+//     }, [])
+
+//     const fetchEvents = async () => {
+//         try {
+//             let eventsObj: any = await getData(`events/${userInfo?.uid}`)
+//             const eventsArray: any = Object.entries(eventsObj)
+//                 .map(([id, data]: [string, any]) => ({
+//                     id,
+//                     ...data,
+//                 }))
+//             setEvents(eventsArray)
+//         } catch (error) {
+//             message.error('Failed to fetch events')
+//         }
+//     }
+
+//     const thisWeekEvents = useMemo(() => {
+//         const today = new Date();
+
+//         // Get start of the week (Sunday)
+//         const startOfWeek = new Date(today);
+//         startOfWeek.setDate(today.getDate() - (today.getDay()+1));
+
+//         // Get end of the week (Saturday)
+//         const endOfWeek = new Date(startOfWeek);
+//         endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+//         return events.filter((event: any) => {
+//             const eventDate = new Date(event.date);
+
+//             return eventDate >= startOfWeek && eventDate <= endOfWeek;
+//         });
+//     }, [events]);
+
+
+//     return (
+//         <div>
+
+//         </div>
+//     )
+// }

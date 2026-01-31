@@ -35,29 +35,31 @@ export default function AdminDashboardPage() {
         );
     }, []);
 
-    // Optimized auth check
+    // Check authentication and load data
     useEffect(() => {
         const checkAuth = async () => {
-            let user = await checkUserSession()
-            if (!user) {
-                message.error('Please Login First')
-                router.replace('/login');
-            } else {
-                try {
-                    const storedUser = localStorage.getItem('userInfo');
-                    if (!storedUser) return;
-
-                    const { uid } = JSON.parse(storedUser);
-                    const userData = await getData(`users/${uid}`);
-                    setUserInfo(userData);
-                } catch (err) {
-                    message.error('Error occurred')
+            try {
+                const user: any = await checkUserSession();
+                if (!user) {
+                    message.error('Please Login First');
+                    router.replace('/login');
+                    return;
                 }
+
+                const storedUser: any = localStorage.getItem('userInfo')
+                const userData = JSON.parse(storedUser);
+                setUserInfo(userData);
+
+            } catch (err) {
+                message.error('Error occurred during authentication');
+                router.replace('/login');
+            } finally {
+                setLoading(false);
             }
-        }
+        };
 
+        checkAuth();
     }, [router]);
-
     // Optimized data fetching with single call
     const fetchAllData = useCallback(async () => {
         // Prevent multiple fetches

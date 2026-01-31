@@ -27,7 +27,7 @@ export default function AddOwnerPage() {
         notes: "",
     });
 
-    const [userInfo, setUserInfo] = useState<UserInfo|null>(null)
+    const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -66,7 +66,11 @@ export default function AddOwnerPage() {
         const emptyFields = requiredFields.filter(f => !formData[f]?.trim());
         if (emptyFields.length > 0) return alert(`Please fill in: ${emptyFields.join(", ")}`);
 
-        const ownerFullData = { ...formData, ownerUid: userInfo.uid };
+        const ownerFullData = {
+            ...formData,
+            agentUid: userInfo.uid,
+            agentName: userInfo.name
+        };
 
         if (formData.id) {
             updateData(`owners/${formData.id}`, ownerFullData)

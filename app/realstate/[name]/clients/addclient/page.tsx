@@ -10,10 +10,12 @@ import { getData, saveData, updateData } from "@/FBConfig/fbFunctions";
 import { useRouter, useSearchParams } from "next/navigation";
 import { message } from "antd";
 import { Timestamp } from "firebase/firestore";
+import { strict } from "assert";
 
 interface UserInfo {
     uid: string;
     email: string;
+    name: string
 }
 
 export default function AddClientPage() {
@@ -108,7 +110,11 @@ export default function AddClientPage() {
             return;
         }
 
-        const clientFullData = { ...formData, createdAt: new Date().toISOString(), ownerUid: userInfo.uid };
+        const clientFullData = {
+            ...formData, createdAt: new Date().toISOString(),
+            agentUid: userInfo?.uid,
+            agentName: userInfo?.name
+        };
 
         if (formData.id) {
             // Edit existing client

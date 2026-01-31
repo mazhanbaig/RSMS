@@ -15,7 +15,7 @@ import {
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import Loader from "@/components/Loader";
-import { getData, saveData, updateData } from "@/FBConfig/fbFunctions";
+import { checkUserSession, getData, saveData, updateData } from "@/FBConfig/fbFunctions";
 
 interface UserInfo {
   uid: string;
@@ -32,24 +32,20 @@ interface ClientData {
   phone: string;
   propertyType: string;
   preferredLocations: string;
+  ownerUid?: string;
 }
 
 interface EventFormData {
   title: string;
   description: string;
-  eventType: 'viewing' | 'meeting' | 'closing' | 'inspection' | 'followup';
-  clientId: string;
-  propertyAddress: string;
-  date: string;
+  eventType: string;
+  address: string;
+  date: any;
   startTime: string;
   endTime: string;
-  status: 'scheduled' | 'confirmed';
   notes: string;
-  participants: string[];
+  clientIds: any[];
   reminderTime: '15' | '30' | '60' | '120';
-  propertyType: string;
-  budget: string;
-  priority: 'low' | 'medium' | 'high';
 }
 
 export default function AddEventPage() {
@@ -62,39 +58,31 @@ export default function AddEventPage() {
   const [participantInput, setParticipantInput] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Initialize form with default values
   const [formData, setFormData] = useState<EventFormData>({
     title: '',
     description: '',
-    eventType: (searchParams.get('type') as EventFormData['eventType']) || 'viewing',
-    clientId: '',
-    propertyAddress: '',
-    date: new Date().toISOString().split('T')[0],
+    eventType: 'property-viewing',
+    address: '',
+    date: {
+      day: new Date().getDay(),
+      date: new Date().getDate(),
+      month: new Date().getMonth(),
+      year: new Date().getFullYear(),
+    },
     startTime: '10:00',
     endTime: '11:00',
-    status: 'scheduled',
     notes: '',
-    participants: [],
+    clientIds: [],
     reminderTime: '30',
-    propertyType: '',
-    budget: '',
-    priority: 'medium'
   });
 
   // Event type options
   const eventTypes = [
-    { value: 'viewing', label: 'Property Viewing', icon: <Eye className="w-4 h-4" />, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { value: 'meeting', label: 'Client Meeting', icon: <Users className="w-4 h-4" />, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { value: 'closing', label: 'Closing Session', icon: <Key className="w-4 h-4" />, color: 'text-green-600', bg: 'bg-green-50' },
-    { value: 'inspection', label: 'Property Inspection', icon: <Target className="w-4 h-4" />, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { value: 'followup', label: 'Follow-up Call', icon: <PhoneCall className="w-4 h-4" />, color: 'text-indigo-600', bg: 'bg-indigo-50' }
-  ];
-
-  // Priority options
-  const priorityOptions = [
-    { value: 'low', label: 'Low', color: 'text-green-600', bg: 'bg-green-50' },
-    { value: 'medium', label: 'Medium', color: 'text-amber-600', bg: 'bg-amber-50' },
-    { value: 'high', label: 'High', color: 'text-red-600', bg: 'bg-red-50' }
+    { value: 'property-viewing', label: 'Property Viewing', icon: <Eye className="w-4 h-4" />, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { value: 'client-meeting', label: 'Client Meeting', icon: <Users className="w-4 h-4" />, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { value: 'closing-session', label: 'Closing Session', icon: <Key className="w-4 h-4" />, color: 'text-green-600', bg: 'bg-green-50' },
+    { value: 'property-inspection', label: 'Property Inspection', icon: <Target className="w-4 h-4" />, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { value: 'follow-up-call', label: 'Follow-up Call', icon: <PhoneCall className="w-4 h-4" />, color: 'text-indigo-600', bg: 'bg-indigo-50' }
   ];
 
   // Reminder time options
@@ -105,39 +93,58 @@ export default function AddEventPage() {
     { value: '120', label: '2 hours before' }
   ];
 
-  // Load user info
-  useEffect(() => {
-    const stored = localStorage.getItem('userInfo');
-    if (stored) {
-      try {
-        const parsed: UserInfo = JSON.parse(stored);
-        setUserInfo(parsed);
-        fetchClients(parsed.uid);
-      } catch (err) {
-        message.error('Error loading user info');
-        setLoading(false);
-      }
-    }
-  }, []);
-
-  // Fetch clients
-  const fetchClients = async (uid: string) => {
+  const fetchClients = async () => {
     try {
-      const clientsData = await getData(`clients/${uid}`);
-      if (clientsData) {
-        const clientsArray = Object.entries(clientsData).map(([id, data]: [string, any]) => ({
-          id,
-          ...data
-        }));
-        setClients(clientsArray);
+      setLoading(true);
+
+      const clientsData: any = await getData("clients");
+
+      if (!clientsData) {
+        setClients([]);
+        return;
       }
+
+      const clientsArray = Object.entries(clientsData)
+        .map(([id, data]: [string, any]) => ({
+          id,
+          ...data,
+        }))
+        .filter((client) => client.agentUid === userInfo?.uid);
+
+      setClients(clientsArray);
     } catch (error) {
-      console.error("Error fetching clients:", error);
-      message.error('Failed to load clients');
+      message.error("Failed to load clients");
     } finally {
       setLoading(false);
     }
   };
+
+  // Check authentication and load data
+  useEffect(() => {
+    const checkAuth = async () => { 
+      try {
+        const user: any = await checkUserSession();
+        if (!user) {
+          message.error('Please Login First');
+          router.replace('/login');
+          return;
+        }
+
+        const storedUser: any = localStorage.getItem('userInfo')
+        const userData = JSON.parse(storedUser);
+        setUserInfo(userData);
+
+      } catch (err) {
+        message.error('Error occurred during authentication');
+        router.replace('/login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+    fetchClients()
+  }, [router]);
 
   // Handle client selection
   const handleClientSelect = (clientId: string) => {
@@ -146,11 +153,7 @@ export default function AddEventPage() {
       setSelectedClient(client);
       setFormData(prev => ({
         ...prev,
-        clientId,
-        propertyType: client.propertyType || '',
-        // Auto-generate title based on client and event type
-        title: `${eventTypes.find(et => et.value === formData.eventType)?.label} - ${client.firstName} ${client.lastName}`,
-        propertyAddress: client.preferredLocations || ''
+        clientIds: [...prev.clientIds,clientId]
       }));
     }
   };
@@ -161,38 +164,24 @@ export default function AddEventPage() {
       ...prev,
       [field]: value
     }));
-  };
 
-  // Add participant
-  const addParticipant = () => {
-    if (participantInput.trim() && !formData.participants.includes(participantInput.trim())) {
+    // Update title if event type changes and client is selected
+    if (field === 'eventType' && selectedClient) {
       setFormData(prev => ({
         ...prev,
-        participants: [...prev.participants, participantInput.trim()]
+        [field]: value,
+        title: `${eventTypes.find(et => et.value === value)?.label}`
       }));
-      setParticipantInput('');
     }
-  };
-
-  // Remove participant
-  const removeParticipant = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      participants: prev.participants.filter((_, i) => i !== index)
-    }));
-  };
-
+  }
+  
   // Validate form
   const validateForm = (): boolean => {
     if (!formData.title.trim()) {
       message.error('Please enter a title for the event');
       return false;
     }
-    if (!formData.clientId) {
-      message.error('Please select a client');
-      return false;
-    }
-    if (!formData.propertyAddress.trim()) {
+    if (!formData.address.trim()) {
       message.error('Please enter property address');
       return false;
     }
@@ -200,8 +189,8 @@ export default function AddEventPage() {
       message.error('Please select a date');
       return false;
     }
-    if (!formData.startTime || !formData.endTime) {
-      message.error('Please select start and end time');
+    if (!formData.startTime) {
+      message.error('Please select start time');
       return false;
     }
     if (formData.startTime >= formData.endTime) {
@@ -226,49 +215,26 @@ export default function AddEventPage() {
     try {
       const eventData = {
         ...formData,
-        clientName: selectedClient ? `${selectedClient.firstName} ${selectedClient.lastName}` : '',
-        ownerUid: userInfo.uid,
+        agentUid: userInfo.uid,
+        agentName: userInfo.name || userInfo.email,
         reminderSent: false,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
       };
 
-      await saveData(`events/${userInfo.uid}`, eventData);
+      // Generate a unique ID for the event
+      const eventId = crypto.randomUUID();
+
+      // Save event under user's events collection
+      await saveData(`events/${userInfo.uid}/${eventId}`, eventData);
 
       message.success('Event created successfully!');
       router.push(`/realstate/${userInfo.uid}/events`);
 
     } catch (error) {
-      console.error("Error creating event:", error);
+      console.error('Error creating event:', error);
       message.error('Failed to create event');
     } finally {
       setSaving(false);
-    }
-  };
-
-  // Quick fill example data (for demo purposes)
-  const fillExampleData = () => {
-    if (clients.length > 0) {
-      const exampleClient = clients[0];
-      setSelectedClient(exampleClient);
-      setFormData({
-        title: `Property Viewing - ${exampleClient.firstName} ${exampleClient.lastName}`,
-        description: 'First viewing of the property. Discuss requirements and show key features.',
-        eventType: 'viewing',
-        clientId: exampleClient.id,
-        propertyAddress: exampleClient.preferredLocations || '123 Example Street, City',
-        date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
-        startTime: '14:00',
-        endTime: '15:00',
-        status: 'scheduled',
-        notes: 'Client is interested in modern amenities and good neighborhood.',
-        participants: [`${exampleClient.firstName} ${exampleClient.lastName}`, 'Spouse'],
-        reminderTime: '30',
-        propertyType: exampleClient.propertyType || 'apartment',
-        budget: '$500,000 - $600,000',
-        priority: 'high'
-      });
-      message.info('Example data filled');
     }
   };
 
@@ -276,30 +242,33 @@ export default function AddEventPage() {
     return <Loader />;
   }
 
+  if (!userInfo) {
+    return null; // Will redirect to login
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white">
       <Header userData={userInfo} />
 
-      <main className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
         {/* Header */}
         <div className="mb-8 mt-4">
-          <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3 sm:items-center">
-              <button
-                onClick={() => router.push(`/realstate/${userInfo?.uid}/events`)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
-              </button>
-              <div className="hidden sm:block h-6 w-px bg-gray-300"></div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-6 mt-6 sm:mt-3">
+              <div className="w-6 h-px bg-gradient-to-r from-purple-500 to-blue-500"></div>
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-widest">Events Management</span>
+              <div className="w-6 h-px bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+            </div>
+
+            <div className="space-y-3">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 leading-tight">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
                   Schedule
-                  <span className="bg-gradient-to-br from-purple-500 to-blue-500 text-transparent bg-clip-text">
+                  <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                     {" "}New Event
                   </span>
                 </h1>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-gray-600 mt-2 max-w-xl">
                   Create property viewings, meetings, and client appointments
                 </p>
               </div>
@@ -342,7 +311,7 @@ export default function AddEventPage() {
               <div className="bg-white rounded-lg border border-gray-200 px-5 py-4 shadow-sm">
                 <label className="flex items-center gap-3 text-lg font-semibold text-gray-900 mb-4">
                   <span><ListFilter size={22} className="w-5 h-5 text-purple-600" />
-</span>
+                  </span>
                   <span>Select Event Type</span>
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -380,10 +349,9 @@ export default function AddEventPage() {
                   )}
                 </label>
                 <select
-                  value={formData.clientId}
+                  value={formData.clientIds[0]}
                   onChange={(e) => handleClientSelect(e.target.value)}
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors bg-white"
-                  required
                 >
                   <option value="">Select a client...</option>
                   {clients.map((client) => (
@@ -394,7 +362,7 @@ export default function AddEventPage() {
                 </select>
 
                 {selectedClient && (
-                  <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="mt-3 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center text-white font-semibold">
@@ -411,7 +379,15 @@ export default function AddEventPage() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setSelectedClient(null)}
+                        onClick={() => {
+                          setSelectedClient(null);
+                          setFormData(prev => ({
+                            ...prev,
+                            client: '',
+                            title: '',
+                            propertyAddress: ''
+                          }));
+                        }}
                         className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
                       >
                         <X className="w-4 h-4 text-gray-500" />
@@ -444,14 +420,14 @@ export default function AddEventPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Property Address
+                      Meeting Address
                     </label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
                         type="text"
-                        value={formData.propertyAddress}
-                        onChange={(e) => handleInputChange('propertyAddress', e.target.value)}
+                        value={formData.address}
+                        onChange={(e) => handleInputChange('address', e.target.value)}
                         placeholder="Enter full property address"
                         className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors"
                         required
@@ -494,7 +470,7 @@ export default function AddEventPage() {
                     </label>
                     <input
                       type="date"
-                      value={formData.date}
+                      value={formData?.date?.date}
                       onChange={(e) => handleInputChange('date', e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors"
