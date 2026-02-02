@@ -74,7 +74,7 @@ export default function ClientsPage() {
                         }));
 
                         const ownerClients = clientsArray.filter(
-                            (client: any) => client.ownerUid === userInfo?.uid
+                            (client: any) => client.agentUid === userInfo?.uid
                         );
 
                         setClients(ownerClients);

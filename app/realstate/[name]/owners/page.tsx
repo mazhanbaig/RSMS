@@ -252,7 +252,7 @@ export default function OwnersPage() {
                         }));
 
                         const userOwners = allOwners.filter(
-                            (owner: any) => owner.ownerUid === userInfo?.uid
+                            (owner: any) => owner.agentUid === userInfo?.uid
                         );
 
                         setOwners(userOwners);

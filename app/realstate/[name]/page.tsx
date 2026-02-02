@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState, useMemo, useCallback, useRef } from "react"
 import {
     Users, Home, DollarSign, Building, PhoneCall,
-    MessageSquare, Mail, ChevronRight, Bed, Bath, Crown
+    MessageSquare, Mail, ChevronRight, Bed, Bath, Crown,
+    CalendarClock
 } from "lucide-react"
 import { auth, checkUserSession, getData } from "@/FBConfig/fbFunctions"
 import { onAuthStateChanged } from "firebase/auth"
@@ -19,6 +20,7 @@ export default function AdminDashboardPage() {
     const [clients, setClients] = useState<any[]>([])
     const [owners, setOwners] = useState<any[]>([])
     const [properties, setProperties] = useState<any[]>([])
+    const [events, setEvents] = useState<any[]>([])
     const [greeting, setGreeting] = useState("")
     const [isInitialLoad, setIsInitialLoad] = useState(true)
 
@@ -60,6 +62,7 @@ export default function AdminDashboardPage() {
 
         checkAuth();
     }, [router]);
+
     // Optimized data fetching with single call
     const fetchAllData = useCallback(async () => {
         // Prevent multiple fetches
@@ -70,10 +73,11 @@ export default function AdminDashboardPage() {
             setIsInitialLoad(false);
 
             // Fetch all data in parallel
-            const [clientsData, ownersData, propertiesData] = await Promise.all([
-                getData('/clients/'),
-                getData('/owners/'),
-                getData('/properties/')
+            const [clientsData, ownersData, propertiesData, eventsData] = await Promise.all([
+                getData('clients'),
+                getData('owners'),
+                getData('properties'),
+                getData('events')
             ]);
 
             // Process data in parallel
@@ -81,54 +85,67 @@ export default function AdminDashboardPage() {
             const processedOwners = ownersData ? Object.entries(ownersData).map(([id, value]: any) => ({ id, ...value })) : [];
             const processedProperties = propertiesData ? Object.entries(propertiesData).map(([id, value]: any) => ({ id, ...value })) : [];
 
+            // Process events - need to handle nested structure
+            let processedEvents: any[] = [];
+            if (eventsData && userInfo?.uid) {
+                // Check if events exist for this user
+                const userEvents = eventsData[userInfo.uid];
+                if (userEvents) {
+                    processedEvents = Object.entries(userEvents).map(([id, value]: any) => ({
+                        id,
+                        ...value
+                    }));
+                }
+            }
+
             // Batch state updates
             setClients(processedClients);
             setOwners(processedOwners);
             setProperties(processedProperties);
+            setEvents(processedEvents);
 
         } catch (error) {
+            console.error("Error fetching data:", error);
             message.error("Error Occurred");
         } finally {
             setLoading(false);
         }
-    }, [isInitialLoad]);
+    }, [isInitialLoad, userInfo?.uid]);
 
-    // Fetch data once when component mounts
+    // Fetch data once when component mounts and when userInfo changes
     useEffect(() => {
-        fetchAllData();
-    }, [fetchAllData]);
+        if (userInfo?.uid) {
+            fetchAllData();
+        }
+    }, [userInfo?.uid, fetchAllData]);
 
     // Memoized stats to prevent recalculation on every render
     const stats = useMemo(() => {
-        const totalValue = properties.reduce((sum, p) => sum + (p.price || 0), 0);
+        const totalValue = properties.reduce((sum, p) => sum + (parseFloat(p.price) || 0), 0);
 
         return [
             {
                 title: "Total Clients",
                 value: clients.length,
                 icon: <Users className="h-5 w-5 text-blue-600" />,
-                change: "+12% this month",
             },
             {
                 title: "Property Owners",
                 value: owners.length,
                 icon: <Building className="h-5 w-5 text-purple-600" />,
-                change: "+5 new owners",
             },
             {
                 title: "Listed Properties",
                 value: properties.length,
                 icon: <Home className="h-5 w-5 text-green-600" />,
-                change: "+8 properties",
             },
             {
-                title: "Total Value",
-                value: `$${totalValue.toLocaleString()}`,
-                icon: <DollarSign className="h-5 w-5 text-amber-600" />,
-                change: "+15% growth",
+                title: "Upcoming Events",
+                value: events.length,
+                icon: <CalendarClock className="h-5 w-5 text-amber-600" />,
             }
         ];
-    }, [clients.length, owners.length, properties.length, properties]);
+    }, [clients.length, owners.length, properties.length, events.length]);
 
     // Memoized quick actions with useCallback for handlers
     const quickActions = useMemo(() => [
@@ -157,47 +174,37 @@ export default function AdminDashboardPage() {
             path: `/realstate/${userInfo?.uid}/properties/addproperty`,
         },
         {
-            icon: <DollarSign className="h-6 w-6" />,
+            icon: <CalendarClock className="h-6 w-6" />,
             label: "Analytics",
             description: "View performance insights",
             textColor: "text-amber-600",
             bgColor: "bg-gradient-to-br from-amber-100 to-amber-50",
             path: '',
         },
-    ], []);
+    ], [userInfo?.uid]);
 
     // Memoized recent items with limit
     const recentClients = useMemo(() => clients.slice(0, 2), [clients]);
     const recentProperties = useMemo(() => properties.slice(0, 2), [properties]);
     const recentOwners = useMemo(() => owners.slice(0, 2), [owners]);
 
-    // Pre-defined upcoming events (no need for state)
-    const upcomingEvents = useMemo(() => [
-        {
-            id: 1,
-            title: "Property Viewing - Modern Villa",
-            date: "28 FEB",
-            time: "9:00 AM",
-            attendees: "2 clients",
-            color: "from-blue-500 to-cyan-500"
-        },
-        {
-            id: 2,
-            title: "Client Meeting - John Smith",
-            date: "15 MAR",
-            time: "2:00 PM",
-            attendees: "Contract discussion",
-            color: "from-purple-500 to-pink-500"
-        },
-        {
-            id: 3,
-            title: "Property Launch Event",
-            date: "22 MAR",
-            time: "6:00 PM",
-            attendees: "All agents",
-            color: "from-green-500 to-emerald-500"
-        }
-    ], []);
+    // Format events for display
+    const upcomingEvents = useMemo(() => {
+        return events
+            .filter(event => {
+                if (!event.date) return false;
+                const eventDate = new Date(event.date);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return eventDate >= today;
+            })
+            .sort((a, b) => {
+                const dateA = new Date(a.date).getTime();
+                const dateB = new Date(b.date).getTime();
+                return dateA - dateB;
+            })
+            .slice(0, 2); // Limit to 2 events
+    }, [events]);
 
     // Memoized status color function
     const getStatusColor = useCallback((status: string) => {
@@ -217,21 +224,28 @@ export default function AdminDashboardPage() {
 
     const navigateToClient = useCallback((id: string) => {
         router.push(`/realstate/${userInfo?.uid}/clients/viewclient/${id}`);
-    }, [router]);
+    }, [router, userInfo?.uid]);
 
     const navigateToProperty = useCallback((id: string) => {
         router.push(`/realstate/${userInfo?.uid}/properties/viewproperty/${id}`);
-    }, [router]);
+    }, [router, userInfo?.uid]);
 
     const navigateToOwner = useCallback((id: string) => {
         router.push(`/realstate/${userInfo?.uid}/owners/viewowner/${id}`);
-    }, [router]);
+    }, [router, userInfo?.uid]);
 
     // Quick action handler
     const handleQuickAction = useCallback((path: string, e?: any) => {
         if (e) e.stopPropagation();
-        navigateTo(path);
+        if (path) {
+            navigateTo(path);
+        }
     }, [navigateTo]);
+
+    // Handle view all events
+    const handleViewAllEvents = useCallback(() => {
+        navigateTo(`/realstate/${userInfo?.uid}/events`);
+    }, [navigateTo, userInfo?.uid]);
 
     if (loading) {
         return <Loader />
@@ -293,6 +307,9 @@ export default function AdminDashboardPage() {
                                     <div className="text-right">
                                         <h3 className="text-2xl font-bold text-gray-900 mb-0.5">{stat.value}</h3>
                                         <p className="text-gray-600 text-xs mb-2">{stat.title}</p>
+                                        {stat.change && (
+                                            <p className="text-xs text-green-600">{stat.change}</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -320,7 +337,7 @@ export default function AdminDashboardPage() {
                                     <div
                                         key={index}
                                         onClick={(e) => handleQuickAction(action.path, e)}
-                                        className="px-3 py-2 rounded-xl border border-gray-100 hover:border-purple-300 hover:shadow-sm transition-all group cursor-pointer"
+                                        className={`px-3 py-2 rounded-xl border border-gray-100 hover:border-purple-300 hover:shadow-sm transition-all ${action.path ? 'cursor-pointer' : 'cursor-default'}`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className={`p-2 rounded-lg ${action.bgColor}`}>
@@ -332,7 +349,9 @@ export default function AdminDashboardPage() {
                                                 <h4 className="font-semibold text-gray-900 truncate">{action.label}</h4>
                                                 <div className="flex items-center justify-between text-xs text-gray-500">
                                                     <span>{action.description}</span>
-                                                    <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    {action.path && (
+                                                        <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -390,7 +409,7 @@ export default function AdminDashboardPage() {
 
                                             <div className="flex items-center gap-3 shrink-0">
                                                 <span className="text-sm font-semibold text-gray-900">
-                                                    ${property.price?.toLocaleString() || '0'}
+                                                    ${parseFloat(property.price)?.toLocaleString() || '0'}
                                                 </span>
 
                                                 <span
@@ -411,7 +430,7 @@ export default function AdminDashboardPage() {
                                             label="Add Property"
                                             size="sm"
                                             variant="theme"
-                                            onClick={() => navigateTo('/properties/addproperty')}
+                                            onClick={() => navigateTo(`/realstate/${userInfo?.uid}/properties/addproperty`)}
                                         />
                                     </div>
                                 )}
@@ -452,13 +471,13 @@ export default function AdminDashboardPage() {
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-gray-900 text-sm">
-                                                        {client.firstName} {client.lastName}
+                                                        {client.firstName || 'Unknown'} {client.lastName || ''}
                                                     </span>
                                                     <span className="text-xs text-gray-500 truncate max-w-[120px]">
-                                                        {client.email}
+                                                        {client.email || 'No email'}
                                                     </span>
                                                     <div className="text-xs text-gray-600 flex items-center gap-1 mt-1">
-                                                        <span>{client.phone}</span>
+                                                        <span>{client.phone || 'No phone'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -508,13 +527,13 @@ export default function AdminDashboardPage() {
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-gray-900 text-sm">
-                                                        {owner.firstName} {owner.lastName}
+                                                        {owner.firstName || 'Unknown'} {owner.lastName || ''}
                                                     </span>
                                                     <span className="text-xs text-gray-500 truncate max-w-[120px]">
-                                                        {owner.email}
+                                                        {owner.email || 'No email'}
                                                     </span>
                                                     <div className="text-xs text-gray-600 flex items-center gap-1 mt-1">
-                                                        <span>{owner.phone}</span>
+                                                        <span>{owner.phone || 'No phone'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -533,7 +552,7 @@ export default function AdminDashboardPage() {
                             </div>
                         </div>
 
-                        {/* Upcoming Events - Static data */}
+                        {/* Upcoming Events */}
                         <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-lg shadow-black/5">
                             <div className="flex items-center justify-between mb-3">
                                 <div>
@@ -546,56 +565,44 @@ export default function AdminDashboardPage() {
                                     label="View All"
                                     variant="theme2"
                                     size="sm"
-                                    onClick={() => navigateTo('/calendar')}
+                                    onClick={handleViewAllEvents}
                                 />
                             </div>
 
                             <div className="space-y-3">
-                                {upcomingEvents.map((event, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="flex items-center justify-between px-3 py-1 rounded-xl border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300 cursor-pointer group"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 text-lg sm:text-xl bg-black rounded-lg flex items-center justify-center font-semibold shadow-md text-white`}>
-                                                {event.date.split(' ')[0]}
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className="font-semibold text-gray-900 text-sm">{event.title}</span>
-                                                <span className="text-xs text-gray-500">
-                                                    {event.date} • {event.time}
-                                                </span>
-                                                <div className="text-xs text-gray-600 mt-1">
-                                                    {event.attendees}
+                                {upcomingEvents.length > 0 ? (
+                                    upcomingEvents.map((event, idx) => (
+                                        <div
+                                            key={event.id || idx}
+                                            className="flex items-center justify-between px-3 py-1 rounded-xl border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300 cursor-pointer group"
+                                            onClick={() => navigateTo(`/realstate/${userInfo?.uid}/events`)}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 text-lg sm:text-xl bg-black rounded-lg flex items-center justify-center font-semibold shadow-md text-white">
+                                                    {event.date ? new Date(event.date).getDate() : '?'}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="font-semibold text-gray-900 text-sm">{event.title || 'Untitled Event'}</span>
+                                                    <span className="text-xs text-gray-500">
+                                                        {event.date ? new Date(event.date).toLocaleDateString() : 'No date'} • {event.startTime || ''}
+                                                    </span>
+                                                    <div className="text-xs text-gray-600 mt-1">
+                                                        {event.address || 'No location'}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div className="flex items-center">
-                                            <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
+                                            <div className="flex items-center">
+                                                <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
+                                            </div>
                                         </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center">
+                                        <CalendarClock className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                                        <p className="text-gray-600">No upcoming events</p>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Quick Contact */}
-                        <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white">
-                            <h2 className="text-xl font-bold mb-4">Need Help?</h2>
-                            <p className="text-purple-100 mb-6">Our support team is available 24/7</p>
-                            <div className="space-y-3">
-                                <button className="flex items-center w-full p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">
-                                    <PhoneCall className="w-5 h-5 mr-3" />
-                                    <span>Call Support</span>
-                                </button>
-                                <button className="flex items-center w-full p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">
-                                    <MessageSquare className="w-5 h-5 mr-3" />
-                                    <span>Live Chat</span>
-                                </button>
-                                <button className="flex items-center w-full p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">
-                                    <Mail className="w-5 h-5 mr-3" />
-                                    <span>Email Support</span>
-                                </button>
+                                )}
                             </div>
                         </div>
                     </div>

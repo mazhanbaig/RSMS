@@ -33,6 +33,7 @@ interface ClientData {
   propertyType: string;
   preferredLocations: string;
   ownerUid?: string;
+  agentUid?: string; // Added this
 }
 
 interface EventFormData {
@@ -40,11 +41,11 @@ interface EventFormData {
   description: string;
   eventType: string;
   address: string;
-  date: any;
+  date: string; // Changed from object to string
   startTime: string;
   endTime: string;
   notes: string;
-  clientIds: any[];
+  clientIds: string[];
   reminderTime: '15' | '30' | '60' | '120';
 }
 
@@ -54,8 +55,6 @@ export default function AddEventPage() {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [clients, setClients] = useState<ClientData[]>([]);
-  const [selectedClient, setSelectedClient] = useState<ClientData | null>(null);
-  const [participantInput, setParticipantInput] = useState('');
   const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState<EventFormData>({
@@ -63,12 +62,7 @@ export default function AddEventPage() {
     description: '',
     eventType: 'property-viewing',
     address: '',
-    date: {
-      day: new Date().getDay(),
-      date: new Date().getDate(),
-      month: new Date().getMonth(),
-      year: new Date().getFullYear(),
-    },
+    date: new Date().toISOString().split('T')[0], // Simplified date format
     startTime: '10:00',
     endTime: '11:00',
     notes: '',
@@ -93,7 +87,7 @@ export default function AddEventPage() {
     { value: '120', label: '2 hours before' }
   ];
 
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -109,19 +103,23 @@ export default function AddEventPage() {
           id,
           ...data,
         }))
-        .filter((client) => client.agentUid === userInfo?.uid);
+        .filter((client) => client.agentUid === userInfo?.uid || client.ownerUid === userInfo?.uid);
 
       setClients(clientsArray);
     } catch (error) {
+      console.error("Failed to load clients:", error);
       message.error("Failed to load clients");
     } finally {
       setLoading(false);
     }
-  };
+  }, [userInfo?.uid]);
+
+  // Get selected clients
+  const selectedClients = clients.filter(client => formData.clientIds.includes(client.id));
 
   // Check authentication and load data
   useEffect(() => {
-    const checkAuth = async () => { 
+    const checkAuth = async () => {
       try {
         const user: any = await checkUserSession();
         if (!user) {
@@ -130,32 +128,39 @@ export default function AddEventPage() {
           return;
         }
 
-        const storedUser: any = localStorage.getItem('userInfo')
-        const userData = JSON.parse(storedUser);
-        setUserInfo(userData);
+        const storedUser: any = localStorage.getItem('userInfo');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          setUserInfo(userData);
+        } else {
+          message.error('No user info found');
+          router.replace('/login');
+        }
 
       } catch (err) {
+        console.error('Authentication error:', err);
         message.error('Error occurred during authentication');
         router.replace('/login');
-      } finally {
-        setLoading(false);
       }
     };
 
     checkAuth();
-    fetchClients()
   }, [router]);
 
-  // Handle client selection
-  const handleClientSelect = (clientId: string) => {
-    const client = clients.find(c => c.id === clientId);
-    if (client) {
-      setSelectedClient(client);
-      setFormData(prev => ({
-        ...prev,
-        clientIds: [...prev.clientIds,clientId]
-      }));
+  // Fetch clients when userInfo is available
+  useEffect(() => {
+    if (userInfo?.uid) {
+      fetchClients();
     }
+  }, [userInfo?.uid, fetchClients]);
+
+  const handleClientSelect = (clientId: string) => {
+    if (!clientId || formData.clientIds.includes(clientId)) return;
+
+    setFormData(prev => ({
+      ...prev,
+      clientIds: [...prev.clientIds, clientId],
+    }));
   };
 
   // Handle form input changes
@@ -165,16 +170,16 @@ export default function AddEventPage() {
       [field]: value
     }));
 
-    // Update title if event type changes and client is selected
-    if (field === 'eventType' && selectedClient) {
+    // Update title if event type changes
+    if (field === 'eventType') {
+      const eventTypeLabel = eventTypes.find(et => et.value === value)?.label || '';
       setFormData(prev => ({
         ...prev,
-        [field]: value,
-        title: `${eventTypes.find(et => et.value === value)?.label}`
+        title: `${eventTypeLabel}${selectedClients.length > 0 ? ` with ${selectedClients[0].firstName}` : ''}`
       }));
     }
-  }
-  
+  };
+
   // Validate form
   const validateForm = (): boolean => {
     if (!formData.title.trim()) {
@@ -197,6 +202,10 @@ export default function AddEventPage() {
       message.error('End time must be after start time');
       return false;
     }
+    if (formData.clientIds.length === 0) {
+      message.error('Please select at least one client');
+      return false;
+    }
     return true;
   };
 
@@ -213,16 +222,23 @@ export default function AddEventPage() {
     setSaving(true);
 
     try {
+      
+      // Generate a unique ID for the event
+      const eventId = crypto.randomUUID();
       const eventData = {
         ...formData,
+        id:eventId,
         agentUid: userInfo.uid,
         agentName: userInfo.name || userInfo.email,
         reminderSent: false,
         createdAt: new Date().toISOString(),
+        clientDetails: selectedClients.map(client => ({
+          id: client.id,
+          name: `${client.firstName} ${client.lastName}`,
+          email: client.email,
+          phone: client.phone
+        }))
       };
-
-      // Generate a unique ID for the event
-      const eventId = crypto.randomUUID();
 
       // Save event under user's events collection
       await saveData(`events/${userInfo.uid}/${eventId}`, eventData);
@@ -310,8 +326,7 @@ export default function AddEventPage() {
               {/* Event Type Selection */}
               <div className="bg-white rounded-lg border border-gray-200 px-5 py-4 shadow-sm">
                 <label className="flex items-center gap-3 text-lg font-semibold text-gray-900 mb-4">
-                  <span><ListFilter size={22} className="w-5 h-5 text-purple-600" />
-                  </span>
+                  <ListFilter size={22} className="w-5 h-5 text-purple-600" />
                   <span>Select Event Type</span>
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -342,57 +357,62 @@ export default function AddEventPage() {
                 <label className="flex items-center gap-3 text-lg font-semibold text-gray-900 mb-3">
                   <User size={22} className="w-5 h-5 text-purple-600" />
                   <span>Select Client</span>
-                  {selectedClient && (
+                  {selectedClients.length > 0 && (
                     <span className="ml-2 text-sm text-gray-600">
-                      • {selectedClient.firstName} {selectedClient.lastName}
+                      • {selectedClients[0].firstName} {selectedClients[0].lastName}
+                      {selectedClients.length > 1 && ` + ${selectedClients.length - 1} more`}
                     </span>
                   )}
                 </label>
                 <select
-                  value={formData.clientIds[0]}
                   onChange={(e) => handleClientSelect(e.target.value)}
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors bg-white"
+                  value=""
                 >
                   <option value="">Select a client...</option>
-                  {clients.map((client) => (
+                  {clients.map(client => (
                     <option key={client.id} value={client.id}>
                       {client.firstName} {client.lastName} • {client.email}
                     </option>
                   ))}
                 </select>
-
-                {selectedClient && (
-                  <div className="mt-3 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center text-white font-semibold">
-                          {selectedClient.firstName.charAt(0)}{selectedClient.lastName.charAt(0)}
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">
-                            {selectedClient.firstName} {selectedClient.lastName}
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            {selectedClient.email} • {selectedClient.phone}
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedClient(null);
-                          setFormData(prev => ({
-                            ...prev,
-                            client: '',
-                            title: '',
-                            propertyAddress: ''
-                          }));
-                        }}
-                        className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                {selectedClients.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    {selectedClients.map(client => (
+                      <div
+                        key={client.id}
+                        className="px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between"
                       >
-                        <X className="w-4 h-4 text-gray-500" />
-                      </button>
-                    </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center text-white font-semibold">
+                            {client.firstName?.charAt(0) || ''}
+                            {client.lastName?.charAt(0) || ''}
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900">
+                              {client.firstName} {client.lastName}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {client.email} • {client.phone}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* REMOVE BUTTON */}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormData(prev => ({
+                              ...prev,
+                              clientIds: prev.clientIds.filter(id => id !== client.id),
+                            }))
+                          }
+                          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          <X className="w-4 h-4 text-gray-500" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -470,7 +490,7 @@ export default function AddEventPage() {
                     </label>
                     <input
                       type="date"
-                      value={formData?.date?.date}
+                      value={formData.date}
                       onChange={(e) => handleInputChange('date', e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors"

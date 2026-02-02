@@ -246,7 +246,7 @@ export default function ElegantEventsPage() {
         return events.filter(event => {
             const matchesSearch = searchTerm === '' ||
                 event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                event.propertyAddress?.toLowerCase().includes(searchTerm.toLowerCase());
+                event.address?.toLowerCase().includes(searchTerm.toLowerCase());
 
             const matchesType = filterType === 'all' || event.eventType === filterType;
 
@@ -357,12 +357,6 @@ export default function ElegantEventsPage() {
                             icon: <Clock className="w-5 h-5 text-green-600" />,
                             color: 'green'
                         },
-                        {
-                            title: 'Completed',
-                            value: eventStats.completed,
-                            icon: <CheckCircle className="w-5 h-5 text-amber-600" />,
-                            color: 'amber'
-                        }
                     ].map((stat, idx) => (
                         <div key={idx} className="relative group">
                             <div className="relative bg-white rounded-xl border border-gray-100 px-4 py-2 shadow-sm hover:shadow-md hover:border-purple-200 transition-all duration-300">
@@ -410,7 +404,7 @@ export default function ElegantEventsPage() {
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                                 <input
                                     type="text"
-                                    placeholder="Search events, clients, or properties..."
+                                    placeholder="Search by events or address"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors md:min-w-80"
@@ -498,7 +492,7 @@ export default function ElegantEventsPage() {
 
                                                     {/* Client Info */}
                                                     {event.clientIds && event.clientIds.length > 0 && (
-                                                        <div className="flex items-center gap-3 mb-3 p-3 bg-gray-50 rounded-lg">
+                                                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                                             <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center text-white font-semibold">
                                                                 C
                                                             </div>
@@ -515,7 +509,7 @@ export default function ElegantEventsPage() {
                                                 </div>
 
                                                 {/* Event Details */}
-                                                <div className="p-4">
+                                                <div className="px-4 py-3">
                                                     <div className="space-y-2.5 mb-4">
                                                         <div className="flex items-center gap-3 text-sm">
                                                             <Calendar className="w-4 h-4 text-gray-400" />
@@ -621,37 +615,6 @@ export default function ElegantEventsPage() {
 
                     {/* Right Sidebar */}
                     <div className="space-y-6">
-                        {/* Quick Actions */}
-                        <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-                            <div className="flex items-center gap-2 mb-4">
-                                <Zap className="w-5 h-5 text-amber-500" />
-                                <h3 className="font-semibold text-gray-900">Quick Actions</h3>
-                            </div>
-                            <div className="space-y-2">
-                                <Button
-                                    label="Schedule Viewing"
-                                    variant="theme"
-                                    icon={<Eye className="w-4 h-4" />}
-                                    size="sm"
-                                    onClick={() => router.push(`/realstate/${userInfo?.uid}/add-event?type=property-viewing`)}
-                                />
-                                <Button
-                                    label="Client Meeting"
-                                    variant="theme2"
-                                    icon={<Users className="w-4 h-4" />}
-                                    size="sm"
-                                    onClick={() => router.push(`/realstate/${userInfo?.uid}/add-event?type=client-meeting`)}
-                                />
-                                <Button
-                                    label="Send Reminders"
-                                    variant="theme2"
-                                    icon={<Bell className="w-4 h-4" />}
-                                    size="sm"
-                                    onClick={() => message.info('Sending reminders...')}
-                                />
-                            </div>
-                        </div>
-
                         {/* Today's Events */}
                         <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
                             <div className="flex items-center justify-between mb-4">
@@ -680,7 +643,7 @@ export default function ElegantEventsPage() {
                                             </div>
                                             <div className="flex items-center gap-2 text-xs text-gray-600">
                                                 <MapPin className="w-3.5 h-3.5" />
-                                                <span className="truncate">{event.propertyAddress}</span>
+                                                <span className="truncate">{event.address}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -692,26 +655,6 @@ export default function ElegantEventsPage() {
                                     </div>
                                 )}
                             </div>
-                        </div>
-
-                        {/* Upcoming This Week */}
-                        <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white">
-                            <h2 className="text-xl font-bold mb-4">Upcoming This Week</h2>
-                            <p className="text-purple-100 mb-6">
-                                {events.filter(e => {
-                                    const eventDate = new Date(e.date);
-                                    const today = new Date();
-                                    const nextWeek = new Date(today);
-                                    nextWeek.setDate(nextWeek.getDate() + 7);
-                                    return eventDate >= today && eventDate <= nextWeek;
-                                }).length} events scheduled
-                            </p>
-                            <Button
-                                label="View Calendar"
-                                variant="theme"
-                                onClick={() => message.info('Calendar view coming soon')}
-                                classNameC="bg-white text-purple-600 hover:bg-gray-100"
-                            />
                         </div>
                     </div>
                 </div>
@@ -734,90 +677,3 @@ const ListIcon = ({ className }: { className?: string }) => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
     </svg>
 );
-
-
-
-// 'use client'
-
-// import { checkUserSession, getData } from "@/FBConfig/fbFunctions";
-// import { message } from "antd";
-// import { useRouter } from "next/navigation"
-// import { useEffect, useMemo, useState } from "react"
-
-// export default function EventPage() {
-//     let router = useRouter()
-//     const [userInfo, setUserInfo] = useState<any>(null)
-//     const [loading, setLoading] = useState<boolean>(true)
-//     const [events, setEvents] = useState<any[]>([])
-
-//     // Check authentication and load data
-//     useEffect(() => {
-//         const checkAuth = async () => {
-//             try {
-//                 const user: any = await checkUserSession();
-//                 if (!user) {
-//                     message.error('Please Login First');
-//                     router.replace('/login');
-//                     return;
-//                 }
-
-//                 const storedUser: any = localStorage.getItem('userInfo')
-//                 const userData = JSON.parse(storedUser);
-//                 setUserInfo(userData);
-
-//             } catch (err) {
-//                 message.error('Error occurred during authentication');
-//                 router.replace('/login');
-//             } finally {
-//                 setLoading(false);
-//             }
-//         };
-
-//         checkAuth();
-//     }, [router]);
-
-//     useEffect(() => {
-//         fetchEvents()
-//         console.log(thisWeekEvents);
-        
-//     }, [])
-
-//     const fetchEvents = async () => {
-//         try {
-//             let eventsObj: any = await getData(`events/${userInfo?.uid}`)
-//             const eventsArray: any = Object.entries(eventsObj)
-//                 .map(([id, data]: [string, any]) => ({
-//                     id,
-//                     ...data,
-//                 }))
-//             setEvents(eventsArray)
-//         } catch (error) {
-//             message.error('Failed to fetch events')
-//         }
-//     }
-
-//     const thisWeekEvents = useMemo(() => {
-//         const today = new Date();
-
-//         // Get start of the week (Sunday)
-//         const startOfWeek = new Date(today);
-//         startOfWeek.setDate(today.getDate() - (today.getDay()+1));
-
-//         // Get end of the week (Saturday)
-//         const endOfWeek = new Date(startOfWeek);
-//         endOfWeek.setDate(startOfWeek.getDate() + 7);
-
-//         return events.filter((event: any) => {
-//             const eventDate = new Date(event.date);
-
-//             return eventDate >= startOfWeek && eventDate <= endOfWeek;
-//         });
-//     }, [events]);
-
-
-//     return (
-//         <div>
-
-//         </div>
-//     )
-// }
