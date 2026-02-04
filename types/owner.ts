@@ -1,5 +1,6 @@
 export interface Owner{
     id: string,
+    createdAt:any,
     agentUid: string,
     agentName: string,
 

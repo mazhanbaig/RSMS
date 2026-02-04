@@ -177,7 +177,7 @@ export default function ElegantEventsPage() {
     const fetchEvents = async (uid: string) => {
         try {
             setLoading(true);
-            const eventsData: any = await getData(`events/${uid}`);
+            const eventsData: any = await getData(`events/${uid}/`);
 
             if (eventsData) {
                 const eventsArray: EventData[] = Object.entries(eventsData)
