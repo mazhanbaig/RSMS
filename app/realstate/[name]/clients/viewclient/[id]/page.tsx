@@ -176,7 +176,7 @@ export default function ViewClientPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white">
+        <div className="min-h-screen w-full bg-gradient-to-br from-white via-gray-50 to-white">
             <Header userData={userInfo} />
 
             <main className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

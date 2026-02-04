@@ -441,7 +441,7 @@ export default function ViewOwnerPage() {
 
     if (!owner) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white">
+            <div className="min-h-screen w-full bg-gradient-to-br from-white via-gray-50 to-white">
                 <Header userData={userInfo} />
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
