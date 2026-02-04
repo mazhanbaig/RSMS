@@ -27,7 +27,7 @@ const PricingSection = () => {
                     <div className="w-full lg:w-3/5 max-w-2xl">
                         <div className="relative bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-2 border-transparent">
                             {/* Most Popular Badge */}
-                            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                            <div className="hidden sm:block absolute -top-3 left-1/2 transform -translate-x-1/2">
                                 <div className="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-6 py-1.5 rounded-full font-semibold text-sm flex items-center gap-2 shadow-lg">
                                     <Star className="w-4 h-4 fill-white" />
                                     Most Popular Choice

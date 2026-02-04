@@ -204,10 +204,6 @@ export default function HomePage() {
                   <div className="text-2xl font-bold text-slate-900 mb-1">100%</div>
                   <div className="text-sm text-slate-600">Cloud Based</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-slate-900 mb-1">$0</div>
-                  <div className="text-sm text-slate-600">Startup Cost</div>
-                </div>
               </div>
             </div>
 
