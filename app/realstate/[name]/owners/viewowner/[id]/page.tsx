@@ -552,24 +552,10 @@ export default function ViewOwnerPage() {
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
                                     <div className="flex items-center gap-2">
-                                        <MapPin className="w-4 h-4 text-gray-600" />
-                                        <span className="text-sm text-gray-600">Location</span>
-                                    </div>
-                                    <span className="text-sm font-medium text-gray-900">{owner.city}, {owner.state}</span>
-                                </div>
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                                    <div className="flex items-center gap-2">
                                         <Calendar className="w-4 h-4 text-gray-600" />
                                         <span className="text-sm text-gray-600">Owner Since</span>
                                     </div>
-                                    <span className="text-sm font-medium text-gray-900">{formatDate(owner.ownerSince)}</span>
-                                </div>
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                                    <div className="flex items-center gap-2">
-                                        <User className="w-4 h-4 text-gray-600" />
-                                        <span className="text-sm text-gray-600">Contact Method</span>
-                                    </div>
-                                    <span className="text-sm font-medium text-gray-900 capitalize">{owner.preferredContactMethod}</span>
+                                    <span className="text-sm font-medium text-gray-900">{owner.createdAt?.slice(0,10)}</span>
                                 </div>
                             </div>
                         </div>
@@ -587,20 +573,6 @@ export default function ViewOwnerPage() {
                                         <span className="text-sm text-gray-600">Properties Owned</span>
                                     </div>
                                     <span className="text-lg font-bold text-gray-900">{owner.propertiesOwned || 0}</span>
-                                </div>
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50">
-                                    <div className="flex items-center gap-2">
-                                        <DollarSign className="w-4 h-4 text-blue-600" />
-                                        <span className="text-sm text-gray-600">Total Value</span>
-                                    </div>
-                                    <span className="text-lg font-bold text-gray-900">${(owner.totalPropertyValue || 0).toLocaleString()}</span>
-                                </div>
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50">
-                                    <div className="flex items-center gap-2">
-                                        <Key className="w-4 h-4 text-green-600" />
-                                        <span className="text-sm text-gray-600">Avg Rent</span>
-                                    </div>
-                                    <span className="text-lg font-bold text-gray-900">${(owner.averageRent || 0).toLocaleString()}/mo</span>
                                 </div>
                             </div>
                         </div>
@@ -633,37 +605,6 @@ export default function ViewOwnerPage() {
                                     size="sm"
                                     onClick={() => router.push(`/realstate/${userInfo?.uid}/properties/addproperty`)}
                                 />
-                            </div>
-                        </div>
-
-                        {/* Status Update */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                            <h3 className="font-semibold text-gray-900 mb-4">Update Status</h3>
-                            <div className="grid grid-cols-2 gap-2">
-                                {[
-                                    { status: 'active', label: 'Active' },
-                                    { status: 'pending', label: 'Pending' },
-                                    { status: 'inactive', label: 'Inactive' },
-                                    { status: 'sold', label: 'Sold All' }
-                                ].map((item) => {
-                                    const config = getStatusConfig(item.status);
-                                    const isActive = owner.status === item.status;
-
-                                    return (
-                                        <button
-                                            key={item.status}
-                                            onClick={() => updateStatus(item.status)}
-                                            className={`px-3 py-2.5 rounded-lg text-sm transition-all duration-200 border flex items-center justify-center gap-2
-                                                ${isActive
-                                                    ? `${config.bg} ${config.border} border ${config.color} font-medium`
-                                                    : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
-                                                }`}
-                                        >
-                                            {config.icon}
-                                            {item.label}
-                                        </button>
-                                    );
-                                })}
                             </div>
                         </div>
                     </div>
@@ -712,32 +653,6 @@ export default function ViewOwnerPage() {
                                             </div>
                                             <div className="px-4 py-3 rounded-lg bg-gray-50">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-blue-100 rounded-lg">
-                                                        <DollarSign className="w-4 h-4 text-blue-600" />
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-sm text-gray-600">Portfolio Value</div>
-                                                        <div className="font-semibold text-gray-900">
-                                                            ${(owner.totalPropertyValue || 0).toLocaleString()}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="px-4 py-3 rounded-lg bg-gray-50">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-green-100 rounded-lg">
-                                                        <Key className="w-4 h-4 text-green-600" />
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-sm text-gray-600">Avg Monthly Rent</div>
-                                                        <div className="font-semibold text-gray-900">
-                                                            ${(owner.averageRent || 0).toLocaleString()}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="px-4 py-3 rounded-lg bg-gray-50">
-                                                <div className="flex items-center gap-3">
                                                     <div className="p-2 bg-amber-100 rounded-lg">
                                                         <Calendar className="w-4 h-4 text-amber-600" />
                                                     </div>
@@ -745,34 +660,6 @@ export default function ViewOwnerPage() {
                                                         <div className="text-sm text-gray-600">Years as Owner</div>
                                                         <div className="font-semibold text-gray-900">
                                                             {owner.ownerSince ? Math.floor((new Date().getTime() - new Date(owner.ownerSince).getTime()) / (1000 * 60 * 60 * 24 * 365)) : 0} years
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="p-4 rounded-lg border border-gray-200">
-                                                <div className="flex items-center gap-3 mb-3">
-                                                    <MapPin className="w-5 h-5 text-blue-600" />
-                                                    <div>
-                                                        <div className="font-medium text-gray-900">Address</div>
-                                                        <div className="text-gray-700 mt-1">{owner.address}</div>
-                                                        <div className="text-gray-600 text-sm mt-1">{owner.city}, {owner.state} {owner.zipCode}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="p-4 rounded-lg border border-gray-200">
-                                                <div className="flex items-center gap-3 mb-3">
-                                                    <User className="w-5 h-5 text-purple-600" />
-                                                    <div>
-                                                        <div className="font-medium text-gray-900">Preferred Contact</div>
-                                                        <div className="text-gray-700 mt-1 capitalize">{owner.preferredContactMethod || 'Email'}</div>
-                                                        <div className="text-gray-600 text-sm mt-1">
-                                                            {owner.preferredContactMethod === 'phone' ? owner.phone : owner.email}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -936,6 +823,35 @@ export default function ViewOwnerPage() {
                                     </div>
                                 </div>
                             )}
+                        </div>
+                        {/* Status Update */}
+                        <div className="mt-6 bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                            <h3 className="font-semibold text-gray-900 mb-4">Update Status</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                {[
+                                    { status: 'active', label: 'Active' },
+                                    { status: 'deal-Done', label: 'Deal Done' },
+                                    { status: 'lost', label: 'Lost' }
+                                ].map((item) => {
+                                    const config = getStatusConfig(item.status);
+                                    const isActive = owner.status === item.status;
+
+                                    return (
+                                        <button
+                                            key={item.status}
+                                            onClick={() => updateStatus(item.status)}
+                                            className={`px-3 py-2.5 rounded-lg text-sm transition-all duration-200 border flex items-center justify-center gap-2
+                                                ${isActive
+                                                    ? `${config.bg} ${config.border} border ${config.color} font-medium`
+                                                    : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                                                }`}
+                                        >
+                                            {config.icon}
+                                            {item.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>

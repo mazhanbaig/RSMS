@@ -313,6 +313,7 @@ export default function ViewClientPage() {
                                     variant="theme2"
                                     icon={<Calendar className="w-4 h-4" />}
                                     size="sm"
+                                    onClick={() => router.push(`/realstate/${userInfo?.uid}/events/addevent`)}
                                 />
                             </div>
                         </div>
