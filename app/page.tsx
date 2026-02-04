@@ -458,201 +458,191 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-slate-50">
+      {/* Pricing Section - Mobile First */}
+      <section className="py-12 md:py-16 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-              Simple, <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Transparent</span> Pricing
+          <div className="text-center mb-8 md:mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-100 mb-4">
+              <CreditCard className="w-4 h-4 text-purple-600" />
+              <span className="text-sm font-medium text-purple-700">Simple Pricing</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-3">
+              One Plan, <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Unlimited Value</span>
             </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">
-              One powerful plan for all real estate professionals
+            <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
+              Everything you need to manage your real estate business for just ₹500/month
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto">
-            {/* Main Pricing Card */}
-            <div className="relative group">
-              {/* Glow Effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+          {/* Main Pricing Card */}
+          <div className="max-w-lg mx-auto lg:max-w-4xl">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
 
-              {/* Pricing Card */}
-              <div className="relative bg-gradient-to-br from-white to-slate-50 rounded-3xl border-2 border-purple-200 shadow-2xl overflow-hidden">
-                {/* Ribbon */}
-                <div className="absolute top-0 right-6 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-b-lg shadow-lg">
-                  <span className="font-bold text-sm flex items-center gap-1">
-                    <BadgeCheck className="w-4 h-4" />
-                    MOST POPULAR
-                  </span>
+              {/* Popular Badge */}
+              <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2 px-6 text-center">
+                <div className="flex items-center justify-center gap-2 text-sm font-semibold">
+                  <BadgeCheck className="w-4 h-4" />
+                  MOST POPULAR CHOICE AMONG AGENTS
+                </div>
+              </div>
+
+              {/* Pricing Header */}
+              <div className="p-6 md:p-8 border-b border-slate-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900">Professional Plan</h3>
+                    <p className="text-slate-600 mt-1">Complete real estate management platform</p>
+                  </div>
+                  <div className="text-center sm:text-right">
+                    <div className="text-3xl sm:text-4xl font-bold text-slate-900">₹500<span className="text-lg text-slate-600">/month</span></div>
+                    <p className="text-sm text-slate-500">₹17 per day · Cancel anytime</p>
+                  </div>
                 </div>
 
-                {/* Card Header */}
-                <div className="p-8 sm:p-10 text-center border-b border-slate-200">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r from-purple-100 to-blue-100 mb-6">
-                    <CreditCard className="w-8 h-8 text-purple-600" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-purple-50 rounded-xl p-3 text-center">
+                    <div className="text-lg font-bold text-purple-700 mb-1">₹0</div>
+                    <div className="text-xs text-slate-600">Setup Cost</div>
+                  </div>
+                  <div className="bg-blue-50 rounded-xl p-3 text-center">
+                    <div className="text-lg font-bold text-blue-700 mb-1">30-Day</div>
+                    <div className="text-xs text-slate-600">Free Trial</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Unlimited Features */}
+              <div className="p-6 md:p-8">
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="p-2 rounded-lg bg-gradient-to-r from-purple-100 to-blue-100">
+                      <Sparkles className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <h4 className="text-lg font-bold text-slate-900">All Unlimited Features</h4>
                   </div>
 
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2">Professional Plan</h3>
-                  <p className="text-slate-600 mb-6">Everything you need to grow your real estate business</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-slate-900">Unlimited Clients</p>
+                          <p className="text-sm text-slate-600">Buyers, sellers & leads</p>
+                        </div>
+                      </div>
 
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <span className="text-5xl font-bold text-slate-900">₹500</span>
-                    <span className="text-slate-600">/ month</span>
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-slate-900">Unlimited Properties</p>
+                          <p className="text-sm text-slate-600">Listings & management</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-slate-900">Unlimited Owners</p>
+                          <p className="text-sm text-slate-600">Property owners & contacts</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-slate-900">Unlimited Events</p>
+                          <p className="text-sm text-slate-600">Meetings & showings</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-sm text-slate-500">Billed monthly, cancel anytime</p>
                 </div>
 
-                {/* Features List */}
-                <div className="p-8 sm:p-10">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                    {/* Unlimited Features */}
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
+                {/* Additional Features */}
+                <div className="mb-8">
+                  <h4 className="text-lg font-bold text-slate-900 mb-4">Everything Included</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {[
+                      { label: "Virtual Tours", icon: <Video className="w-4 h-4" /> },
+                      { label: "Analytics Dashboard", icon: <BarChart3 className="w-4 h-4" /> },
+                      { label: "Document Storage", icon: <Database className="w-4 h-4" /> },
+                      { label: "Mobile App Access", icon: <Smartphone className="w-4 h-4" /> },
+                      { label: "Priority Support", icon: <Phone className="w-4 h-4" /> },
+                      { label: "Training Videos", icon: <FileText className="w-4 h-4" /> }
+                    ].map((feature, idx) => (
+                      <div key={idx} className="flex items-center gap-2 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
+                        <div className="p-1.5 rounded-md bg-white text-slate-700">
+                          {feature.icon}
                         </div>
-                        <div>
-                          <h4 className="font-semibold text-slate-900 mb-1">Unlimited Clients</h4>
-                          <p className="text-sm text-slate-600">Add unlimited buyers, sellers, and leads</p>
-                        </div>
+                        <span className="text-sm font-medium text-slate-700">{feature.label}</span>
                       </div>
+                    ))}
+                  </div>
+                </div>
 
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-slate-900 mb-1">Unlimited Properties</h4>
-                          <p className="text-sm text-slate-600">List and manage unlimited properties</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-slate-900 mb-1">Unlimited Owners</h4>
-                          <p className="text-sm text-slate-600">Manage multiple property owners</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-slate-900 mb-1">Unlimited Events</h4>
-                          <p className="text-sm text-slate-600">Schedule unlimited meetings, showings, and follow-ups</p>
-                        </div>
-                      </div>
+                {/* CTA Section */}
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6">
+                  <div className="text-center mb-4">
+                    <div className="inline-flex items-center gap-2 bg-white rounded-full px-4 py-2 mb-3">
+                      <Clock className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm font-medium text-slate-700">Start in 2 minutes</span>
                     </div>
-
-                    {/* Additional Features */}
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-slate-900 mb-1">Advanced Analytics</h4>
-                          <p className="text-sm text-slate-600">Detailed reports and insights</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-slate-900 mb-1">Virtual Tours</h4>
-                          <p className="text-sm text-slate-600">Digital property showcasing</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-slate-900 mb-1">24/7 Support</h4>
-                          <p className="text-sm text-slate-600">Priority customer support</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-slate-900 mb-1">Cloud Storage</h4>
-                          <p className="text-sm text-slate-600">Secure document storage</p>
-                        </div>
-                      </div>
-                    </div>
+                    <h4 className="text-lg font-bold text-slate-900 mb-2">Ready to grow your business?</h4>
+                    <p className="text-slate-600 text-sm mb-6">Join hundreds of successful real estate agents</p>
                   </div>
 
-                  {/* Value Proposition */}
-                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-6 mb-8">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center">
-                        <DollarSign className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-slate-900">Incredible Value</h4>
-                        <p className="text-slate-600 text-sm">
-                          Less than ₹17 per day for unlimited business management
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                      <div className="bg-white p-3 rounded-xl">
-                        <div className="text-lg font-bold text-slate-900">₹0</div>
-                        <div className="text-xs text-slate-600">Setup Cost</div>
-                      </div>
-                      <div className="bg-white p-3 rounded-xl">
-                        <div className="text-lg font-bold text-slate-900">100%</div>
-                        <div className="text-xs text-slate-600">Cloud Based</div>
-                      </div>
-                      <div className="bg-white p-3 rounded-xl">
-                        <div className="text-lg font-bold text-slate-900">24/7</div>
-                        <div className="text-xs text-slate-600">Access</div>
-                      </div>
-                      <div className="bg-white p-3 rounded-xl">
-                        <div className="text-lg font-bold text-slate-900">30-Day</div>
-                        <div className="text-xs text-slate-600">Trial</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* CTA Button */}
-                  <div className="text-center">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <Button
-                      label="Get Started for ₹500/month"
+                      label="Start 30-Day Free Trial"
                       size="lg"
                       variant="theme2"
                       onClick={() => router.push("/signup")}
-                      classNameC="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all px-8"
+                      classNameC="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-md hover:shadow-lg transition-all"
                       icon={<ArrowRight className="ml-2 w-5 h-5" />}
                     />
-                    <p className="text-sm text-slate-500 mt-4">
-                      Start with 30-day free trial • No credit card required • Cancel anytime
-                    </p>
+                    <Button
+                      label="Watch Demo"
+                      size="lg"
+                      variant="theme"
+                      onClick={() => router.push("/tutorial")}
+                      classNameC="flex-1 border-2 border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                    />
                   </div>
+
+                  <p className="text-center text-sm text-slate-500 mt-4">
+                    No credit card required · 30-day free trial · Cancel anytime
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Comparison Note */}
-            <div className="mt-12 text-center">
-              <div className="inline-flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-6 py-4 shadow-sm">
-                <Shield className="w-5 h-5 text-green-600" />
-                <div className="text-left">
-                  <p className="font-medium text-slate-900">All-in-one solution</p>
-                  <p className="text-sm text-slate-600">
-                    No hidden fees, no per-user charges, no property limits
-                  </p>
+            {/* Trust Badge */}
+            <div className="mt-8">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-center sm:text-left">
+                <div className="flex items-center gap-3">
+                  <ShieldCheck className="w-5 h-5 text-green-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Secure & Reliable</p>
+                    <p className="text-xs text-slate-600">Bank-level security</p>
+                  </div>
+                </div>
+                <div className="hidden sm:block w-px h-6 bg-slate-200"></div>
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5 text-blue-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">500+ Agents</p>
+                    <p className="text-xs text-slate-600">Trust our platform</p>
+                  </div>
+                </div>
+                <div className="hidden sm:block w-px h-6 bg-slate-200"></div>
+                <div className="flex items-center gap-3">
+                  <Globe className="w-5 h-5 text-purple-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">24/7 Access</p>
+                    <p className="text-xs text-slate-600">Anywhere, anytime</p>
+                  </div>
                 </div>
               </div>
             </div>
