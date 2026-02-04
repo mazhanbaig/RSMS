@@ -73,7 +73,7 @@ export default function AdminDashboardPage() {
             setIsInitialLoad(false);
 
             // Fetch all data in parallel
-            const [clientsData, ownersData, propertiesData, eventsData]:any = await Promise.all([
+            const [clientsData, ownersData, propertiesData, eventsData]: any = await Promise.all([
                 getData('clients'),
                 getData('owners'),
                 getData('properties'),
@@ -175,18 +175,19 @@ export default function AdminDashboardPage() {
         },
         {
             icon: <CalendarClock className="h-6 w-6" />,
-            label: "Analytics",
-            description: "View performance insights",
-            textColor: "text-amber-600",
-            bgColor: "bg-gradient-to-br from-amber-100 to-amber-50",
-            path: '',
-        },
+            label: "Create Events",
+            description: "Add your events",
+            textColor: "text-blue-600",
+            bgColor: "bg-gradient-to-br from-blue-100 to-blue-50",
+            path: '/realstate/events', // or your actual events route
+        }
+
     ], [userInfo?.uid]);
 
     // Memoized recent items with limit
-    const recentClients = useMemo(() => clients.slice(0, 2), [clients]);
-    const recentProperties = useMemo(() => properties.slice(0, 2), [properties]);
-    const recentOwners = useMemo(() => owners.slice(0, 2), [owners]);
+    const recentClients = useMemo(() => clients.slice(-2).reverse(), [clients]);
+    const recentProperties = useMemo(() => properties.slice(-2).reverse(), [properties]);
+    const recentOwners = useMemo(() => owners.slice(-2).reverse(), [owners]);
 
     // Format events for display
     const upcomingEvents = useMemo(() => {
@@ -572,7 +573,7 @@ export default function AdminDashboardPage() {
                                         <div
                                             key={event.id || idx}
                                             className="flex items-center justify-between px-3 py-1 rounded-xl border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300 cursor-pointer group"
-                                            onClick={() => navigateTo(`/realstate/${userInfo?.uid}/events`)}
+                                            onClick={() => navigateTo(`/realstate/${userInfo?.uid}/events/${event.id}`)}
                                         >
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 text-lg sm:text-xl bg-black rounded-lg flex items-center justify-center font-semibold shadow-md text-white">
