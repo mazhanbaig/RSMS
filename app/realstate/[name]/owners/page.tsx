@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Header from "@/components/Header";
 import Button from "@/components/Button";
-import { getData, deleleData, auth } from "@/FBConfig/fbFunctions";
+import { getData, deleleData, auth, checkUserSession } from "@/FBConfig/fbFunctions";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import Loader from "@/components/Loader";
@@ -24,14 +24,31 @@ export default function OwnersPage() {
     const [loading, setLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState("all");
 
+    // Check authentication and load data
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                router.replace("/login");
+        const checkAuth = async () => {
+            try {
+                const user: any = await checkUserSession();
+                if (!user) {
+                    message.error('Please Login First');
+                    router.replace('/login');
+                    return;
+                }
+
+                const storedUser: any = localStorage.getItem('userInfo')
+                const userData = JSON.parse(storedUser);
+                setUserInfo(userData);
+
+            } catch (err) {
+                message.error('Error occurred during authentication');
+                router.replace('/login');
+            } finally {
+                setLoading(false);
             }
-        });
-        return () => unsubscribe();
-    }, []);
+        };
+
+        checkAuth();
+    }, [router]);
 
     // Load userInfo from localStorage once
     useEffect(() => {

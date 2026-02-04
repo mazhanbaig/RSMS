@@ -6,7 +6,7 @@ import Button from "@/components/Button";
 import Header from "@/components/Header";
 import AddPropertyPart1 from "@/components/AddPropertyPart1";
 import AddPropertyPart2 from "@/components/AddPropertyPart2";
-import { getData, saveData, updateData, uploadImage, uploadImagesToCloudinary } from "@/FBConfig/fbFunctions";
+import { checkUserSession, getData, saveData, updateData, uploadImage, uploadImagesToCloudinary } from "@/FBConfig/fbFunctions";
 import { message } from 'antd';
 import AddPropertyPart3 from '@/components/AddPropertyPart3';
 
@@ -82,6 +82,30 @@ export default function AddPropertyPage() {
     });
 
     const sections = ['basic', 'details', 'images'];
+
+    // Check authentication and load data
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const user: any = await checkUserSession();
+                if (!user) {
+                    message.error('Please Login First');
+                    router.replace('/login');
+                    return;
+                }
+
+                const storedUser: any = localStorage.getItem('userInfo')
+                const userData = JSON.parse(storedUser);
+                setUserInfo(userData);
+
+            } catch (err) {
+                message.error('Error occurred during authentication');
+                router.replace('/login');
+            }
+        };
+
+        checkAuth();
+    }, [router]);
 
     // Load userInfo from localStorage once
     useEffect(() => {

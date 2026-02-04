@@ -1,6 +1,6 @@
 'use client'
 
-import { auth, getData, updateData } from "@/FBConfig/fbFunctions"
+import { auth, checkUserSession, getData, updateData } from "@/FBConfig/fbFunctions"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import {
@@ -52,21 +52,31 @@ export default function ViewPropertyPage() {
     const { propertyid } = useParams()
     const router = useRouter()
 
-    // Auth check
+    // Check authentication and load data
     useEffect(() => {
-        onAuthStateChanged(auth, (user) => {
-            if (!user) router.replace(`/login`)
-        })
-        const data = localStorage.getItem("userInfo")
-        if (data) {
+        const checkAuth = async () => {
             try {
-                const parsed = JSON.parse(data)
-                getData(`users/${parsed.uid}`)
-                    .then(res => setUserInfo(res))
-                    .catch(err => console.error(err))
-            } catch (err) { console.error(err) }
-        }
-    }, [])
+                const user: any = await checkUserSession();
+                if (!user) {
+                    message.error('Please Login First');
+                    router.replace('/login');
+                    return;
+                }
+
+                const storedUser: any = localStorage.getItem('userInfo')
+                const userData = JSON.parse(storedUser);
+                setUserInfo(userData);
+
+            } catch (err) {
+                message.error('Error occurred during authentication');
+                router.replace('/login');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        checkAuth();
+    }, [router]);
 
     // Fetch property
     useEffect(() => {

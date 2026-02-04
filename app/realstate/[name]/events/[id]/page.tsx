@@ -1240,7 +1240,7 @@ import {
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import Loader from "@/components/Loader";
-import { getData } from "@/FBConfig/fbFunctions";
+import { checkUserSession, getData } from "@/FBConfig/fbFunctions";
 
 interface UserInfo {
     uid: string;
@@ -1323,6 +1323,32 @@ export default function ViewEventPage() {
             gradient: 'from-indigo-500 to-indigo-600'
         }
     }), []);
+
+    // Check authentication and load data
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const user: any = await checkUserSession();
+                if (!user) {
+                    message.error('Please Login First');
+                    router.replace('/login');
+                    return;
+                }
+
+                const storedUser: any = localStorage.getItem('userInfo')
+                const userData = JSON.parse(storedUser);
+                setUserInfo(userData);
+
+            } catch (err) {
+                message.error('Error occurred during authentication');
+                router.replace('/login');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        checkAuth();
+    }, [router]);
 
     // Load user info
     useEffect(() => {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Button from "@/components/Button";
-import { auth, getData, saveData, updateData } from "@/FBConfig/fbFunctions";
+import { auth, checkUserSession, getData, saveData, updateData } from "@/FBConfig/fbFunctions";
 import { useRouter, useSearchParams } from "next/navigation";
 import AddClientPart1 from "@/components/AddClientPart1";
 import { message } from 'antd'
@@ -30,6 +30,31 @@ export default function AddOwnerPage() {
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
     const searchParams = useSearchParams();
     const router = useRouter();
+
+ // Check authentication and load data
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const user: any = await checkUserSession();
+                if (!user) {
+                    message.error('Please Login First');
+                    router.replace('/login');
+                    return;
+                }
+
+                const storedUser: any = localStorage.getItem('userInfo')
+                const userData = JSON.parse(storedUser);
+                setUserInfo(userData);
+
+            } catch (err) {
+                message.error('Error occurred during authentication');
+                router.replace('/login');
+            } finally {
+            }
+        };
+
+        checkAuth();
+    }, [router]);
 
     useEffect(() => {
         onAuthStateChanged(auth, async (user) => {

@@ -2,7 +2,7 @@
 
 import Button from "@/components/Button";
 import Header from "@/components/Header";
-import { getData, deleleData, auth } from "@/FBConfig/fbFunctions";
+import { getData, deleleData, auth, checkUserSession } from "@/FBConfig/fbFunctions";
 import { message } from "antd";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -32,14 +32,30 @@ export default function ClientsPage() {
     const [activeFilter, setActiveFilter] = useState<string>("all");
     const [loading, setLoading] = useState<boolean>(true);
 
-    // Optimized auth check - only runs once
+    // Check authentication and load data
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                router.replace("/login");
+        const checkAuth = async () => {
+            try {
+                const user: any = await checkUserSession();
+                if (!user) {
+                    message.error('Please Login First');
+                    router.replace('/login');
+                    return;
+                }
+
+                const storedUser: any = localStorage.getItem('userInfo')
+                const userData = JSON.parse(storedUser);
+                setUserInfo(userData);
+
+            } catch (err) {
+                message.error('Error occurred during authentication');
+                router.replace('/login');
+            } finally {
+                setLoading(false);
             }
-        });
-        return () => unsubscribe();
+        };
+
+        checkAuth();
     }, [router]);
 
     // Optimized user info loading - memoized parsing

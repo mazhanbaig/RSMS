@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import Button from "@/components/Button";
 import { MapPin, Trash2, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { auth, deleleData, getData } from "@/FBConfig/fbFunctions";
+import { auth, checkUserSession, deleleData, getData } from "@/FBConfig/fbFunctions";
 import { onAuthStateChanged } from "firebase/auth";
 import { message } from "antd";
 
@@ -25,36 +25,29 @@ export default function PropertiesPage() {
             .catch(err => console.error("Failed to delete property:", err));
     };
 
+    // Check authentication and load data
     useEffect(() => {
-        onAuthStateChanged(auth, (user) => {
-            if (!user) router.replace("/login");
-        });
-
-        const loadData = async () => {
-            const data = localStorage.getItem("userInfo");
-            if (!data) return;
-
+        const checkAuth = async () => {
             try {
-                const parsed = JSON.parse(data);
+                const user: any = await checkUserSession();
+                if (!user) {
+                    message.error('Please Login First');
+                    router.replace('/login');
+                    return;
+                }
 
-                const userRes: any = await getData(`users/${parsed.uid}`);
-                setUserInfo(userRes);
+                const storedUser: any = localStorage.getItem('userInfo')
+                const userData = JSON.parse(storedUser);
+                setUserInfo(userData);
 
-                const allProps = await getData("properties/");
-                if (!allProps) return;
-
-                const propertiesArray = Object.entries(allProps)
-                    .map(([id, value]: any) => ({ id, ...value }))
-                    .filter(p => p.agentUid === userRes.uid)
-                    .reverse();
-
-                setProperties(propertiesArray);
             } catch (err) {
-                console.error(err);
+                message.error('Error occurred during authentication');
+                router.replace('/login');
+            } finally {
             }
         };
 
-        loadData();
+        checkAuth();
     }, [router]);
 
     if (!userInfo) {

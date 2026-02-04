@@ -14,7 +14,7 @@ import {
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import Loader from "@/components/Loader";
-import { getData, updateData } from "@/FBConfig/fbFunctions";
+import { checkUserSession, getData, updateData } from "@/FBConfig/fbFunctions";
 
 interface UserInfo {
     uid: string;
@@ -53,18 +53,31 @@ export default function ViewClientPage() {
     const [activePanel, setActivePanel] = useState('details');
     const [newNote, setNewNote] = useState('');
 
-    // Load user info
+    // Check authentication and load data
     useEffect(() => {
-        const stored = localStorage.getItem('userInfo');
-        if (stored) {
+        const checkAuth = async () => {
             try {
-                const parsed: UserInfo = JSON.parse(stored);
-                setUserInfo(parsed);
+                const user: any = await checkUserSession();
+                if (!user) {
+                    message.error('Please Login First');
+                    router.replace('/login');
+                    return;
+                }
+
+                const storedUser: any = localStorage.getItem('userInfo')
+                const userData = JSON.parse(storedUser);
+                setUserInfo(userData);
+
             } catch (err) {
-                message.error('Error loading user info');
+                message.error('Error occurred during authentication');
+                router.replace('/login');
+            } finally {
+                setLoading(false);
             }
-        }
-    }, []);
+        };
+
+        checkAuth();
+    }, [router]);
 
     // Fetch client data
     const fetchClientData = useCallback(async () => {

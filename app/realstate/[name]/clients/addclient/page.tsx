@@ -6,7 +6,7 @@ import AddClientPart1 from "@/components/AddClientPart1";
 import AddClientPart2 from "@/components/AddClientPart2";
 import AddClientPart3 from "@/components/AddClientPart3";
 import Button from "@/components/Button";
-import { getData, saveData, updateData } from "@/FBConfig/fbFunctions";
+import { checkUserSession, getData, saveData, updateData } from "@/FBConfig/fbFunctions";
 import { useRouter, useSearchParams } from "next/navigation";
 import { message } from "antd";
 import { Timestamp } from "firebase/firestore";
@@ -57,6 +57,30 @@ export default function AddClientPage() {
     const sections = ["personal", "property", "additional"];
     const searchParams = useSearchParams();
     const router = useRouter();
+    // Check authentication and load data
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const user: any = await checkUserSession();
+                if (!user) {
+                    message.error('Please Login First');
+                    router.replace('/login');
+                    return;
+                }
+
+                const storedUser: any = localStorage.getItem('userInfo')
+                const userData = JSON.parse(storedUser);
+                setUserInfo(userData);
+
+            } catch (err) {
+                message.error('Error occurred during authentication');
+                router.replace('/login');
+            } finally {
+            }
+        };
+
+        checkAuth();
+    }, [router]);
 
     // Load userInfo from localStorage once
     useEffect(() => {
