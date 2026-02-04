@@ -73,7 +73,7 @@ export default function AdminDashboardPage() {
             setIsInitialLoad(false);
 
             // Fetch all data in parallel
-            const [clientsData, ownersData, propertiesData, eventsData] = await Promise.all([
+            const [clientsData, ownersData, propertiesData, eventsData]:any = await Promise.all([
                 getData('clients'),
                 getData('owners'),
                 getData('properties'),
@@ -307,9 +307,6 @@ export default function AdminDashboardPage() {
                                     <div className="text-right">
                                         <h3 className="text-2xl font-bold text-gray-900 mb-0.5">{stat.value}</h3>
                                         <p className="text-gray-600 text-xs mb-2">{stat.title}</p>
-                                        {stat.change && (
-                                            <p className="text-xs text-green-600">{stat.change}</p>
-                                        )}
                                     </div>
                                 </div>
                             </div>

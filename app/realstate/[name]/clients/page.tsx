@@ -75,7 +75,7 @@ export default function ClientsPage() {
 
                         const ownerClients = clientsArray.filter(
                             (client: any) => client.agentUid === userInfo?.uid
-                        );
+                        ).reverse()
 
                         setClients(ownerClients);
                     } else {

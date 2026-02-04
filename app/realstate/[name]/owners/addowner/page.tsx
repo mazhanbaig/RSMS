@@ -68,6 +68,7 @@ export default function AddOwnerPage() {
 
         const ownerFullData = {
             ...formData,
+            createdAt: new Date().toISOString(),
             agentUid: userInfo.uid,
             agentName: userInfo.name
         };

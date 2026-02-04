@@ -7,9 +7,11 @@ export interface Client {
   createdAt:any
   agentUid: string
   agentName: string
+
   firstName: string
   lastName: string
   phone: string
+  email:string
 
   minBudget?: number
   maxBudget?: number

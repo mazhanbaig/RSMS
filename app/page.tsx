@@ -458,6 +458,208 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-slate-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+              Simple, <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Transparent</span> Pricing
+            </h2>
+            <p className="text-slate-600 max-w-2xl mx-auto">
+              One powerful plan for all real estate professionals
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            {/* Main Pricing Card */}
+            <div className="relative group">
+              {/* Glow Effect */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+
+              {/* Pricing Card */}
+              <div className="relative bg-gradient-to-br from-white to-slate-50 rounded-3xl border-2 border-purple-200 shadow-2xl overflow-hidden">
+                {/* Ribbon */}
+                <div className="absolute top-0 right-6 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-b-lg shadow-lg">
+                  <span className="font-bold text-sm flex items-center gap-1">
+                    <BadgeCheck className="w-4 h-4" />
+                    MOST POPULAR
+                  </span>
+                </div>
+
+                {/* Card Header */}
+                <div className="p-8 sm:p-10 text-center border-b border-slate-200">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r from-purple-100 to-blue-100 mb-6">
+                    <CreditCard className="w-8 h-8 text-purple-600" />
+                  </div>
+
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">Professional Plan</h3>
+                  <p className="text-slate-600 mb-6">Everything you need to grow your real estate business</p>
+
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <span className="text-5xl font-bold text-slate-900">₹500</span>
+                    <span className="text-slate-600">/ month</span>
+                  </div>
+                  <p className="text-sm text-slate-500">Billed monthly, cancel anytime</p>
+                </div>
+
+                {/* Features List */}
+                <div className="p-8 sm:p-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                    {/* Unlimited Features */}
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-1">Unlimited Clients</h4>
+                          <p className="text-sm text-slate-600">Add unlimited buyers, sellers, and leads</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-1">Unlimited Properties</h4>
+                          <p className="text-sm text-slate-600">List and manage unlimited properties</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-1">Unlimited Owners</h4>
+                          <p className="text-sm text-slate-600">Manage multiple property owners</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-1">Unlimited Events</h4>
+                          <p className="text-sm text-slate-600">Schedule unlimited meetings, showings, and follow-ups</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Additional Features */}
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-1">Advanced Analytics</h4>
+                          <p className="text-sm text-slate-600">Detailed reports and insights</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-1">Virtual Tours</h4>
+                          <p className="text-sm text-slate-600">Digital property showcasing</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-1">24/7 Support</h4>
+                          <p className="text-sm text-slate-600">Priority customer support</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-1">Cloud Storage</h4>
+                          <p className="text-sm text-slate-600">Secure document storage</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Value Proposition */}
+                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-6 mb-8">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center">
+                        <DollarSign className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-900">Incredible Value</h4>
+                        <p className="text-slate-600 text-sm">
+                          Less than ₹17 per day for unlimited business management
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                      <div className="bg-white p-3 rounded-xl">
+                        <div className="text-lg font-bold text-slate-900">₹0</div>
+                        <div className="text-xs text-slate-600">Setup Cost</div>
+                      </div>
+                      <div className="bg-white p-3 rounded-xl">
+                        <div className="text-lg font-bold text-slate-900">100%</div>
+                        <div className="text-xs text-slate-600">Cloud Based</div>
+                      </div>
+                      <div className="bg-white p-3 rounded-xl">
+                        <div className="text-lg font-bold text-slate-900">24/7</div>
+                        <div className="text-xs text-slate-600">Access</div>
+                      </div>
+                      <div className="bg-white p-3 rounded-xl">
+                        <div className="text-lg font-bold text-slate-900">30-Day</div>
+                        <div className="text-xs text-slate-600">Trial</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CTA Button */}
+                  <div className="text-center">
+                    <Button
+                      label="Get Started for ₹500/month"
+                      size="lg"
+                      variant="theme2"
+                      onClick={() => router.push("/signup")}
+                      classNameC="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all px-8"
+                      icon={<ArrowRight className="ml-2 w-5 h-5" />}
+                    />
+                    <p className="text-sm text-slate-500 mt-4">
+                      Start with 30-day free trial • No credit card required • Cancel anytime
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Comparison Note */}
+            <div className="mt-12 text-center">
+              <div className="inline-flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-6 py-4 shadow-sm">
+                <Shield className="w-5 h-5 text-green-600" />
+                <div className="text-left">
+                  <p className="font-medium text-slate-900">All-in-one solution</p>
+                  <p className="text-sm text-slate-600">
+                    No hidden fees, no per-user charges, no property limits
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-600 to-blue-600">
         <div className="max-w-4xl mx-auto text-center text-white">

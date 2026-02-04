@@ -232,12 +232,6 @@ export default function AddEventPage() {
         agentName: userInfo.name || userInfo.email,
         reminderSent: false,
         createdAt: new Date().toISOString(),
-        clientDetails: selectedClients.map(client => ({
-          id: client.id,
-          name: `${client.firstName} ${client.lastName}`,
-          email: client.email,
-          phone: client.phone
-        }))
       };
 
       // Save event under user's events collection

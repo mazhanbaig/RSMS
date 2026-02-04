@@ -111,7 +111,8 @@ export default function AddClientPage() {
         }
 
         const clientFullData = {
-            ...formData, createdAt: new Date().toISOString(),
+            ...formData,
+            createdAt: new Date().toISOString(),
             agentUid: userInfo?.uid,
             agentName: userInfo?.name
         };
