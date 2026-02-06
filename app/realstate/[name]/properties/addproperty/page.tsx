@@ -33,6 +33,7 @@ export default function AddPropertyPage() {
         yearBuilt?: string;
         ownerName: string;
         ownerContact?: string;
+        ownerUid?:string,
         features: string[];
         amenities: string[];
         facingDirection?: string;
