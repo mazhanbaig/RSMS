@@ -406,7 +406,7 @@ export default function ViewPropertyPage() {
     const router = useRouter()
 
     // Property status configuration
-    const propertyStatusConfig:any = useMemo(() => ({
+    const propertyStatusConfig: any = useMemo(() => ({
         'available': {
             label: 'Available',
             color: 'text-green-600',
@@ -572,7 +572,6 @@ export default function ViewPropertyPage() {
                 message.success(`Property marked as ${propertyStatusConfig[newStatus].label}`)
             })
             .catch((err) => {
-                console.error(err)
                 message.error('Failed to change status of property')
             })
     }, [propertyid, propertyStatusConfig])
@@ -583,27 +582,12 @@ export default function ViewPropertyPage() {
         deleleData(`properties/${propertyid}`)
             .then(() => {
                 message.success("Property deleted successfully")
-                router.push('/properties')
+                router.replace(`/realstate/${userInfo?.uid}/properties`)
             })
             .catch((err) => {
-                console.error(err)
                 message.error("Failed to delete property")
             })
     }, [propertyid, router])
-
-    // // Format price
-    // const formatPrice = useMemo(() => {
-    //     if (!property) return ''
-    //     const priceNum = parseFloat(property.price) || 0
-    //     if (property.priceUnit === 'Lakh') {
-    //         return `₹${(priceNum / 100000).toFixed(2)} Lakh`
-    //     } else if (property.priceUnit === 'Crore') {
-    //         return `₹${(priceNum / 10000000).toFixed(2)} Crore`
-    //     } else if (property.priceUnit === 'Million') {
-    //         return `$${priceNum} Million`
-    //     }
-    //     return `₹${priceNum.toLocaleString()}`
-    // }, [property])
 
     // Format date
     const formatDate = useCallback((dateString?: string) => {
@@ -663,7 +647,7 @@ export default function ViewPropertyPage() {
                         <p className="text-gray-600 mb-6">The property you're looking for doesn't exist.</p>
                         <Button
                             label="Back to Properties"
-                            onClick={() => router.push('/properties')}
+                            onClick={() => router.push(`/realstate/${userInfo.uid}/properties`)}
                             variant="theme"
                             size="md"
                             icon={<ArrowLeft className="w-4 h-4" />}
@@ -1024,7 +1008,7 @@ export default function ViewPropertyPage() {
                             <div className="space-y-3">
                                 <label className="block text-sm font-medium text-gray-700">Update Status</label>
                                 <div className="grid grid-cols-2 gap-2">
-                                    {Object.entries(propertyStatusConfig).map(([key, config]:any) => (
+                                    {Object.entries(propertyStatusConfig).map(([key, config]: any) => (
                                         <button
                                             key={key}
                                             onClick={() => handleStatusChange(key as PropertyFormData['propertyStatus'])}
@@ -1049,7 +1033,7 @@ export default function ViewPropertyPage() {
                                     icon={<PhoneCall className="w-4 h-4" />}
                                     size="sm"
                                     // onClick={() => property.ownerContact && window.location.href = `tel:${property.ownerContact}`}
-                                disabled={!property.ownerContact}
+                                    disabled={!property.ownerContact}
                                 />
                                 <Button
                                     label="Schedule Viewing"
@@ -1086,7 +1070,7 @@ export default function ViewPropertyPage() {
                         </div>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {relatedProperties.map((prop) => {
-                                const propTypeConfig:any = propertyTypeConfig[prop.propertyType as keyof typeof propertyTypeConfig] || propertyTypeConfig.House
+                                const propTypeConfig: any = propertyTypeConfig[prop.propertyType as keyof typeof propertyTypeConfig] || propertyTypeConfig.House
                                 const propStatusConfig = propertyStatusConfig[prop.propertyStatus]
 
                                 return (
