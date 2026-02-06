@@ -284,32 +284,6 @@ export default function AddEventPage() {
               </div>
             </div>
           </div>
-
-          {/* Progress Steps */}
-          <div className="flex items-center justify-center mb-8">
-            <div className="flex items-center">
-              <div className="flex flex-col items-center">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-sm font-semibold">
-                  1
-                </div>
-                <span className="text-xs text-gray-600 mt-2">Details</span>
-              </div>
-              <div className="w-16 h-px bg-gradient-to-r from-blue-500 to-purple-500"></div>
-              <div className="flex flex-col items-center">
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-sm font-semibold">
-                  2
-                </div>
-                <span className="text-xs text-gray-600 mt-2">Schedule</span>
-              </div>
-              <div className="w-16 h-px bg-gray-300"></div>
-              <div className="flex flex-col items-center">
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-sm font-semibold">
-                  3
-                </div>
-                <span className="text-xs text-gray-600 mt-2">Confirm</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Main Form */}

@@ -237,7 +237,7 @@ export default function OwnersPage() {
                             <input
                                 type="text"
                                 value={searchVal}
-                                placeholder="Search owners..."
+                                placeholder="Search owners by name, email, number"
                                 className="md:min-w-80 border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 onChange={(e) => setSearchVal(e.target.value)}
                             />

@@ -179,7 +179,7 @@ export default function AdminDashboardPage() {
             description: "Add your events",
             textColor: "text-blue-600",
             bgColor: "bg-gradient-to-br from-blue-100 to-blue-50",
-            path: '/realstate/events', // or your actual events route
+            path: `/realstate/${userInfo?.uid}/events/addevent`,
         }
 
     ], [userInfo?.uid]);
@@ -464,12 +464,12 @@ export default function AdminDashboardPage() {
                                             onClick={() => navigateToClient(client.id)}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 text-lg sm:text-xl rounded-lg bg-gradient-to-br from-purple-100 to-blue-100 text-black flex items-center justify-center font-semibold shadow-md">
+                                                <div className="w-10 h-10 text-lg sm:text-xl rounded-lg bg-black text-white flex items-center justify-center font-semibold shadow-md">
                                                     {client.firstName?.charAt(0) || 'C'}
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-gray-900 text-sm">
-                                                        {client.firstName || 'Unknown'} {client.lastName || ''}
+                                                        {client.firstName.slice(0, 30) || 'Unknown'} {client.lastName || ''}
                                                     </span>
                                                     <span className="text-xs text-gray-500 truncate max-w-[120px]">
                                                         {client.email || 'No email'}
@@ -520,12 +520,12 @@ export default function AdminDashboardPage() {
                                             onClick={() => navigateToOwner(owner.id)}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 text-lg sm:text-xl rounded-lg bg-gradient-to-br from-purple-100 to-blue-100 text-black flex items-center justify-center font-semibold shadow-md">
+                                                <div className="w-10 h-10 text-lg sm:text-xl rounded-lg bg-black text-white flex items-center justify-center font-semibold shadow-md">
                                                     {owner.firstName?.charAt(0) || 'O'}
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-gray-900 text-sm">
-                                                        {owner.firstName || 'Unknown'} {owner.lastName || ''}
+                                                        {owner.firstName.slice(0, 30) || 'Unknown'} {owner.lastName || ''}
                                                     </span>
                                                     <span className="text-xs text-gray-500 truncate max-w-[120px]">
                                                         {owner.email || 'No email'}
@@ -580,7 +580,7 @@ export default function AdminDashboardPage() {
                                                     {event.date ? new Date(event.date).getDate() : '?'}
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="font-semibold text-gray-900 text-sm">{event.title || 'Untitled Event'}</span>
+                                                    <span className="font-semibold text-gray-900 text-sm">{event.title.slice(0,30) || 'Untitled Event'}</span>
                                                     <span className="text-xs text-gray-500">
                                                         {event.date ? new Date(event.date).toLocaleDateString() : 'No date'} • {event.startTime || ''}
                                                     </span>

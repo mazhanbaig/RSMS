@@ -5,6 +5,7 @@ import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface UserInfo {
     name: string;
@@ -20,17 +21,19 @@ export default function Header({ userData }: { userData?: Partial<UserInfo> | nu
     const router = useRouter();
 
     const navLinks = [
-        // { label: "Home", href: `/` },
         { label: "Dashboard", href: `/realstate/${userData?.uid}` },
         { label: "Properties", href: `/realstate/${userData?.uid}/properties` },
         { label: "Clients", href: `/realstate/${userData?.uid}/clients` },
         { label: "Owners", href: `/realstate/${userData?.uid}/owners` },
+        { label: "Events", href: `/realstate/${userData?.uid}/events` },
     ];
 
     return (
         <nav className="relative z-50 top-5 right-5 left-5 w-[96%] bg-white/70 backdrop-blur-lg shadow-lg px-6 py-3 flex flex-wrap justify-between items-center rounded-xl">
             {/* Logo */}
-            <div className="text-2xl font-extrabold text-gray-900 uppercase">Zstate</div>
+            <div className="text-2xl font-extrabold text-gray-900 uppercase">
+                ZState
+            </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-4">
@@ -64,9 +67,6 @@ export default function Header({ userData }: { userData?: Partial<UserInfo> | nu
                         <div className="rounded-full bg-black text-white w-8 h-8 flex justify-center items-center">
                             {userData?.name?.[0]?.toUpperCase() || "U"}
                         </div>
-                        <span className="hidden sm:inline">
-                            {userData?.name ? userData.name.toUpperCase() : "USER"}
-                        </span>
                     </button>
 
                     {dropdownOpen && (
