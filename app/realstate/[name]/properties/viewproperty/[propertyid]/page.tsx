@@ -406,7 +406,7 @@ export default function ViewPropertyPage() {
     const router = useRouter()
 
     // Property status configuration
-    const propertyStatusConfig = useMemo(() => ({
+    const propertyStatusConfig:any = useMemo(() => ({
         'available': {
             label: 'Available',
             color: 'text-green-600',
@@ -591,19 +591,19 @@ export default function ViewPropertyPage() {
             })
     }, [propertyid, router])
 
-    // Format price
-    const formatPrice = useMemo(() => {
-        if (!property) return ''
-        const priceNum = parseFloat(property.price) || 0
-        if (property.priceUnit === 'Lakh') {
-            return `₹${(priceNum / 100000).toFixed(2)} Lakh`
-        } else if (property.priceUnit === 'Crore') {
-            return `₹${(priceNum / 10000000).toFixed(2)} Crore`
-        } else if (property.priceUnit === 'Million') {
-            return `$${priceNum} Million`
-        }
-        return `₹${priceNum.toLocaleString()}`
-    }, [property])
+    // // Format price
+    // const formatPrice = useMemo(() => {
+    //     if (!property) return ''
+    //     const priceNum = parseFloat(property.price) || 0
+    //     if (property.priceUnit === 'Lakh') {
+    //         return `₹${(priceNum / 100000).toFixed(2)} Lakh`
+    //     } else if (property.priceUnit === 'Crore') {
+    //         return `₹${(priceNum / 10000000).toFixed(2)} Crore`
+    //     } else if (property.priceUnit === 'Million') {
+    //         return `$${priceNum} Million`
+    //     }
+    //     return `₹${priceNum.toLocaleString()}`
+    // }, [property])
 
     // Format date
     const formatDate = useCallback((dateString?: string) => {
@@ -740,19 +740,13 @@ export default function ViewPropertyPage() {
                             <div>
                                 <div className="text-sm font-medium text-gray-700">Total Price</div>
                                 <div className="text-3xl font-bold text-gray-900 mt-1">
-                                    {formatPrice}
+                                    Rs{property.price} {property.priceUnit}
                                 </div>
                                 <div className="text-sm text-gray-600 mt-2">
                                     {property.area} {property.areaUnit} • {property.bedrooms} Beds • {property.bathrooms} Baths
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 mt-4 sm:mt-0">
-                                <button
-                                    onClick={() => setLiked(!liked)}
-                                    className={`p-2 rounded-lg ${liked ? 'bg-red-50 text-red-600' : 'bg-gray-100 hover:bg-gray-200'}`}
-                                >
-                                    <Heart className="w-5 h-5" fill={liked ? "currentColor" : "none"} />
-                                </button>
                                 <button
                                     onClick={handleShare}
                                     className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
@@ -863,7 +857,7 @@ export default function ViewPropertyPage() {
                                     <h3 className="text-xl font-semibold text-gray-900">Property Details</h3>
 
                                     <div className="space-y-4">
-                                        <div className="flex items-start gap-4 p-4 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors">
+                                        <div className="flex items-start gap-4 px-4 py-2 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors">
                                             <div className="p-2 bg-blue-100 rounded-lg">
                                                 <MapPin className="w-5 h-5 text-blue-600" />
                                             </div>
@@ -875,19 +869,19 @@ export default function ViewPropertyPage() {
                                             </div>
                                         </div>
 
-                                        <div className="flex items-start gap-4 p-4 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors">
+                                        <div className="flex items-start gap-4 px-4 py-2 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors">
                                             <div className="p-2 bg-purple-100 rounded-lg">
                                                 <DollarSign className="w-5 h-5 text-purple-600" />
                                             </div>
                                             <div className="flex-1">
                                                 <div className="font-medium text-gray-900">Pricing Details</div>
                                                 <div className="text-gray-700 mt-1">
-                                                    {formatPrice} • {property.propertyCondition}
+                                                    Rs{property.price} {property.priceUnit} • {property.propertyCondition}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-start gap-4 p-4 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors">
+                                        <div className="flex items-start gap-4 px-4 py-2 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors">
                                             <div className="p-2 bg-green-100 rounded-lg">
                                                 <Building className="w-5 h-5 text-green-600" />
                                             </div>
@@ -1030,7 +1024,7 @@ export default function ViewPropertyPage() {
                             <div className="space-y-3">
                                 <label className="block text-sm font-medium text-gray-700">Update Status</label>
                                 <div className="grid grid-cols-2 gap-2">
-                                    {Object.entries(propertyStatusConfig).map(([key, config]) => (
+                                    {Object.entries(propertyStatusConfig).map(([key, config]:any) => (
                                         <button
                                             key={key}
                                             onClick={() => handleStatusChange(key as PropertyFormData['propertyStatus'])}
@@ -1092,7 +1086,7 @@ export default function ViewPropertyPage() {
                         </div>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {relatedProperties.map((prop) => {
-                                const propTypeConfig = propertyTypeConfig[prop.propertyType as keyof typeof propertyTypeConfig] || propertyTypeConfig.House
+                                const propTypeConfig:any = propertyTypeConfig[prop.propertyType as keyof typeof propertyTypeConfig] || propertyTypeConfig.House
                                 const propStatusConfig = propertyStatusConfig[prop.propertyStatus]
 
                                 return (
