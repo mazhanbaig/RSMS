@@ -8,13 +8,15 @@ export const metadata: Metadata = {
     template: "%s | ZState",
   },
   description:
-    "ZState is a smart real estate management platform for buying, selling, and managing properties with ease.",
+    "ZState is a smart real estate management platform helping real estate agents managing clients, owners, properties and their events with ease.",
   keywords: [
     "ZState",
-    "Real Estate Management",
-    "Property Management",
-    "Buy Property",
-    "Sell Property",
+    "Real Estate Management System",
+    "Property Management System",
+    "Manage Clients",
+    "Manage Properties",
+    "Manage Property Owners",
+    "Manage Events",
     "Real Estate Platform",
   ],
   authors: [{ name: "Muhammad Azhan Baig" }],
@@ -30,11 +32,11 @@ export const metadata: Metadata = {
     title: "ZState | Smart Real Estate Management",
     description:
       "Revolutionizing real estate management with modern technology.",
-    url: "https://zstate.com", // change to your real domain
+    url: "https://zstate.vercel.app",
     siteName: "ZState",
     images: [
       {
-        url: "/og-image.png", // place this image in /public
+        url: "/images/icon.jpeg", 
         width: 1200,
         height: 630,
         alt: "ZState Real Estate Platform",
@@ -49,10 +51,10 @@ export const metadata: Metadata = {
     title: "ZState | Smart Real Estate Management",
     description:
       "Revolutionizing real estate management with modern technology.",
-    images: ["/og-image.png"],
+    images: ["/images/icon.jpeg"],
   },
 
-  metadataBase: new URL("https://zstate.com"), // change domain
+  metadataBase: new URL("https://zstate.vercel.app"),
 };
 
 export default function RootLayout({

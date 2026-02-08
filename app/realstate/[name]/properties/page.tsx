@@ -889,7 +889,7 @@ export default function PropertiesPage() {
                 {/* Floating Action Button */}
                 <button
                     onClick={handleAddProperty}
-                    className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-shadow z-50"
+                    className="fixed bottom-6 right-6 w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-shadow z-50"
                 >
                     <Plus className="w-6 h-6" />
                 </button>

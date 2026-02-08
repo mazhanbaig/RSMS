@@ -33,7 +33,7 @@ export default function AddPropertyPage() {
         yearBuilt?: string;
         ownerName: string;
         ownerContact?: string;
-        ownerUid?: string,
+        ownerId?: string,
         features: string[];
         amenities: string[];
         facingDirection?: string;
@@ -71,7 +71,7 @@ export default function AddPropertyPage() {
         yearBuilt: new Date().getFullYear().toString(),
         ownerName: '',
         ownerContact: '',
-        ownerUid: '',
+        ownerId: '',
         features: [] as string[],
         amenities: [] as string[],
         facingDirection: '',

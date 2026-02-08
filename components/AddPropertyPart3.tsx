@@ -13,15 +13,19 @@ interface ImagesOwnerProps {
     handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
     removeImage: (index: number) => void;
 }
-
 interface Owner {
-    uid: string;
-    firstName: string;
-    lastName: string;
-    phone?: string;
-    contactNumber?: string;
-    ownerContact?: string;
-    agentUid: string;
+    id: string,
+    createdAt: any,
+    agentUid: string,
+    agentName: string,
+
+    firstName: string,
+    lastName: string,
+    email: string,
+    phone: string,
+
+    status: "active" | "deal-Done" | "lost",
+    notes: string,
 }
 
 export default function AddPropertyPart3({
@@ -62,13 +66,13 @@ export default function AddPropertyPart3({
             .finally(() => setLoadingOwners(false));
     }, []);
 
-    const handleOwnerSelect = (uid: string) => {
-        const selectedOwner = owners.find(o => o.uid === uid);
+    const handleOwnerSelect = (id: string) => {
+        const selectedOwner = owners.find(o => o.id === id);
         if (!selectedOwner) return;
 
-        handleChange({ target: { name: "ownerUid", value: selectedOwner.uid } });
+        handleChange({ target: { name: "ownerId", value: selectedOwner?.id } });
         handleChange({ target: { name: "ownerName", value: `${selectedOwner.firstName} ${selectedOwner.lastName}` } });
-        handleChange({ target: { name: "ownerContact", value: selectedOwner.phone || selectedOwner.contactNumber || selectedOwner.ownerContact || "" } });
+        handleChange({ target: { name: "ownerContact", value: selectedOwner.phone || selectedOwner.phone || "" } });
     };
 
     return (
@@ -135,7 +139,7 @@ export default function AddPropertyPart3({
 
                     >
                         {owners.map(o => (
-                            <Option key={o.uid} value={o.uid}>{o.firstName} {o.lastName}</Option>
+                            <Option key={o.id} value={o.id}>{o.firstName} {o.lastName}</Option>
                         ))}
                     </Select>
 

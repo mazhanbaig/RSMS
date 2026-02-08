@@ -126,7 +126,9 @@ export default function ViewOwnerPage() {
                         id,
                         ...value
                     })
-                )
+                ).filter((p: any) => {
+                    return p.ownerId==owner?.id
+                })
 
                 setOwnerProperties(propsArray);
                 console.log(propsArray);
