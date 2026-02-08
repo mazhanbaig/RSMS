@@ -512,7 +512,7 @@ export default function ViewPropertyPage() {
             .then((res: any) => {
                 if (!res) {
                     message.error("Property not found");
-                    router.push('/properties');
+                    router.replace(`/realstate/${userInfo?.uid}/properties`)
                     return
                 }
                 setProperty(res)
@@ -710,7 +710,6 @@ export default function ViewPropertyPage() {
 
                             <Button
                                 label="Edit"
-                                onClick={() => router.push(`/properties/addproperty?edit=${propertyid}`)}
                                 variant="theme"
                                 size="sm"
                                 icon={<Edit className="w-4 h-4" />}

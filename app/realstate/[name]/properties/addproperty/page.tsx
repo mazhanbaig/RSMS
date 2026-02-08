@@ -13,7 +13,7 @@ import AddPropertyPart3 from '@/components/AddPropertyPart3';
 interface UserInfo {
     uid: string;
     email: string;
-    name:string;
+    name: string;
 }
 
 export default function AddPropertyPage() {
@@ -33,7 +33,7 @@ export default function AddPropertyPage() {
         yearBuilt?: string;
         ownerName: string;
         ownerContact?: string;
-        ownerUid?:string,
+        ownerUid?: string,
         features: string[];
         amenities: string[];
         facingDirection?: string;
@@ -71,6 +71,7 @@ export default function AddPropertyPage() {
         yearBuilt: new Date().getFullYear().toString(),
         ownerName: '',
         ownerContact: '',
+        ownerUid: '',
         features: [] as string[],
         amenities: [] as string[],
         facingDirection: '',
@@ -79,7 +80,7 @@ export default function AddPropertyPage() {
         hasParking: false,
         hasGarden: false,
         hasSecurity: false,
-        propertyStatus:'available' 
+        propertyStatus: 'available'
     });
 
     const sections = ['basic', 'details', 'images'];
@@ -215,7 +216,7 @@ export default function AddPropertyPage() {
         saveData(`properties/${propertyData.id}`, propertyData)
             .then(() => {
                 message.success('Property saved successfully!');
-                router.push('/properties');
+                router.replace(`/realstate/${userInfo?.uid}/properties`)
             })
             .catch(err => {
                 console.error(err);

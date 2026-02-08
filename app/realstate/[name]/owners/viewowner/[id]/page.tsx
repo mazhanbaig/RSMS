@@ -126,9 +126,10 @@ export default function ViewOwnerPage() {
                         id,
                         ...value
                     })
-                );
+                )
 
                 setOwnerProperties(propsArray);
+                console.log(propsArray);
             } catch (error) {
                 console.error("Failed to fetch properties", error);
                 setOwnerProperties([]);
@@ -136,7 +137,7 @@ export default function ViewOwnerPage() {
         };
 
         fetchOwnersProperties();
-    }, []);
+    }, [owner]);
 
 
     // Helper functions
