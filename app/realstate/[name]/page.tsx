@@ -8,11 +8,12 @@ import {
     CalendarClock
 } from "lucide-react"
 import { auth, checkUserSession, getData } from "@/FBConfig/fbFunctions"
-import { onAuthStateChanged } from "firebase/auth"
+import { getAuth, onAuthStateChanged } from "firebase/auth"
 import Loader from "@/components/Loader"
 import Header from "@/components/Header"
 import Button from "@/components/Button"
 import React from "react"
+import { app } from "@/FBConfig/config"
 
 export default function AdminDashboardPage() {
     const [loading, setLoading] = useState(true)
@@ -51,7 +52,6 @@ export default function AdminDashboardPage() {
                 const storedUser: any = localStorage.getItem('userInfo')
                 const userData = JSON.parse(storedUser);
                 setUserInfo(userData);
-
             } catch (err) {
                 message.error('Error occurred during authentication');
                 router.replace('/login');
@@ -580,7 +580,7 @@ export default function AdminDashboardPage() {
                                                     {event.date ? new Date(event.date).getDate() : '?'}
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="font-semibold text-gray-900 text-sm">{event.title.slice(0,30) || 'Untitled Event'}</span>
+                                                    <span className="font-semibold text-gray-900 text-sm">{event.title.slice(0, 30) || 'Untitled Event'}</span>
                                                     <span className="text-xs text-gray-500">
                                                         {event.date ? new Date(event.date).toLocaleDateString() : 'No date'} • {event.startTime || ''}
                                                     </span>

@@ -6,7 +6,7 @@ import Button from "@/components/Button";
 import Header from "@/components/Header";
 import AddPropertyPart1 from "@/components/AddPropertyPart1";
 import AddPropertyPart2 from "@/components/AddPropertyPart2";
-import { checkUserSession, getData, saveData, updateData, uploadImage, uploadImagesToCloudinary } from "@/FBConfig/fbFunctions";
+import { checkUserSession, getData, saveData, updateData, uploadImages, } from "@/FBConfig/fbFunctions";
 import { message } from 'antd';
 import AddPropertyPart3 from '@/components/AddPropertyPart3';
 
@@ -179,10 +179,12 @@ export default function AddPropertyPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
         if (!userInfo) {
             message.error("User not detected!");
             return;
         }
+
         setIsLoading(true);
 
         const required = ['title', 'propertyType', 'price', 'area', 'city', 'location', 'description'];
@@ -195,9 +197,12 @@ export default function AddPropertyPage() {
 
         let uploadedUrls: string[] = [];
         try {
-            uploadedUrls = await uploadImagesToCloudinary(images);
-            if (uploadedUrls.length === 0) throw new Error("No images uploaded");
+            uploadedUrls = await uploadImages(images);
+            if (!uploadedUrls || uploadedUrls.length === 0) {
+                throw new Error("No images uploaded");
+            }
         } catch (err) {
+            console.error(err);
             message.error("Failed to upload images");
             setIsLoading(false);
             return;
@@ -216,7 +221,7 @@ export default function AddPropertyPage() {
         saveData(`properties/${propertyData.id}`, propertyData)
             .then(() => {
                 message.success('Property saved successfully!');
-                router.replace(`/realstate/${userInfo?.uid}/properties`)
+                router.replace(`/realstate/${userInfo?.uid}/properties`);
             })
             .catch(err => {
                 console.error(err);
@@ -224,8 +229,6 @@ export default function AddPropertyPage() {
             })
             .finally(() => setIsLoading(false));
     };
-
-
 
     if (!userInfo) {
         return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
