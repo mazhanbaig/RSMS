@@ -128,22 +128,21 @@
 
 import axios from "axios";
 import api from "./api"
-import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
-import { auth } from "./config";
+import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
+import { app } from "./config";
+export const auth = getAuth(app);
+
 
 export const loginWithGoogle = async () => {
   const provider = new GoogleAuthProvider();
-
   const result = await signInWithPopup(auth, provider);
-
   // token auto attached via interceptor
   await api.post("/api/auth");
-
   return result.user;
 };
 
 // ---------------- LOGOUT ----------------
-export const logoutUser = async () => {
+export const logout = async () => {
   await signOut(auth);
 };
 
@@ -189,7 +188,7 @@ export const updateData = async (path: string, data: any) => {
 };
 
 // ---------------- DELETE DATA ----------------
-export const deleteData = async (path: string) => {
+export const deleleData = async (path: string) => {
   try {
     const res = await api.delete(`/api/data/`, { data: { path } });
     return res.data;
@@ -222,17 +221,5 @@ export const uploadImages = async (files:any) => {
   } catch (error) {
     console.log(error);
     throw error;
-  }
-};
-
-
-// ---------------- SAVE USER (Google Sign-In) ----------------
-export const saveUser = async (user: any) => {
-  try {
-    const res = await api.post(`/api/auth/`, user);
-    return res.data;
-  } catch (err) {
-    console.error(err);
-    return null;
   }
 };
