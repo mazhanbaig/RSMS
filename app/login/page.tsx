@@ -5,7 +5,7 @@ import { message } from "antd";
 import Link from "next/link";
 // import { getCurrentUser, handleGoogleSignUp } from "@/config/sbFunctions";
 import { useRouter } from "next/navigation";
-import { signInWithGoogle } from "@/FBConfig/fbFunctions";
+import { loginWithGoogle } from "@/FBConfig/fbFunctions";
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false);
@@ -14,7 +14,7 @@ export default function LoginPage() {
     const handleGoogleLogin = async () => {
         setLoading(true);
         try {
-            const res:any = await signInWithGoogle();
+            const res: any = await loginWithGoogle();
             message.success('Login Successful!');
 
             localStorage.setItem(

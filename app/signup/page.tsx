@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
-import { signInWithGoogle } from "@/FBConfig/fbFunctions";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { message } from "antd";
+import { loginWithGoogle } from "@/FBConfig/fbFunctions";
 
 export default function Signup() {
   const [loading, setLoading] = useState(false);
@@ -13,7 +13,7 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const res: any = await signInWithGoogle();
+      const res: any = await loginWithGoogle();
       console.log(res);
 
       localStorage.setItem(

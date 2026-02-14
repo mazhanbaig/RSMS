@@ -3,17 +3,14 @@ import { message } from "antd"
 import { useRouter } from "next/navigation"
 import { useEffect, useState, useMemo, useCallback, useRef } from "react"
 import {
-    Users, Home, DollarSign, Building, PhoneCall,
-    MessageSquare, Mail, ChevronRight, Bed, Bath, Crown,
+    Users, Home, DollarSign, Building,
+    ChevronRight, Bed, Bath, Crown,
     CalendarClock
 } from "lucide-react"
-import { auth, checkUserSession, getData } from "@/FBConfig/fbFunctions"
-import { getAuth, onAuthStateChanged } from "firebase/auth"
+import { checkUserSession, getData } from "@/FBConfig/fbFunctions"
 import Loader from "@/components/Loader"
 import Header from "@/components/Header"
 import Button from "@/components/Button"
-import React from "react"
-import { app } from "@/FBConfig/config"
 
 export default function AdminDashboardPage() {
     const [loading, setLoading] = useState(true)

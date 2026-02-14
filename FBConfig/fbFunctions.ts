@@ -128,47 +128,37 @@
 
 import axios from "axios";
 import api from "./api"
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
 import { auth } from "./config";
 
-const BASE_URL=''
-const handleGoogleLogin = async () => {
-  const result:any = await signInWithGoogle(); 
-  const user = result.user;
+export const loginWithGoogle = async () => {
+  const provider = new GoogleAuthProvider();
 
-  await saveUser({
-    uid: user.uid,
-    name: user.displayName,
-    email: user.email,
-    photoURL: user.photoURL,
-    provider: "google"
-  });
+  const result = await signInWithPopup(auth, provider);
+
+  // token auto attached via interceptor
+  await api.post("/api/auth");
+
+  return result.user;
 };
 
-const logoutUser = async () => {
-  try {
-    const user = auth.currentUser;
-    if (!user) return;
-    await axios.post(`${BASE_URL}/api/auth/logout`, {
-      uid:user.uid
-    });
-    await signOut(auth);
-  } catch (err) {
-  }
+// ---------------- LOGOUT ----------------
+export const logoutUser = async () => {
+  await signOut(auth);
 };
 
+// ---------------- CHECK SESSION ----------------
 export const checkUserSession = () => {
   return new Promise((resolve) => {
     onAuthStateChanged(auth, (user) => {
-      resolve(user ? user : null);
+      resolve(user);
     });
   });
 };
-
 // ---------------- GET DATA ----------------
 export const getData = async (path: string) => {
   try {
-    const res = await api.get(`${BASE_URL}/api/data?path=${path}`);
+    const res = await api.get(`/api/data?path=${path}`);
     return res.data.data;
   } catch (err) {
     console.error(err);
@@ -179,7 +169,7 @@ export const getData = async (path: string) => {
 // ---------------- SAVE DATA ----------------
 export const saveData = async (path: string, data: any) => {
   try {
-      const res = await api.post(`${BASE_URL}/api/data/`, { path, data });
+      const res = await api.post(`/api/data/`, { path, data });
       return res.data;
     } catch (err) {
     console.error(err);
@@ -190,7 +180,7 @@ export const saveData = async (path: string, data: any) => {
 // ---------------- UPDATE DATA ----------------
 export const updateData = async (path: string, data: any) => {
   try {
-    const res = await api.put(`${BASE_URL}/api/data/`, { path, data });
+    const res = await api.put(`/api/data/`, { path, data });
     return res.data;
   } catch (err) {
     console.error(err);
@@ -201,7 +191,7 @@ export const updateData = async (path: string, data: any) => {
 // ---------------- DELETE DATA ----------------
 export const deleteData = async (path: string) => {
   try {
-    const res = await api.delete(`${BASE_URL}/api/data/`, { data: { path } });
+    const res = await api.delete(`/api/data/`, { data: { path } });
     return res.data;
   } catch (err) {
     console.error(err);
@@ -219,7 +209,7 @@ export const uploadImages = async (files:any) => {
     }
 
     const res = await axios.post(
-      `${BASE_URL}/api/images/addimage`,
+      `/api/images/addimages`,
       formData,
       {
         headers: {
@@ -235,17 +225,14 @@ export const uploadImages = async (files:any) => {
   }
 };
 
+
 // ---------------- SAVE USER (Google Sign-In) ----------------
 export const saveUser = async (user: any) => {
   try {
-    const res = await api.post(`${BASE_URL}/api/auth/`, user);
+    const res = await api.post(`/api/auth/`, user);
     return res.data;
   } catch (err) {
     console.error(err);
     return null;
   }
 };
-function signInWithGoogle() {
-  throw new Error("Function not implemented.");
-}
-

@@ -1,18 +1,16 @@
 import axios from "axios";
-import { auth } from "@/FBConfig/config";
+import { auth } from "./config";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
 });
 
 api.interceptors.request.use(async (config) => {
   const user = auth.currentUser;
-
   if (user) {
     const token = await user.getIdToken();
     config.headers.Authorization = `Bearer ${token}`;
   }
-
   return config;
 });
 
