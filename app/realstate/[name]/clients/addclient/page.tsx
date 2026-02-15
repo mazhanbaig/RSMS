@@ -82,26 +82,6 @@ export default function AddClientPage() {
         checkAuth();
     }, [router]);
 
-    // Load userInfo from localStorage once
-    useEffect(() => {
-        const data = localStorage.getItem("userInfo");
-        if (data) {
-            try {
-                let parsed = JSON.parse(data)
-                getData(`users/${parsed.uid}`)
-                    .then((res: any) => {
-                        setUserInfo(res)
-                    })
-                    .catch((err: any) => {
-                        console.error(err.message);
-                    })
-                setUserInfo(parsed);
-            } catch (err) {
-                console.error("Failed to parse userInfo from localStorage:", err);
-            }
-        }
-    }, []);
-
     // Prefill form for editing
     useEffect(() => {
         const clientData = searchParams.get("clientData");

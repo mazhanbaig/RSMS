@@ -132,28 +132,78 @@ import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signO
 import { app } from "./config";
 export const auth = getAuth(app);
 
-
 export const loginWithGoogle = async () => {
-  const provider = new GoogleAuthProvider();
-  const result = await signInWithPopup(auth, provider);
-  // token auto attached via interceptor
-  await api.post("/api/auth");
-  return result.user;
+  try {
+    // 1. Sign in with Google
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    
+    console.log("✅ Google login successful:", user.email);
+    
+    // 2. Get Firebase token (your interceptor will use this)
+    const token = await user.getIdToken();
+    
+    // 3. Send user data to your backend API
+    const response = await api.post("/api/auth", {
+      uid: user.uid,
+      name: user.displayName,
+      email: user.email,
+      picture: user.photoURL
+    });
+    
+    console.log("✅ Backend response:", response.data);
+    
+    // 4. Return user data
+    return {
+      user: {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL
+      },
+      backendResponse: response.data
+    };
+    
+  } catch (error) {
+    console.error("❌ Google login failed:", error);
+    throw error;
+  }
 };
 
 // ---------------- LOGOUT ----------------
 export const logout = async () => {
-  await signOut(auth);
+  try {
+    await signOut(auth);
+    localStorage.removeItem('userInfo');
+    console.log("✅ Logout successful");
+  } catch (error) {
+    console.error("❌ Logout failed:", error);
+    throw error;
+  }
 };
 
 // ---------------- CHECK SESSION ----------------
 export const checkUserSession = () => {
   return new Promise((resolve) => {
     onAuthStateChanged(auth, (user) => {
-      resolve(user);
+      if (user) {
+        // User is logged in
+        const userInfo = {
+          uid: user.uid,
+          name: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL
+        };
+        resolve(userInfo);
+      } else {
+        // User is logged out
+        resolve(null);
+      }
     });
   });
 };
+
 // ---------------- GET DATA ----------------
 export const getData = async (path: string) => {
   try {
@@ -168,9 +218,11 @@ export const getData = async (path: string) => {
 // ---------------- SAVE DATA ----------------
 export const saveData = async (path: string, data: any) => {
   try {
-      const res = await api.post(`/api/data/`, { path, data });
-      return res.data;
-    } catch (err) {
+    const res = await api.post(`/api/data/`, { path, data });
+    console.log(res);
+    return res.data.data;
+    
+  } catch (err) {
     console.error(err);
     return null;
   }
@@ -179,8 +231,7 @@ export const saveData = async (path: string, data: any) => {
 // ---------------- UPDATE DATA ----------------
 export const updateData = async (path: string, data: any) => {
   try {
-    const res = await api.put(`/api/data/`, { path, data });
-    return res.data;
+     await api.put(`/api/data/`, { path, data });
   } catch (err) {
     console.error(err);
     return null;
@@ -190,8 +241,7 @@ export const updateData = async (path: string, data: any) => {
 // ---------------- DELETE DATA ----------------
 export const deleleData = async (path: string) => {
   try {
-    const res = await api.delete(`/api/data/`, { data: { path } });
-    return res.data;
+     await api.delete(`/api/data/`, { data: { path } });
   } catch (err) {
     console.error(err);
     return null;

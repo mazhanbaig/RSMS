@@ -33,7 +33,7 @@ interface ClientData {
   propertyType: string;
   preferredLocations: string;
   ownerUid?: string;
-  agentUid?: string; // Added this
+  agentUid?: string;
 }
 
 interface EventFormData {
@@ -41,7 +41,7 @@ interface EventFormData {
   description: string;
   eventType: string;
   address: string;
-  date: string; // Changed from object to string
+  date: string;
   startTime: string;
   endTime: string;
   notes: string;
@@ -53,7 +53,8 @@ export default function AddEventPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // For auth
+  const [clientsLoading, setClientsLoading] = useState(false); // ✅ Separate for clients
   const [clients, setClients] = useState<ClientData[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -62,7 +63,7 @@ export default function AddEventPage() {
     description: '',
     eventType: 'property-viewing',
     address: '',
-    date: new Date().toISOString().split('T')[0], // Simplified date format
+    date: new Date().toISOString().split('T')[0],
     startTime: '10:00',
     endTime: '11:00',
     notes: '',
@@ -87,10 +88,12 @@ export default function AddEventPage() {
     { value: '120', label: '2 hours before' }
   ];
 
-  const fetchClients = useCallback(async () => {
-    try {
-      setLoading(true);
+  // ✅ FIXED: Fetch clients with proper error handling
+  const fetchClients = useCallback(async (uid: string) => {
+    if (!uid) return;
 
+    setClientsLoading(true);
+    try {
       const clientsData: any = await getData("clients");
 
       if (!clientsData) {
@@ -103,24 +106,26 @@ export default function AddEventPage() {
           id,
           ...data,
         }))
-        .filter((client) => client.agentUid === userInfo?.uid || client.ownerUid === userInfo?.uid);
+        .filter((client) => client.agentUid === uid || client.ownerUid === uid);
 
       setClients(clientsArray);
     } catch (error) {
       console.error("Failed to load clients:", error);
       message.error("Failed to load clients");
     } finally {
-      setLoading(false);
+      setClientsLoading(false);
     }
-  }, [userInfo?.uid]);
+  }, []);
 
   // Get selected clients
   const selectedClients = clients.filter(client => formData.clientIds.includes(client.id));
 
-  // Check authentication and load data
+  // ✅ FIXED: Single useEffect for auth
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        setLoading(true);
+
         const user: any = await checkUserSession();
         if (!user) {
           message.error('Please Login First');
@@ -128,31 +133,31 @@ export default function AddEventPage() {
           return;
         }
 
-        const storedUser: any = localStorage.getItem('userInfo');
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          setUserInfo(userData);
-        } else {
+        // Get user data from localStorage
+        const storedUser = localStorage.getItem('userInfo');
+        if (!storedUser) {
           message.error('No user info found');
           router.replace('/login');
+          return;
         }
+
+        const userData = JSON.parse(storedUser);
+        setUserInfo(userData);
+
+        // ✅ Fetch clients after user is set
+        await fetchClients(userData.uid);
 
       } catch (err) {
         console.error('Authentication error:', err);
         message.error('Error occurred during authentication');
         router.replace('/login');
+      } finally {
+        setLoading(false);
       }
     };
 
     checkAuth();
-  }, [router]);
-
-  // Fetch clients when userInfo is available
-  useEffect(() => {
-    if (userInfo?.uid) {
-      fetchClients();
-    }
-  }, [userInfo?.uid, fetchClients]);
+  }, [router, fetchClients]);
 
   const handleClientSelect = (clientId: string) => {
     if (!clientId || formData.clientIds.includes(clientId)) return;
@@ -161,6 +166,16 @@ export default function AddEventPage() {
       ...prev,
       clientIds: [...prev.clientIds, clientId],
     }));
+
+    // Auto-update title with client name
+    const selectedClient = clients.find(c => c.id === clientId);
+    if (selectedClient && formData.eventType) {
+      const eventTypeLabel = eventTypes.find(et => et.value === formData.eventType)?.label || '';
+      setFormData(prev => ({
+        ...prev,
+        title: `${eventTypeLabel} with ${selectedClient.firstName} ${selectedClient.lastName}`
+      }));
+    }
   };
 
   // Handle form input changes
@@ -169,15 +184,6 @@ export default function AddEventPage() {
       ...prev,
       [field]: value
     }));
-
-    // Update title if event type changes
-    if (field === 'eventType') {
-      const eventTypeLabel = eventTypes.find(et => et.value === value)?.label || '';
-      setFormData(prev => ({
-        ...prev,
-        title: `${eventTypeLabel}${selectedClients.length > 0 ? ` with ${selectedClients[0].firstName}` : ''}`
-      }));
-    }
   };
 
   // Validate form
@@ -222,20 +228,19 @@ export default function AddEventPage() {
     setSaving(true);
 
     try {
-      
       // Generate a unique ID for the event
       const eventId = crypto.randomUUID();
       const eventData = {
         ...formData,
-        id:eventId,
+        id: eventId,
         agentUid: userInfo.uid,
         agentName: userInfo.name || userInfo.email,
         reminderSent: false,
         createdAt: new Date().toISOString(),
       };
 
-      // Save event under user's events collection
-      await saveData(`events/${userInfo.uid}/${eventId}`, eventData);
+      // ✅ FIXED: Save event with flat structure (matches your fetch pattern)
+      await saveData(`events/${eventId}`, eventData);
 
       message.success('Event created successfully!');
       router.push(`/realstate/${userInfo.uid}/events`);
@@ -248,12 +253,13 @@ export default function AddEventPage() {
     }
   };
 
-  if (loading) {
+  // Show loader while checking auth or loading clients
+  if (loading || clientsLoading) {
     return <Loader />;
   }
 
   if (!userInfo) {
-    return null; // Will redirect to login
+    return null;
   }
 
   return (
@@ -304,8 +310,8 @@ export default function AddEventPage() {
                       type="button"
                       onClick={() => handleInputChange('eventType', type.value)}
                       className={`px-3 py-2 rounded-lg border-2 transition-all duration-200 flex flex-col items-center justify-center gap-2 ${formData.eventType === type.value
-                        ? `${type.bg} border-purple-300`
-                        : 'border-gray-200 hover:border-gray-300'
+                          ? `${type.bg} border-purple-300`
+                          : 'border-gray-200 hover:border-gray-300'
                         }`}
                     >
                       <div className={`${type.color}`}>
@@ -366,7 +372,6 @@ export default function AddEventPage() {
                           </div>
                         </div>
 
-                        {/* REMOVE BUTTON */}
                         <button
                           type="button"
                           onClick={() =>
@@ -385,12 +390,12 @@ export default function AddEventPage() {
                 )}
               </div>
 
-              {/* Title & Description */}
+              {/* Title & Address */}
               <div className="bg-white rounded-lg border border-gray-200 px-5 py-4 shadow-sm">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 text-lg font-semibold text-gray-900 mb-4">
                     <PenLine size={22} className="w-5 h-5 text-purple-600" />
-                    <span>Event Description</span>
+                    <span>Event Details</span>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -422,19 +427,6 @@ export default function AddEventPage() {
                       />
                     </div>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) => handleInputChange('description', e.target.value)}
-                      placeholder="Brief description of the event..."
-                      rows={3}
-                      className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors resize-none"
-                    />
-                  </div>
                 </div>
               </div>
             </div>
@@ -451,10 +443,7 @@ export default function AddEventPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        Date
-                      </div>
+                      Date
                     </label>
                     <input
                       type="date"
@@ -469,10 +458,7 @@ export default function AddEventPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
-                          Start Time
-                        </div>
+                        Start Time
                       </label>
                       <input
                         type="time"
@@ -485,10 +471,7 @@ export default function AddEventPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
-                          End Time
-                        </div>
+                        End Time
                       </label>
                       <input
                         type="time"
@@ -500,26 +483,34 @@ export default function AddEventPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">
-                        <div className="flex items-center gap-2">
-                          <Bell className="w-4 h-4" />
-                          Reminder
-                        </div>
-                      </label>
-                      <select
-                        value={formData.reminderTime}
-                        onChange={(e) => handleInputChange('reminderTime', e.target.value as any)}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors bg-white"
-                      >
-                        {reminderOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                      Reminder
+                    </label>
+                    <select
+                      value={formData.reminderTime}
+                      onChange={(e) => handleInputChange('reminderTime', e.target.value as any)}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors bg-white"
+                    >
+                      {reminderOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                      Description (Optional)
+                    </label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => handleInputChange('description', e.target.value)}
+                      placeholder="Brief description of the event..."
+                      rows={2}
+                      className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors resize-none"
+                    />
                   </div>
                 </div>
               </div>
@@ -532,9 +523,6 @@ export default function AddEventPage() {
                 </h3>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Notes for this event
-                  </label>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => handleInputChange('notes', e.target.value)}
@@ -547,7 +535,7 @@ export default function AddEventPage() {
             </div>
           </div>
 
-          {/* Action Buttons - Full Width at Bottom */}
+          {/* Action Buttons */}
           <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
               <Button
@@ -558,15 +546,13 @@ export default function AddEventPage() {
                 disabled={saving}
               />
 
-              <div className="flex gap-4">
-                <Button
-                  label={saving ? "Saving..." : "Create Event"}
-                  type="submit"
-                  variant="theme"
-                  icon={!saving && <Plus className="w-4 h-4" />}
-                  disabled={saving}
-                />
-              </div>
+              <Button
+                label={saving ? "Saving..." : "Create Event"}
+                type="submit"
+                variant="theme"
+                icon={!saving && <Plus className="w-4 h-4" />}
+                disabled={saving}
+              />
             </div>
           </div>
         </form>

@@ -24,10 +24,12 @@ export default function OwnersPage() {
     const [loading, setLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState("all");
 
-    // Check authentication and load data
+    // ✅ SINGLE useEffect for authentication and user data
     useEffect(() => {
         const checkAuth = async () => {
             try {
+                setLoading(true);
+
                 const user: any = await checkUserSession();
                 if (!user) {
                     message.error('Please Login First');
@@ -35,7 +37,13 @@ export default function OwnersPage() {
                     return;
                 }
 
-                const storedUser: any = localStorage.getItem('userInfo')
+                const storedUser = localStorage.getItem('userInfo');
+                if (!storedUser) {
+                    message.error('User data not found');
+                    router.replace('/login');
+                    return;
+                }
+
                 const userData = JSON.parse(storedUser);
                 setUserInfo(userData);
 
@@ -48,28 +56,12 @@ export default function OwnersPage() {
         };
 
         checkAuth();
-    }, [router]);
+    }, [router]); // ✅ Runs only once
 
-    // Load userInfo from localStorage once
-    useEffect(() => {
-        const stored = localStorage.getItem("userInfo");
-        if (stored) {
-            try {
-                const parsed = JSON.parse(stored);
-                getData(`users/${parsed.uid}`)
-                    .then((res: any) => {
-                        setUserInfo(res);
-                    })
-                    .catch(console.error);
-            } catch (err) {
-                console.error("Failed to parse userInfo:", err);
-            }
-        }
-    }, []);
-
-    // Fetch owners once userInfo is available
+    // ✅ Fetch owners once userInfo is available
     useEffect(() => {
         if (userInfo?.uid) {
+            setLoading(true);
             getData("owners/")
                 .then((res: any) => {
                     if (res) {
@@ -83,27 +75,30 @@ export default function OwnersPage() {
                         ).reverse()
 
                         setOwners(userOwners);
-                        setLoading(false);
                     } else {
                         setOwners([]);
-                        setLoading(false);
                     }
                 })
                 .catch(err => {
-                    message.error('Error ccured')
+                    console.error("Fetch error:", err);
+                    message.error('Error occurred while fetching owners');
+                })
+                .finally(() => {
                     setLoading(false);
                 });
         }
-    }, [userInfo]);
+    }, [userInfo?.uid]); // ✅ Only depends on uid
 
     const deleteOwner = (id: string) => {
         if (confirm("Are you sure you want to delete this owner?")) {
             deleleData(`owners/${id}`)
                 .then(() => {
                     setOwners(prev => prev.filter(owner => owner.id !== id));
+                    message.success("Owner deleted successfully");
                 })
                 .catch((error) => {
-                    message.error('Error while deleleting owner')
+                    console.error("Delete error:", error);
+                    message.error('Error while deleting owner');
                 });
         }
     };
@@ -119,18 +114,18 @@ export default function OwnersPage() {
 
             const matchesFilter =
                 activeFilter === "all" ||
-                owner.status?.toLowerCase() === activeFilter;
+                owner.status?.toLowerCase() === activeFilter.toLowerCase(); // ✅ Fixed: both lowercase
 
             return matchesSearch && matchesFilter;
         });
     }, [owners, searchVal, activeFilter]);
 
-    // Status filters
+    // ✅ Status filters (fixed comparison)
     const statusFilters = [
         { id: "all", label: "All Owners", count: owners.length },
-        { id: "active", label: "Active", count: owners.filter(o => o.status === 'active').length },
-        { id: "deal-done", label: "Deal Done", count: owners.filter(o => o.status === 'deal-Done').length },
-        { id: "inactive", label: "Inactive", count: owners.filter(o => o.status === 'inactive').length }
+        { id: "active", label: "Active", count: owners.filter(o => o.status?.toLowerCase() === 'active').length },
+        { id: "deal-done", label: "Deal Done", count: owners.filter(o => o.status?.toLowerCase() === 'deal-done').length },
+        { id: "inactive", label: "Inactive", count: owners.filter(o => o.status?.toLowerCase() === 'inactive').length }
     ];
 
     const calculateOwnersGrowth = useMemo(() => {
@@ -337,7 +332,7 @@ export default function OwnersPage() {
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                router.push(`/owners/viewowner/${owner.id}`);
+                                                                router.push(`/realstate/${userInfo?.uid}/owners/viewowner/${owner.id}`);
                                                             }}
                                                             className="p-2 hover:bg-blue-50 rounded-lg text-blue-600"
                                                         >
@@ -346,8 +341,9 @@ export default function OwnersPage() {
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
+                                                                // ✅ FIXED: Added userInfo?.uid in path
                                                                 router.push(
-                                                                    `/owners/addowner?ownerData=${encodeURIComponent(
+                                                                    `/realstate/${userInfo?.uid}/owners/addowner?ownerData=${encodeURIComponent(
                                                                         JSON.stringify(owner)
                                                                     )}`
                                                                 );

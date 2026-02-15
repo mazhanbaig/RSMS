@@ -123,17 +123,15 @@ export default function HomePage() {
       setIsAuthenticated(true);
 
       try {
-        const storedUser = localStorage.getItem("userInfo");
+        const storedUser: any = localStorage.getItem("userInfo");
 
         if (storedUser) {
-          const parsedUser: any = JSON.parse(storedUser);
-          const userData: any = await getData(`users/${parsedUser.uid}`);
-
+          const parsedUser = JSON.parse(storedUser);
+          const userData = await getData(`users/${parsedUser.uid}`);
           setUserInfo(userData);
-          router.replace(`/realstate/${userData.uid}`);
+          router.replace(`/realstate/${parsedUser?.uid}`);
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
       } finally {
         setLoading(false);
       }
@@ -142,8 +140,6 @@ export default function HomePage() {
     checkAuth();
   }, [router]);
 
-
-  // If loading, show loader
   if (loading) {
     return <Loader />;
   }

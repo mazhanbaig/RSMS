@@ -25,7 +25,8 @@ interface UserInfo {
 
 interface ClientDetail {
     id: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     email: string;
     phone: string;
 }
@@ -36,7 +37,6 @@ interface EventData {
     description: string;
     eventType: 'property-viewing' | 'client-meeting' | 'closing-session' | 'property-inspection' | 'follow-up-call';
     clientIds: string[];
-    clientDetails?: ClientDetail[];
     address: string;
     date: string;
     startTime: string;
@@ -57,9 +57,8 @@ export default function ViewEventPage() {
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
     const [event, setEvent] = useState<EventData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [uid, setUid] = useState<string | null>(null);
     const [activePanel, setActivePanel] = useState('overview');
-    const [clients, setClients] = useState<any[]>([])
+    const [clients, setClients] = useState<ClientDetail[]>([]);
 
     // Event type configuration matching your theme
     const eventTypeConfig = useMemo(() => ({
@@ -100,10 +99,12 @@ export default function ViewEventPage() {
         }
     }), []);
 
-    // Check authentication and load data
+    // ✅ SINGLE useEffect for authentication
     useEffect(() => {
         const checkAuth = async () => {
             try {
+                setLoading(true);
+
                 const user: any = await checkUserSession();
                 if (!user) {
                     message.error('Please Login First');
@@ -111,11 +112,18 @@ export default function ViewEventPage() {
                     return;
                 }
 
-                const storedUser: any = localStorage.getItem('userInfo')
+                const storedUser = localStorage.getItem('userInfo');
+                if (!storedUser) {
+                    message.error('User not logged in');
+                    router.push('/login');
+                    return;
+                }
+
                 const userData = JSON.parse(storedUser);
                 setUserInfo(userData);
 
             } catch (err) {
+                console.error('Authentication error:', err);
                 message.error('Error occurred during authentication');
                 router.replace('/login');
             } finally {
@@ -126,54 +134,10 @@ export default function ViewEventPage() {
         checkAuth();
     }, [router]);
 
-    // Load user info
-    useEffect(() => {
-        const stored = localStorage.getItem('userInfo');
-        if (stored) {
-            try {
-                const userData = JSON.parse(stored);
-                setUserInfo(userData);
-                setUid(userData.uid);
-            } catch (error) {
-                message.error("Error loading user information");
-            }
-        } else {
-            message.error("User not logged in");
-            router.push("/login");
-        }
-    }, []);
+    // ✅ Fetch clients function (defined before use)
+    const fetchClients = useCallback(async (clientIds: string[]) => {
+        if (!clientIds || clientIds.length === 0) return [];
 
-    // Fetch event data
-    const fetchEventData = useCallback(async () => {
-        if (!uid || !eventId) return;
-
-        try {
-            setLoading(true);
-            const eventData: any = await getData(`events/${uid}/${eventId}`);
-
-            if (eventData) {
-                setEvent({ id: eventId, ...eventData });
-
-                if (eventData.clientIds?.length > 0) {
-                    const resolvedClients = await abstractClients(eventData.clientIds);
-                    setClients(resolvedClients);
-                } else {
-                    setClients([]);
-                }
-            }
-            else {
-                message.error("Event not found");
-                router.push(`/realstate/${uid}/events`);
-            }
-        } catch (error) {
-            console.error("Error fetching event:", error);
-            message.error('Failed to load event data');
-        } finally {
-            setLoading(false);
-        }
-    }, [uid, eventId, router]);
-
-    const abstractClients = async (clientIds: string[]) => {
         try {
             const clientData: any = await getData('clients/');
             if (!clientData) return [];
@@ -181,25 +145,65 @@ export default function ViewEventPage() {
             const clientsArray = Object.entries(clientData).map(
                 ([id, value]: [string, any]) => ({
                     id,
-                    ...value
+                    firstName: value.firstName || '',
+                    lastName: value.lastName || '',
+                    email: value.email || '',
+                    phone: value.phone || ''
                 })
             );
 
-            // ONLY clients linked to this event
-            return clientsArray.filter(client =>
-                clientIds.includes(client.id)
-            );
-
+            // Return ONLY clients linked to this event
+            return clientsArray.filter(client => clientIds.includes(client.id));
         } catch (error) {
             console.error("Error fetching clients", error);
             return [];
         }
-    };
+    }, []);
 
+    // ✅ Fetch event data
+    const fetchEventData = useCallback(async () => {
+        if (!userInfo?.uid || !eventId) return;
 
+        try {
+            setLoading(true);
+            // ✅ FIXED: Flat structure - matches your save path
+            const eventData: any = await getData(`events/${eventId}`);
+
+            if (eventData) {
+                // Verify this event belongs to current user
+                if (eventData.agentUid !== userInfo.uid) {
+                    message.error("You don't have permission to view this event");
+                    router.push(`/realstate/${userInfo.uid}/events`);
+                    return;
+                }
+
+                setEvent({ id: eventId, ...eventData });
+
+                // Fetch client details if there are client IDs
+                if (eventData.clientIds?.length > 0) {
+                    const resolvedClients = await fetchClients(eventData.clientIds);
+                    setClients(resolvedClients);
+                } else {
+                    setClients([]);
+                }
+            } else {
+                message.error("Event not found");
+                router.push(`/realstate/${userInfo.uid}/events`);
+            }
+        } catch (error) {
+            console.error("Error fetching event:", error);
+            message.error('Failed to load event data');
+        } finally {
+            setLoading(false);
+        }
+    }, [userInfo, eventId, router, fetchClients]);
+
+    // Fetch event when userInfo is available
     useEffect(() => {
-        fetchEventData();
-    }, [fetchEventData]);
+        if (userInfo?.uid) {
+            fetchEventData();
+        }
+    }, [userInfo, fetchEventData]);
 
     // Helper functions
     const getEventStatus = useCallback(() => {
@@ -302,6 +306,13 @@ export default function ViewEventPage() {
         }
     }, [event]);
 
+    // ✅ Navigate to client page
+    const navigateToClient = useCallback((clientId: string) => {
+        if (userInfo?.uid) {
+            router.push(`/realstate/${userInfo.uid}/clients/viewclient/${clientId}`);
+        }
+    }, [userInfo, router]);
+
     // Memoized values
     const typeConfig = useMemo(() =>
         event ? eventTypeConfig[event.eventType] || eventTypeConfig['client-meeting'] : eventTypeConfig['client-meeting'],
@@ -336,7 +347,7 @@ export default function ViewEventPage() {
                         <p className="text-gray-600 mb-6">The event you're looking for doesn't exist.</p>
                         <Button
                             label="Back to Events"
-                            onClick={() => uid ? router.push(`/realstate/${uid}/events`) : router.back()}
+                            onClick={() => userInfo?.uid ? router.push(`/realstate/${userInfo.uid}/events`) : router.back()}
                             variant="theme"
                             size="md"
                             icon={<ArrowLeft className="w-4 h-4" />}
@@ -358,7 +369,7 @@ export default function ViewEventPage() {
                         {/* Left Section */}
                         <div className="flex items-start gap-3 sm:items-center">
                             <button
-                                onClick={() => router.push(`/realstate/${uid}/events`)}
+                                onClick={() => router.push(`/realstate/${userInfo?.uid}/events`)}
                                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                             >
                                 <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -368,10 +379,7 @@ export default function ViewEventPage() {
 
                             <div>
                                 <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 leading-tight">
-                                    {event.title.split(' ')[0] || 'Untitled Event'} {''}
-                                    <span className="bg-gradient-to-br from-purple-500 to-blue-500 text-transparent bg-clip-text">
-                                        {event.title.split(' ')[1] || 'Untitled Event'}
-                                    </span>
+                                    {event.title || 'Untitled Event'}
                                 </h1>
                                 <p className="text-sm text-gray-600 mt-1">
                                     Event Details • Real Estate
@@ -390,14 +398,6 @@ export default function ViewEventPage() {
                                 {statusConfig.icon}
                                 <span className="text-sm font-medium">{statusConfig.label}</span>
                             </div>
-
-                            <Button
-                                label="Edit"
-                                onClick={() => router.push(`/realstate/${uid}/events/edit/${eventId}`)}
-                                variant="theme"
-                                size="sm"
-                                icon={<Edit className="w-4 h-4" />}
-                            />
                         </div>
                     </div>
                 </div>
@@ -443,7 +443,7 @@ export default function ViewEventPage() {
                                         <MapPin className="w-4 h-4 text-gray-600" />
                                         <span className="text-sm text-gray-600">Location</span>
                                     </div>
-                                    <span className="text-sm font-medium text-gray-900 truncate">{event.address || 'N/A'}</span>
+                                    <span className="text-sm font-medium text-gray-900 truncate max-w-[150px]">{event.address || 'N/A'}</span>
                                 </div>
                                 <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
                                     <div className="flex items-center gap-2">
@@ -528,17 +528,16 @@ export default function ViewEventPage() {
                             {activePanel === 'clients' && (
                                 <div className="space-y-6">
                                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Clients ({event.clientDetails?.length ?? event.clientIds?.length ?? 0})
+                                        Clients ({clients.length})
                                     </h3>
 
-                                    {/* CASE 1: Full client objects */}
                                     {clients.length > 0 ? (
                                         <div className="space-y-4">
-                                            {clients.map((client: any) => (
+                                            {clients.map((client) => (
                                                 <div
                                                     key={client.id}
                                                     className="flex items-center justify-between px-3 py-1 rounded-xl border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300 cursor-pointer group"
-                                                // onClick={() => navigateToClient(client.id)}
+                                                    onClick={() => navigateToClient(client.id)}
                                                 >
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-10 h-10 text-lg sm:text-xl rounded-lg bg-black text-white flex items-center justify-center font-semibold shadow-md">
@@ -547,7 +546,7 @@ export default function ViewEventPage() {
 
                                                         <div className="flex flex-col">
                                                             <span className="font-semibold text-gray-900 text-sm">
-                                                                {client.firstName || 'Unknown'} {client.lastName || ''}
+                                                                {client.firstName} {client.lastName}
                                                             </span>
                                                             <span className="text-xs text-gray-500 truncate max-w-[120px]">
                                                                 {client.email || 'No email'}
@@ -564,10 +563,7 @@ export default function ViewEventPage() {
                                                 </div>
                                             ))}
                                         </div>
-
                                     ) : (
-
-                                        /* CASE 3: No clients */
                                         <div className="text-center py-8">
                                             <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                                             <p className="text-gray-500">No clients assigned to this event</p>
@@ -575,8 +571,6 @@ export default function ViewEventPage() {
                                     )}
                                 </div>
                             )}
-
-
 
                             {activePanel === 'notes' && (
                                 <div className="space-y-6">
