@@ -75,9 +75,9 @@ export default function ViewOwnerPage() {
         if (!id) return;
 
         try {
-            const ownerData: any = await getData(`owners/${id}`);
+            const ownerData: any = await getData(`owners/${userInfo?.uid}/${id}`);
             if (ownerData) {
-                setOwner({ ...ownerData, id: id as string });
+                setOwner(ownerData);
             } else {
                 message.error('Owner not found');
                 router.push(`/realstate/${userInfo?.uid}/owners`);
@@ -92,7 +92,7 @@ export default function ViewOwnerPage() {
 
     useEffect(() => {
         fetchOwnerData();
-    }, [fetchOwnerData]);
+    }, [fetchOwnerData, userInfo?.uid]);
 
     // Update status
     const updateStatus = useCallback(async (newStatus: string) => {

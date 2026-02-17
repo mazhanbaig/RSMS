@@ -18,7 +18,7 @@ export default function AddOwnerPage() {
     }
 
     const [formData, setFormData] = useState({
-        id: "",        
+        id: "",
         firstName: "",
         lastName: "",
         email: "",
@@ -31,7 +31,7 @@ export default function AddOwnerPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
- // Check authentication and load data
+    // Check authentication and load data
     useEffect(() => {
         const checkAuth = async () => {
             try {
@@ -99,12 +99,12 @@ export default function AddOwnerPage() {
         };
 
         if (formData.id) {
-            updateData(`owners/${formData.id}`, ownerFullData)
+            updateData(`owners/${userInfo.uid}/${formData.id}`, ownerFullData)
                 .then(() => { message.success("Edited Successfully"); router.push(`/realstate/${userInfo?.uid}/owners`); })
                 .catch(console.log);
         } else {
             const newId = crypto.randomUUID();
-            saveData(`owners/${newId}`, { ...ownerFullData, id: newId })
+            saveData(`owners/${userInfo.uid}/${newId}`, { ...ownerFullData, id: newId })
                 .then(() => { message.success("Saved Successfully"); router.push(`/realstate/${userInfo?.uid}/owners`); })
                 .catch(console.log);
         }

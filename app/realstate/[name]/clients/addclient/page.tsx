@@ -99,7 +99,7 @@ export default function AddClientPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!userInfo) {
@@ -107,56 +107,68 @@ export default function AddClientPage() {
             return;
         }
 
-        const requiredFields: (keyof FormData)[] = ["firstName", "phone", "propertyType", "minBudget", "maxBudget", "bedrooms", "status"];
+        // Required fields
+        const requiredFields: (keyof FormData)[] = [
+            "firstName",
+            "phone",
+            "propertyType",
+            "minBudget",
+            "maxBudget",
+            "bedrooms",
+            "status"
+        ];
+
+        // Check for empty fields
         const emptyFields = requiredFields.filter(field => !(formData[field]?.trim()));
         if (emptyFields.length > 0) {
             alert(`Please fill in: ${emptyFields.join(", ")}`);
             return;
         }
 
-        const clientFullData = {
-            ...formData,
-            createdAt: new Date().toISOString(),
-            agentUid: userInfo?.uid,
-            agentName: userInfo?.name
-        };
+        try {
+            if (formData.id) {
+                await updateData(`clients/${userInfo.uid}/${formData.id}`, {
+                    ...formData,
+                    agentUid: userInfo.uid,
+                    agentName: userInfo.name
+                });
+                message.success("Edited Successfully");
+            } else {
+                const newId = crypto.randomUUID();
+                await saveData(`clients/${userInfo.uid}/${newId}`, {
+                    ...formData,
+                    id: newId,
+                    createdAt: new Date().toISOString(),
+                    agentUid: userInfo.uid,
+                    agentName: userInfo.name
+                });
+                message.success("Saved Successfully");
 
-        if (formData.id) {
-            // Edit existing client
-            updateData(`clients/${formData.id}`, clientFullData)
-                .then(() => {
-                    message.success("Edited Successfully");
-                    router.push(`/realstate/${userInfo?.uid}/clients`);
-                })
-                .catch(err => console.log(err));
-        } else {
-            // Add new client
-            const newId = crypto.randomUUID();
-            saveData(`clients/${newId}`, { ...clientFullData, id: newId })
-                .then(() => {
-                    message.success("Saved Successfully");
-                    router.push(`/realstate/${userInfo?.uid}/clients`);
-                })
-                .catch(err => console.log(err));
+                setFormData({
+                    id: "",
+                    firstName: "",
+                    lastName: "",
+                    email: "",
+                    phone: "",
+                    propertyType: "",
+                    minBudget: "",
+                    maxBudget: "",
+                    preferredLocations: "",
+                    bedrooms: "",
+                    source: "",
+                    status: "lead",
+                    notes: "",
+                });
+                setActiveSection("personal");
+            }
 
-            setFormData({
-                id: "",
-                firstName: "",
-                lastName: "",
-                email: "",
-                phone: "",
-                propertyType: "",
-                minBudget: "",
-                maxBudget: "",
-                preferredLocations: "",
-                bedrooms: "",
-                source: "",
-                status: "lead",
-                notes: "",
-            });
-            setActiveSection("personal");
+            router.push(`/realstate/${userInfo.uid}/clients`);
+        } catch (err) {
+            console.log(err);
+            message.error("Something went wrong!");
         }
     };
+
 
     if (!userInfo) {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">

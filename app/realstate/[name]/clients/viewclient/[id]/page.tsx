@@ -80,16 +80,25 @@ export default function ViewClientPage() {
     }, [router]);
 
     // Fetch client data
+    // Fetch client data
     const fetchClientData = useCallback(async () => {
         if (!id) return;
 
+        // Wait for userInfo if it's not available yet
+        if (!userInfo?.uid) {
+            console.log("Waiting for userInfo...");
+            return;
+        }
+
         try {
-            const clientData: any = await getData(`clients/${id}`);
+            setLoading(true);
+            const clientData: any = await getData(`clients/${userInfo.uid}/${id}`);
+
             if (clientData) {
-                setClient({ ...clientData, id: id as string });
+                setClient(clientData);
             } else {
                 message.error('Client not found');
-                router.push(`/realstate/${userInfo?.uid}/clients`);
+                router.push(`/realstate/${userInfo.uid}/clients`);
             }
         } catch (error) {
             console.error("Error fetching client:", error);
@@ -100,8 +109,10 @@ export default function ViewClientPage() {
     }, [id, router, userInfo?.uid]);
 
     useEffect(() => {
-        fetchClientData();
-    }, [fetchClientData]);
+        if (userInfo?.uid) {
+            fetchClientData();
+        }
+    }, [fetchClientData, userInfo?.uid]);
 
     // Update status
     const updateStatus = useCallback(async (newStatus: string) => {
@@ -516,7 +527,7 @@ export default function ViewClientPage() {
                                             onClick={async () => {
                                                 if (newNote.trim()) {
                                                     try {
-                                                        const updatedNotes =`${newNote}`;
+                                                        const updatedNotes = `${newNote}`;
                                                         await updateData(`clients/${id}`, { ...client, notes: updatedNotes });
                                                         setClient(prev => prev ? { ...prev, notes: updatedNotes } : null);
                                                         setNewNote('');
