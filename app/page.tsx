@@ -104,37 +104,22 @@ import PricingSection from "@/components/PricingSection";
 export default function HomePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userInfo, setUserInfo] = useState<any>(null);
 
   // Check authentication status
   useEffect(() => {
     const checkAuth = async () => {
-      setLoading(true);
-
       const user = await checkUserSession();
 
-      if (!user) {
-        setIsAuthenticated(false);
-        setLoading(false);
-        return;
-      }
-
-      setIsAuthenticated(true);
-
-      try {
-        const storedUser: any = localStorage.getItem("userInfo");
-
+      if (user) {
+        const storedUser = localStorage.getItem('userInfo');
         if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          const userData = await getData(`users/${parsedUser.uid}`);
-          setUserInfo(userData);
-          router.replace(`/realstate/${parsedUser?.uid}`);
+          const userData = JSON.parse(storedUser);
+          router.replace(`/realstate/${userData.uid}`);
+          return;
         }
-      } catch (error) {
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     };
 
     checkAuth();
@@ -144,8 +129,7 @@ export default function HomePage() {
     return <Loader />;
   }
 
-  // If authenticated but still loading redirect, show loader
-  if (isAuthenticated && !userInfo) {
+  if (!userInfo) {
     return <Loader />;
   }
 
