@@ -40,7 +40,7 @@ interface PropertyFormData {
     hasParking: boolean;
     hasGarden: boolean;
     hasSecurity: boolean;
-    images?: any[];
+    images?: any;
     propertyStatus: 'available' | 'rented' | 'sold' | 'under-Negotiation'
     dealType: 'sold' | 'rented'
     createdAt?: string;
@@ -609,7 +609,7 @@ export default function ViewPropertyPage() {
                                     <h3 className="text-xl font-semibold text-gray-900 mb-4">Property Media</h3>
                                     {property.images && property.images.length > 0 ? (
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                            {property.images.map((image, index) => (
+                                            {property.images.map((image:any, index:number) => (
                                                 <div
                                                     key={index}
                                                     className="relative aspect-square rounded-lg overflow-hidden cursor-pointer"
