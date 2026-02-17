@@ -126,7 +126,6 @@ export default function AddPropertyPage() {
                 }
 
             } catch (err) {
-                console.error('Authentication error:', err);
                 message.error('Error occurred during authentication');
                 router.replace('/login');
             }
@@ -162,6 +161,7 @@ export default function AddPropertyPage() {
     };
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        console.log(e);
         const files = Array.from(e.target.files || []);
         const newImages = [...images, ...files].slice(0, 10);
         setImages(newImages);

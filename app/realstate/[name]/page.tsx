@@ -47,13 +47,18 @@ export default function AdminDashboardPage() {
                 }
 
                 const storedUser: any = localStorage.getItem('userInfo')
+                if (!storedUser) {
+                    message.error('User info not found');
+                    router.replace('/login');
+                    return;
+                }
+
                 const userData = JSON.parse(storedUser);
                 setUserInfo(userData);
             } catch (err) {
+                console.error('Authentication error:', err);
                 message.error('Error occurred during authentication');
                 router.replace('/login');
-            } finally {
-                setLoading(false);
             }
         };
 
@@ -62,6 +67,8 @@ export default function AdminDashboardPage() {
 
     // Optimized data fetching with single call
     const fetchAllData = useCallback(async () => {
+        if (!userInfo?.uid) return;
+
         // Prevent multiple fetches
         if (hasFetchedRef.current && !isInitialLoad) return;
 
@@ -82,17 +89,12 @@ export default function AdminDashboardPage() {
             const processedOwners = ownersData ? Object.entries(ownersData).map(([id, value]: any) => ({ id, ...value })) : [];
             const processedProperties = propertiesData ? Object.entries(propertiesData).map(([id, value]: any) => ({ id, ...value })) : [];
 
-            // Process events - need to handle nested structure
+            // ✅ FIXED: Process events - flat structure filtered by agentUid
             let processedEvents: any[] = [];
-            if (eventsData && userInfo?.uid) {
-                // Check if events exist for this user
-                const userEvents = eventsData[userInfo.uid];
-                if (userEvents) {
-                    processedEvents = Object.entries(userEvents).map(([id, value]: any) => ({
-                        id,
-                        ...value
-                    }));
-                }
+            if (eventsData) {
+                processedEvents = Object.entries(eventsData)
+                    .map(([id, value]: any) => ({ id, ...value }))
+                    .filter((event: any) => event.agentUid === userInfo?.uid);
             }
 
             // Batch state updates
@@ -144,7 +146,7 @@ export default function AdminDashboardPage() {
         ];
     }, [clients.length, owners.length, properties.length, events.length]);
 
-    // Memoized quick actions with useCallback for handlers
+    // ✅ FIXED: Memoized quick actions with safe paths
     const quickActions = useMemo(() => [
         {
             icon: <Users className="h-6 w-6" />,
@@ -152,7 +154,7 @@ export default function AdminDashboardPage() {
             description: "Register new clients",
             textColor: "text-blue-600",
             bgColor: "bg-gradient-to-br from-blue-100 to-blue-50",
-            path: `/realstate/${userInfo?.uid}/clients/addclient`,
+            path: userInfo?.uid ? `/realstate/${userInfo.uid}/clients/addclient` : '#',
         },
         {
             icon: <Building className="h-6 w-6" />,
@@ -160,7 +162,7 @@ export default function AdminDashboardPage() {
             description: "Add property owners",
             textColor: "text-purple-600",
             bgColor: "bg-gradient-to-br from-purple-100 to-purple-50",
-            path: `/realstate/${userInfo?.uid}/owners/addowner`,
+            path: userInfo?.uid ? `/realstate/${userInfo.uid}/owners/addowner` : '#',
         },
         {
             icon: <Home className="h-6 w-6" />,
@@ -168,7 +170,7 @@ export default function AdminDashboardPage() {
             description: "List new properties",
             textColor: "text-green-600",
             bgColor: "bg-gradient-to-br from-green-100 to-green-50",
-            path: `/realstate/${userInfo?.uid}/properties/addproperty`,
+            path: userInfo?.uid ? `/realstate/${userInfo.uid}/properties/addproperty` : '#',
         },
         {
             icon: <CalendarClock className="h-6 w-6" />,
@@ -176,9 +178,8 @@ export default function AdminDashboardPage() {
             description: "Add your events",
             textColor: "text-blue-600",
             bgColor: "bg-gradient-to-br from-blue-100 to-blue-50",
-            path: `/realstate/${userInfo?.uid}/events/addevent`,
+            path: userInfo?.uid ? `/realstate/${userInfo.uid}/events/addevent` : '#',
         }
-
     ], [userInfo?.uid]);
 
     // Memoized recent items with limit
@@ -201,7 +202,7 @@ export default function AdminDashboardPage() {
                 const dateB = new Date(b.date).getTime();
                 return dateA - dateB;
             })
-            .slice(0, 2); // Limit to 2 events
+            .slice(0, 2);
     }, [events]);
 
     // Memoized status color function
@@ -217,32 +218,40 @@ export default function AdminDashboardPage() {
 
     // Optimized navigation handlers
     const navigateTo = useCallback((path: string) => {
-        router.push(path);
+        if (path && path !== '#') {
+            router.push(path);
+        }
     }, [router]);
 
     const navigateToClient = useCallback((id: string) => {
-        router.push(`/realstate/${userInfo?.uid}/clients/viewclient/${id}`);
+        if (userInfo?.uid) {
+            router.push(`/realstate/${userInfo.uid}/clients/viewclient/${id}`);
+        }
     }, [router, userInfo?.uid]);
 
     const navigateToProperty = useCallback((id: string) => {
-        router.push(`/realstate/${userInfo?.uid}/properties/viewproperty/${id}`);
+        if (userInfo?.uid) {
+            router.push(`/realstate/${userInfo.uid}/properties/viewproperty/${id}`);
+        }
     }, [router, userInfo?.uid]);
 
     const navigateToOwner = useCallback((id: string) => {
-        router.push(`/realstate/${userInfo?.uid}/owners/viewowner/${id}`);
+        if (userInfo?.uid) {
+            router.push(`/realstate/${userInfo.uid}/owners/viewowner/${id}`);
+        }
     }, [router, userInfo?.uid]);
 
     // Quick action handler
     const handleQuickAction = useCallback((path: string, e?: any) => {
         if (e) e.stopPropagation();
-        if (path) {
-            navigateTo(path);
-        }
+        navigateTo(path);
     }, [navigateTo]);
 
     // Handle view all events
     const handleViewAllEvents = useCallback(() => {
-        navigateTo(`/realstate/${userInfo?.uid}/events`);
+        if (userInfo?.uid) {
+            navigateTo(`/realstate/${userInfo.uid}/events`);
+        }
     }, [navigateTo, userInfo?.uid]);
 
     if (loading) {
@@ -332,7 +341,7 @@ export default function AdminDashboardPage() {
                                     <div
                                         key={index}
                                         onClick={(e) => handleQuickAction(action.path, e)}
-                                        className={`px-3 py-2 rounded-xl border border-gray-100 hover:border-purple-300 hover:shadow-sm transition-all ${action.path ? 'cursor-pointer' : 'cursor-default'}`}
+                                        className={`px-3 py-2 rounded-xl border border-gray-100 hover:border-purple-300 hover:shadow-sm transition-all ${action.path && action.path !== '#' ? 'cursor-pointer' : 'cursor-default'}`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className={`p-2 rounded-lg ${action.bgColor}`}>
@@ -344,7 +353,7 @@ export default function AdminDashboardPage() {
                                                 <h4 className="font-semibold text-gray-900 truncate">{action.label}</h4>
                                                 <div className="flex items-center justify-between text-xs text-gray-500">
                                                     <span>{action.description}</span>
-                                                    {action.path && (
+                                                    {action.path && action.path !== '#' && (
                                                         <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                                                     )}
                                                 </div>
@@ -404,7 +413,7 @@ export default function AdminDashboardPage() {
 
                                             <div className="flex items-center gap-3 shrink-0">
                                                 <span className="text-sm font-semibold text-gray-900">
-                                                    ${parseFloat(property.price)?.toLocaleString() || '0'}
+                                                    ${property.price ? parseFloat(property.price)?.toLocaleString() : '0'}
                                                 </span>
 
                                                 <span
@@ -466,7 +475,7 @@ export default function AdminDashboardPage() {
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-gray-900 text-sm">
-                                                        {client.firstName.slice(0, 30) || 'Unknown'} {client.lastName || ''}
+                                                        {client.firstName?.slice(0, 30) || 'Unknown'} {client.lastName || ''}
                                                     </span>
                                                     <span className="text-xs text-gray-500 truncate max-w-[120px]">
                                                         {client.email || 'No email'}
@@ -522,7 +531,7 @@ export default function AdminDashboardPage() {
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-gray-900 text-sm">
-                                                        {owner.firstName.slice(0, 30) || 'Unknown'} {owner.lastName || ''}
+                                                        {owner.firstName?.slice(0, 30) || 'Unknown'} {owner.lastName || ''}
                                                     </span>
                                                     <span className="text-xs text-gray-500 truncate max-w-[120px]">
                                                         {owner.email || 'No email'}
@@ -577,7 +586,7 @@ export default function AdminDashboardPage() {
                                                     {event.date ? new Date(event.date).getDate() : '?'}
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="font-semibold text-gray-900 text-sm">{event.title.slice(0, 30) || 'Untitled Event'}</span>
+                                                    <span className="font-semibold text-gray-900 text-sm">{event.title?.slice(0, 30) || 'Untitled Event'}</span>
                                                     <span className="text-xs text-gray-500">
                                                         {event.date ? new Date(event.date).toLocaleDateString() : 'No date'} • {event.startTime || ''}
                                                     </span>

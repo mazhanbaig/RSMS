@@ -245,7 +245,7 @@ import {
     Building2, Check, Clock, X, AlertCircle
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { checkUserSession, deleleData, getData } from "@/FBConfig/fbFunctions";
+import { checkUserSession, deleleData, deleteImageFromCloudinary, getData } from "@/FBConfig/fbFunctions";
 import { message } from "antd";
 
 interface UserInfo {
@@ -439,14 +439,31 @@ export default function PropertiesPage() {
 
     // Delete property
     const deleteProperty = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this property?')) return;
+        if (!window.confirm('Are you sure you want to delete this property? This will also delete all associated images.')) return;
 
         setDeletingId(id);
+
         try {
+            const propertyToDelete = properties.find(p => p.id === id);
+
+            if (propertyToDelete?.images && propertyToDelete.images.length > 0) {
+                message.loading({ content: 'Deleting images...', key: 'deleteImages' });
+
+                for (const image of propertyToDelete.images) {
+                    if (image.public_id) {
+                        await deleteImageFromCloudinary(image.public_id);
+                    }
+                }
+
+                message.success({ content: 'Images deleted successfully', key: 'deleteImages' });
+            }
             await deleleData(`properties/${id}`);
+
             setProperties(prev => prev.filter(p => p.id !== id));
             message.success('Property deleted successfully');
+
         } catch (error) {
+            console.error("Delete error:", error);
             message.error('Failed to delete property');
         } finally {
             setDeletingId(null);

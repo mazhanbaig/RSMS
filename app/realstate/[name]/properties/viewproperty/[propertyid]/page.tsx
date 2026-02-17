@@ -40,7 +40,7 @@ interface PropertyFormData {
     hasParking: boolean;
     hasGarden: boolean;
     hasSecurity: boolean;
-    images?: string[];
+    images?: any[];
     propertyStatus: 'available' | 'rented' | 'sold' | 'under-Negotiation'
     dealType: 'sold' | 'rented'
     createdAt?: string;
@@ -55,6 +55,7 @@ export default function ViewPropertyPage() {
     const [userInfo, setUserInfo] = useState<any>(null)
     const [liked, setLiked] = useState(false)
     const [activePanel, setActivePanel] = useState('overview')
+    const [isOpen, setIsOpen] = useState(false);
 
     const { propertyid } = useParams()
     const router = useRouter()
@@ -127,7 +128,7 @@ export default function ViewPropertyPage() {
         { id: 'media', label: 'Media', icon: <FileText className="w-4 h-4" /> }
     ], [])
 
-    // Check authentication and load data
+    // ✅ SINGLE useEffect for authentication
     useEffect(() => {
         const checkAuth = async () => {
             try {
@@ -138,11 +139,18 @@ export default function ViewPropertyPage() {
                     return;
                 }
 
-                const storedUser: any = localStorage.getItem('userInfo')
+                const storedUser = localStorage.getItem('userInfo');
+                if (!storedUser) {
+                    message.error('User info not found');
+                    router.replace('/login');
+                    return;
+                }
+
                 const userData = JSON.parse(storedUser);
                 setUserInfo(userData);
 
             } catch (err) {
+                console.error('Authentication error:', err);
                 message.error('Error occurred during authentication');
                 router.replace('/login');
             } finally {
@@ -153,38 +161,44 @@ export default function ViewPropertyPage() {
         checkAuth();
     }, [router]);
 
-    // Fetch property
+    // Fetch property when userInfo and propertyid are available
     useEffect(() => {
-        if (!propertyid) return
-        const id = Array.isArray(propertyid) ? propertyid[0] : propertyid
-        fetchPropertyData(id)
-    }, [propertyid])
+        if (!propertyid || !userInfo?.uid) return;
+        const id = Array.isArray(propertyid) ? propertyid[0] : propertyid;
+        fetchPropertyData(id);
+    }, [propertyid, userInfo?.uid]);
 
     const fetchPropertyData = useCallback((id: string) => {
-        setLoading(true)
+        setLoading(true);
         getData(`properties/${id}`)
             .then((res: any) => {
                 if (!res) {
                     message.error("Property not found");
-                    router.replace(`/realstate/${userInfo?.uid}/properties`)
-                    return
+                    if (userInfo?.uid) {
+                        router.replace(`/realstate/${userInfo.uid}/properties`);
+                    } else {
+                        router.replace('/login');
+                    }
+                    return;
                 }
-                setProperty(res)
-                fetchRelatedProperties(res)
+                setProperty(res);
+                fetchRelatedProperties(res);
             })
             .catch(err => {
                 console.error(err);
-                message.error("Failed to load property")
+                message.error("Failed to load property");
             })
-            .finally(() => setLoading(false))
-    }, [router])
+            .finally(() => setLoading(false));
+    }, [userInfo?.uid, router]);
 
     const fetchRelatedProperties = useCallback((currentProperty?: PropertyFormData) => {
+        if (!userInfo?.uid) return;
+
         getData('properties')
             .then((allProps: any) => {
-                if (!allProps) return
-                const propsArray = Object.entries(allProps).map(([key, value]: [string, any]) => ({ id: key, ...value }))
-                const current = currentProperty || property
+                if (!allProps) return;
+                const propsArray = Object.entries(allProps).map(([key, value]: [string, any]) => ({ id: key, ...value }));
+                const current = currentProperty || property;
 
                 if (current) {
                     let related = propsArray.filter((p: any) =>
@@ -192,78 +206,80 @@ export default function ViewPropertyPage() {
                         p.city === current.city &&
                         p.propertyType === current.propertyType
                     ).slice(0, 3);
-                    setRelatedProperties(related)
+                    setRelatedProperties(related);
                 }
             })
-            .catch(err => console.error(err))
-    }, [property, propertyid])
+            .catch(err => console.error(err));
+    }, [property, propertyid, userInfo?.uid]);
 
     const handleNext = useCallback(() => {
         if (!property?.images) return;
         setCurrIndex(prev => prev + 1 < property.images!.length ? prev + 1 : 0);
-    }, [property])
+    }, [property]);
 
     const handleShare = useCallback(() => {
-        const shareText = `Check out ${property?.title} at ${property?.location}, ${property?.city}. Price: ₹${property?.price} ${property?.priceUnit}`
+        const shareText = `Check out ${property?.title} at ${property?.location}, ${property?.city}. Price: ₹${property?.price} ${property?.priceUnit}`;
         if (navigator.share) {
             navigator.share({
                 title: property?.title,
                 text: shareText,
                 url: window.location.href
-            })
+            });
         } else {
             navigator.clipboard.writeText(shareText);
-            message.success('Copied to clipboard!')
+            message.success('Copied to clipboard!');
         }
-    }, [property])
+    }, [property]);
 
     const handleStatusChange = useCallback((newStatus: PropertyFormData['propertyStatus']) => {
-        if (!propertyid) return
+        if (!propertyid || !userInfo?.uid) return;
 
         updateData(`properties/${propertyid}`, { propertyStatus: newStatus })
-            .then((res: any) => {
-                setProperty(prev => prev ? { ...prev, propertyStatus: newStatus } : null)
-                message.success(`Property marked as ${propertyStatusConfig[newStatus].label}`)
+            .then(() => {
+                setProperty(prev => prev ? { ...prev, propertyStatus: newStatus } : null);
+                message.success(`Property marked as ${propertyStatusConfig[newStatus].label}`);
             })
             .catch((err) => {
-                message.error('Failed to change status of property')
-            })
-    }, [propertyid, propertyStatusConfig])
+                console.error(err);
+                message.error('Failed to change status of property');
+            });
+    }, [propertyid, userInfo?.uid, propertyStatusConfig]);
 
     const handleDeleteProperty = useCallback(() => {
-        if (!propertyid || !window.confirm("Are you sure you want to delete this property?")) return
+        if (!propertyid || !userInfo?.uid || !window.confirm("Are you sure you want to delete this property?")) return;
 
         deleleData(`properties/${propertyid}`)
             .then(() => {
-                message.success("Property deleted successfully")
-                router.replace(`/realstate/${userInfo?.uid}/properties`)
+                message.success("Property deleted successfully");
+                router.replace(`/realstate/${userInfo.uid}/properties`);
             })
             .catch((err) => {
-                message.error("Failed to delete property")
-            })
-    }, [propertyid, router])
+                console.error(err);
+                message.error("Failed to delete property");
+            });
+    }, [propertyid, userInfo?.uid, router]);
 
     // Format date
     const formatDate = useCallback((dateString?: string) => {
-        if (!dateString) return 'Not specified'
+        if (!dateString) return 'Not specified';
         return new Date(dateString).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
             year: 'numeric'
-        })
-    }, [])
+        });
+    }, []);
 
     // Memoized status config
     const currentStatusConfig = useMemo(() =>
         property ? propertyStatusConfig[property.propertyStatus] : propertyStatusConfig.available,
         [property, propertyStatusConfig]
-    )
+    );
 
     // Memoized type config
     const currentTypeConfig = useMemo(() =>
         property ? propertyTypeConfig[property.propertyType as keyof typeof propertyTypeConfig] || propertyTypeConfig.House : propertyTypeConfig.House,
         [property, propertyTypeConfig]
-    )
+    );
 
     if (loading) {
         return (
@@ -285,7 +301,7 @@ export default function ViewPropertyPage() {
                     </div>
                 </div>
             </div>
-        )
+        );
     }
 
     if (!property) {
@@ -301,7 +317,7 @@ export default function ViewPropertyPage() {
                         <p className="text-gray-600 mb-6">The property you're looking for doesn't exist.</p>
                         <Button
                             label="Back to Properties"
-                            onClick={() => router.push(`/realstate/${userInfo.uid}/properties`)}
+                            onClick={() => router.push(`/realstate/${userInfo?.uid}/properties`)}
                             variant="theme"
                             size="md"
                             icon={<ArrowLeft className="w-4 h-4" />}
@@ -309,7 +325,7 @@ export default function ViewPropertyPage() {
                     </div>
                 </div>
             </div>
-        )
+        );
     }
 
     return (
@@ -367,6 +383,7 @@ export default function ViewPropertyPage() {
                                 variant="theme"
                                 size="sm"
                                 icon={<Edit className="w-4 h-4" />}
+                                onClick={() => router.push(`/realstate/${userInfo?.uid}/properties/edit/${propertyid}`)}
                             />
                         </div>
                     </div>
@@ -427,10 +444,12 @@ export default function ViewPropertyPage() {
                                     <div className="relative h-64 md:h-80 rounded-xl overflow-hidden mb-6">
                                         {property.images?.[currIndex] ? (
                                             <img
-                                                src={property.images[currIndex]}
+                                                src={property.images[currIndex]?.url}
                                                 alt={property.title}
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-fill cursor-pointer"
+                                                onClick={() => setIsOpen(true)}
                                             />
+
                                         ) : (
                                             <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 to-gray-200">
                                                 <Home className="w-16 h-16 text-gray-400" />
@@ -685,7 +704,7 @@ export default function ViewPropertyPage() {
                                     variant="theme"
                                     icon={<PhoneCall className="w-4 h-4" />}
                                     size="sm"
-                                    // onClick={() => property.ownerContact && window.location.href = `tel:${property.ownerContact}`}
+                                    onClick={() => property.ownerContact && window.open(`tel:${property.ownerContact}`)}
                                     disabled={!property.ownerContact}
                                 />
                                 <Button
@@ -718,7 +737,7 @@ export default function ViewPropertyPage() {
                                 label="View All"
                                 variant="theme2"
                                 size="sm"
-                                onClick={() => router.push('/properties')}
+                                onClick={() => router.push(`/realstate/${userInfo?.uid}/properties`)}
                             />
                         </div>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -729,7 +748,7 @@ export default function ViewPropertyPage() {
                                 return (
                                     <div
                                         key={prop.id}
-                                        onClick={() => router.push(`/properties/viewproperty/${prop.id}`)}
+                                        onClick={() => router.push(`/realstate/${userInfo?.uid}/properties/viewproperty/${prop.id}`)}
                                         className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
                                     >
                                         <div className="relative h-40">
@@ -776,6 +795,27 @@ export default function ViewPropertyPage() {
                         </div>
                     </div>
                 )}
+                {isOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
+                        onClick={() => setIsOpen(false)}
+                    >
+                        <img
+                            src={property.images[currIndex]?.url}
+                            alt={property.title}
+                            className="max-h-[95vh] max-w-[95vw] object-contain"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="absolute top-5 right-5 text-white text-3xl font-bold"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                )}
+
             </main>
         </div>
     )

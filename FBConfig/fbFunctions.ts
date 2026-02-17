@@ -268,3 +268,13 @@ export const uploadImages = async (files:any) => {
     throw error;
   }
 };
+
+export const deleteImageFromCloudinary = async (publicId: string) => {
+  try {
+    const res = await api.delete(`/api/images/deleteimage/${publicId}`);
+    return res.data;
+  } catch (err) {
+    console.error("Failed to delete image from Cloudinary:", err);
+    return null;
+  }
+};
