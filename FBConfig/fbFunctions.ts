@@ -252,20 +252,15 @@ export const uploadImages = async (files:any) => {
   try {
     const formData = new FormData();
 
-    // append multiple files
     for (let i = 0; i < files.length; i++) {
-      formData.append("images", files[i]); // must match upload.array('images')
+      formData.append("images", files[i]);
     }
 
-    const res = await axios.post(
-      `/api/images/addimages`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+    const res = await api.post(`/api/images/addimages`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
     return res.data;
   } catch (error) {

@@ -43,18 +43,19 @@ export default function AddPropertyPage() {
         hasGarden: boolean;
         hasSecurity: boolean;
         propertyStatus: 'available' | 'rented' | 'sold' | 'under-Negotiation'
-
     }
 
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     // State for userInfo from localStorage
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-
     const [activeSection, setActiveSection] = useState('basic');
     const [isLoading, setIsLoading] = useState(false);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [images, setImages] = useState<File[]>([]);
+    const [isEditing, setIsEditing] = useState(false);
+    const [propertyId, setPropertyId] = useState<string | null>(null);
 
     const [formData, setFormData] = useState<PropertyFormData>({
         title: '',
@@ -85,7 +86,7 @@ export default function AddPropertyPage() {
 
     const sections = ['basic', 'details', 'images'];
 
-    // Check authentication and load data
+    // ✅ SINGLE useEffect for authentication
     useEffect(() => {
         const checkAuth = async () => {
             try {
@@ -96,37 +97,43 @@ export default function AddPropertyPage() {
                     return;
                 }
 
-                const storedUser: any = localStorage.getItem('userInfo')
+                const storedUser = localStorage.getItem('userInfo');
+                if (!storedUser) {
+                    message.error('User info not found');
+                    router.replace('/login');
+                    return;
+                }
+
                 const userData = JSON.parse(storedUser);
                 setUserInfo(userData);
 
+                // ✅ Check if editing existing property
+                const propertyData = searchParams.get('propertyData');
+                if (propertyData) {
+                    try {
+                        const parsedData = JSON.parse(propertyData);
+                        setFormData(prev => ({ ...prev, ...parsedData }));
+                        setIsEditing(true);
+                        setPropertyId(parsedData.id);
+
+                        // Load existing images if any
+                        if (parsedData.images && parsedData.images.length > 0) {
+                            setImagePreviews(parsedData.images);
+                        }
+                    } catch (err) {
+                        console.error("Failed to parse property data:", err);
+                    }
+                }
+
             } catch (err) {
+                console.error('Authentication error:', err);
                 message.error('Error occurred during authentication');
                 router.replace('/login');
             }
         };
 
         checkAuth();
-    }, [router]);
-
-    // Load userInfo from localStorage once
-    useEffect(() => {
-        const data = localStorage.getItem("userInfo");
-        if (data) {
-            try {
-                let parsed = JSON.parse(data)
-                getData(`users/${parsed.uid}`)
-                    .then((res: any) => {
-                        setUserInfo(res)
-                    })
-                    .catch((err: any) => {
-                        console.error(err.message);
-                    })
-            } catch (err) {
-                console.error("Failed to parse userInfo from localStorage:", err);
-            }
-        }
-    }, []);
+    }, [router, searchParams]);
 
     const handleChange = (e: any) => {
         const { name, value, type, checked } = e.target;
@@ -196,38 +203,59 @@ export default function AddPropertyPage() {
         }
 
         let uploadedUrls: string[] = [];
-        try {
-            uploadedUrls = await uploadImages(images);
-            if (!uploadedUrls || uploadedUrls.length === 0) {
-                throw new Error("No images uploaded");
+
+        if (images.length > 0) {
+            try {
+                const response = await uploadImages(images);
+                uploadedUrls = response?.data || [];
+                if (uploadedUrls.length === 0) {
+                    throw new Error("No images uploaded");
+                }
+            } catch (err) {
+                message.error("Failed to upload images");
+                setIsLoading(false);
+                return;
             }
-        } catch (err) {
-            console.error(err);
-            message.error("Failed to upload images");
-            setIsLoading(false);
-            return;
+        } else if (imagePreviews.length > 0) {
+            uploadedUrls = imagePreviews;
         }
 
         const propertyData = sanitize({
             ...formData,
             agentUid: userInfo.uid,
             agentName: userInfo.name,
-            propertyStatus: "available",
+            propertyStatus: formData.propertyStatus || "available",
             images: uploadedUrls,
-            createdAt: new Date().toISOString(),
-            id: crypto.randomUUID()
+            updatedAt: new Date().toISOString(),
+            ...(isEditing ? {} : { createdAt: new Date().toISOString() }),
+            id: isEditing ? propertyId : crypto.randomUUID()
         });
 
-        saveData(`properties/${propertyData.id}`, propertyData)
-            .then(() => {
-                message.success('Property saved successfully!');
-                router.replace(`/realstate/${userInfo?.uid}/properties`);
-            })
-            .catch(err => {
-                console.error(err);
-                message.error('Error saving property. Please try again.');
-            })
-            .finally(() => setIsLoading(false));
+        if (isEditing && propertyId) {
+            // ✅ Update existing property
+            updateData(`properties/${propertyId}`, propertyData)
+                .then(() => {
+                    message.success('Property updated successfully!');
+                    router.replace(`/realstate/${userInfo?.uid}/properties`);
+                })
+                .catch(err => {
+                    console.error(err);
+                    message.error('Error updating property. Please try again.');
+                })
+                .finally(() => setIsLoading(false));
+        } else {
+            // ✅ Save new property
+            saveData(`properties/${propertyData.id}`, propertyData)
+                .then(() => {
+                    message.success('Property saved successfully!');
+                    router.replace(`/realstate/${userInfo?.uid}/properties`);
+                })
+                .catch(err => {
+                    console.error(err);
+                    message.error('Error saving property. Please try again.');
+                })
+                .finally(() => setIsLoading(false));
+        }
     };
 
     if (!userInfo) {
@@ -242,8 +270,12 @@ export default function AddPropertyPage() {
 
             <div className="max-w-6xl mx-auto px-4 py-8">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Add Property</h1>
-                    <p className="text-gray-600 mt-2">List your property in simple steps</p>
+                    <h1 className="text-3xl font-bold text-gray-900">
+                        {isEditing ? 'Edit Property' : 'Add Property'}
+                    </h1>
+                    <p className="text-gray-600 mt-2">
+                        {isEditing ? 'Update your property details' : 'List your property in simple steps'}
+                    </p>
                 </div>
 
                 {/* Progress Steps */}
@@ -278,7 +310,6 @@ export default function AddPropertyPage() {
                         />
                     )}
 
-
                     <div className="flex justify-between mt-8 pt-6 border-t">
                         <Button
                             type="button"
@@ -305,7 +336,7 @@ export default function AddPropertyPage() {
                         ) : (
                             <Button
                                 type="submit"
-                                label={isLoading ? "Saving..." : "Save Property"}
+                                label={isLoading ? "Saving..." : isEditing ? "Update Property" : "Save Property"}
                                 variant="theme2"
                                 disabled={isLoading}
                             />
