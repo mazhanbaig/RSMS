@@ -27,7 +27,6 @@ export default function Signup() {
       message.success('Account Created Successfully');
       window.location.replace(`/realstate/${res.user.uid}`);
     } catch (err: any) {
-      console.log("Google signup error:", err.message);
       message.error('Error While Signup');
       setLoading(false);
     }

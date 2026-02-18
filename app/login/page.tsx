@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { message } from "antd";
 import Link from "next/link";
-// import { getCurrentUser, handleGoogleSignUp } from "@/config/sbFunctions";
 import { useRouter } from "next/navigation";
 import { loginWithGoogle } from "@/FBConfig/fbFunctions";
 

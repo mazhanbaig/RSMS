@@ -61,7 +61,7 @@ export default function ClientsPage() {
 
 
             } catch (err) {
-                message.error('Error loading page');
+                message.error("Something went wrong!");
                 router.replace('/login');
             } finally {
                 setLoading(false);
@@ -74,26 +74,25 @@ export default function ClientsPage() {
     // ✅ Separate function to fetch clients
     const fetchClients = async (uid: string) => {
         try {
-            const res = await getData(`clients/${uid}`); 
+            const res = await getData(`clients/${uid}`);
             if (res) {
-                const clientsArray = Object.entries(res).map(([id, value]:any) => ({
+                const clientsArray = Object.entries(res).map(([id, value]: any) => ({
                     id,
                     ...value
                 }));
                 console.log(clientsArray);
-                
+
 
                 // Optional: filter only this agent's clients
                 const ownerClients = clientsArray
                     .filter(client => client.agentUid === uid)
-                    .reverse(); 
+                    .reverse();
 
                 setClients(ownerClients);
             } else {
                 setClients([]);
             }
         } catch (err) {
-            console.error("Fetch clients error:", err);
             message.error("Failed to load clients");
         }
     };
@@ -105,12 +104,16 @@ export default function ClientsPage() {
         if (!confirm("Are you sure you want to delete this client?")) return;
 
         try {
+            if (!userInfo?.uid) {
+                message.error("Something went wrong")
+                return 
+            }
             await deleleData(`clients/${userInfo?.uid}/${id}`);
             setClients(prev => prev.filter(client => client.id !== id));
             message.success("Client deleted successfully");
         } catch (err) {
             console.error(err);
-            message.error("Failed to delete client");
+            message.error("Something went wrong!");
         }
     }, []);
 
@@ -131,30 +134,6 @@ export default function ClientsPage() {
             return matchesSearch && matchesFilter;
         });
     }, [clients, searchVal, activeFilter]);
-
-    // ✅ Fast stats calculation (memoized)
-    const clientStats = useMemo(() => [
-        {
-            title: "Total Clients",
-            value: clients.length,
-            icon: <Users className="h-5 w-5 text-blue-600" />,
-        },
-        {
-            title: "Active Clients",
-            value: clients.filter(c => c.status === 'active').length,
-            icon: <UserCheck className="h-5 w-5 text-green-600" />,
-        },
-        {
-            title: "New Inquiries",
-            value: clients.filter(c => c.status === 'new').length,
-            icon: <TrendingUp className="h-5 w-5 text-purple-600" />,
-        },
-        {
-            title: "Converted",
-            value: clients.filter(c => c.status === 'converted').length,
-            icon: <DollarSign className="h-5 w-5 text-amber-600" />,
-        }
-    ], [clients]);
 
     // ✅ Fast status filters (memoized)
     const statusFilters = useMemo(() => [

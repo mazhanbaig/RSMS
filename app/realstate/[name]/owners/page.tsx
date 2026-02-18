@@ -99,6 +99,10 @@ export default function OwnersPage() {
         if (!confirm("Are you sure you want to delete this owner?")) return;
 
         try {
+            if (!userInfo?.uid) {
+                message.error("Something went wrong")
+                return
+            }
             await deleleData(`owners/${userInfo?.uid}/${id}`);
             setOwners(prev => prev.filter(owner => owner.id !== id));
             message.success("Owner deleted successfully");

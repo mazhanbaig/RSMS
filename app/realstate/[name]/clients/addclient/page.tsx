@@ -73,7 +73,7 @@ export default function AddClientPage() {
                 setUserInfo(userData);
 
             } catch (err) {
-                message.error('Error occurred during authentication');
+                message.error("Something went wrong!");
                 router.replace('/login');
             } finally {
             }
@@ -90,7 +90,7 @@ export default function AddClientPage() {
                 const parsedData = JSON.parse(clientData);
                 setFormData(prev => ({ ...prev, ...parsedData }));
             } catch (err) {
-                console.error("Failed to parse clientData:", err);
+                message.error("Something went wrong!");
             }
         }
     }, [searchParams]);
@@ -164,7 +164,6 @@ export default function AddClientPage() {
 
             router.push(`/realstate/${userInfo.uid}/clients`);
         } catch (err) {
-            console.log(err);
             message.error("Something went wrong!");
         }
     };

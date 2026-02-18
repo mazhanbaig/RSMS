@@ -139,34 +139,24 @@ export const loginWithGoogle = async () => {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
     
-    console.log("✅ Google login successful:", user.email);
-    
-    // 2. Get Firebase token (your interceptor will use this)
-    const token = await user.getIdToken();
-    
     // 3. Send user data to your backend API
-    const response = await api.post("/api/auth", {
+     await api.post("/api/auth", {
       uid: user.uid,
       name: user.displayName,
       email: user.email,
-      picture: user.photoURL
+      picture: user.photoURL,
     });
     
-    console.log("✅ Backend response:", response.data);
-    
-    // 4. Return user data
     return {
       user: {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL
-      },
-      backendResponse: response.data
+      uid: user.uid,
+      name: user.displayName,
+      email: user.email,
+      picture: user.photoURL,
+      }
     };
     
   } catch (error) {
-    console.error("❌ Google login failed:", error);
     throw error;
   }
 };
@@ -176,9 +166,7 @@ export const logout = async () => {
   try {
     await signOut(auth);
     localStorage.removeItem('userInfo');
-    console.log("✅ Logout successful");
   } catch (error) {
-    console.error("❌ Logout failed:", error);
     throw error;
   }
 };
@@ -269,9 +257,9 @@ export const uploadImages = async (files:any) => {
   }
 };
 
-export const deleteImageFromCloudinary = async (publicId: string) => {
+export const deleteImageFromCloudinary = async (public_id: string) => {
   try {
-    const res = await api.delete(`/api/images/deleteimage/${publicId}`);
+    const res = await api.delete(`/api/images/deleteimage/${public_id}`);
     return res.data;
   } catch (err) {
     console.error("Failed to delete image from Cloudinary:", err);

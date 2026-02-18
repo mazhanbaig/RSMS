@@ -411,7 +411,7 @@ export default function PropertiesPage() {
     const fetchProperties = async (uid: string) => {
         try {
             setLoading(true);
-            const propertiesData: any = await getData('properties/');
+            const propertiesData: any = await getData(`properties/${uid}`);
 
             if (propertiesData) {
                 const propertiesArray: Property[] = Object.entries(propertiesData)
@@ -430,7 +430,6 @@ export default function PropertiesPage() {
             }
         } catch (error) {
             console.error('Error fetching properties:', error);
-            message.error('Failed to fetch properties');
             setProperties([]);
         } finally {
             setLoading(false);
@@ -444,6 +443,10 @@ export default function PropertiesPage() {
         setDeletingId(id);
 
         try {
+            if (!userInfo?.uid) {
+                message.error("Something went wrong")
+                return
+            }
             const propertyToDelete = properties.find(p => p.id === id);
 
             if (propertyToDelete?.images && propertyToDelete.images.length > 0) {
@@ -457,13 +460,12 @@ export default function PropertiesPage() {
 
                 message.success({ content: 'Images deleted successfully', key: 'deleteImages' });
             }
-            await deleleData(`properties/${id}`);
+            await deleleData(`properties/${userInfo?.uid}/${id}`);
 
             setProperties(prev => prev.filter(p => p.id !== id));
             message.success('Property deleted successfully');
 
         } catch (error) {
-            console.error("Delete error:", error);
             message.error('Failed to delete property');
         } finally {
             setDeletingId(null);

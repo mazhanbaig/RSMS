@@ -170,7 +170,10 @@ export default function ViewPropertyPage() {
 
     const fetchPropertyData = useCallback((id: string) => {
         setLoading(true);
-        getData(`properties/${id}`)
+        if (!userInfo?.uid) {
+            message.error('Something went wrong!')
+        }
+        getData(`properties/${userInfo?.uid}/${id}`)
             .then((res: any) => {
                 if (!res) {
                     message.error("Property not found");
@@ -609,7 +612,7 @@ export default function ViewPropertyPage() {
                                     <h3 className="text-xl font-semibold text-gray-900 mb-4">Property Media</h3>
                                     {property.images && property.images.length > 0 ? (
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                            {property.images.map((image:any, index:number) => (
+                                            {property.images.map((image: any, index: number) => (
                                                 <div
                                                     key={index}
                                                     className="relative aspect-square rounded-lg overflow-hidden cursor-pointer"

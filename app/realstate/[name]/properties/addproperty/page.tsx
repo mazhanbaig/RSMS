@@ -236,7 +236,7 @@ export default function AddPropertyPage() {
             updateData(`properties/${propertyId}`, propertyData)
                 .then(() => {
                     message.success('Property updated successfully!');
-                    router.replace(`/realstate/${userInfo?.uid}/properties`);
+                    router.replace(`/realstate/${userInfo?.uid}/${userInfo?.uid}/properties`);
                 })
                 .catch(err => {
                     console.error(err);
@@ -245,7 +245,7 @@ export default function AddPropertyPage() {
                 .finally(() => setIsLoading(false));
         } else {
             // ✅ Save new property
-            saveData(`properties/${propertyData.id}`, propertyData)
+            saveData(`properties/${userInfo?.uid}/${propertyData.id}`, propertyData)
                 .then(() => {
                     message.success('Property saved successfully!');
                     router.replace(`/realstate/${userInfo?.uid}/properties`);
