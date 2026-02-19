@@ -247,6 +247,7 @@ import {
 import { useRouter } from "next/navigation";
 import { checkUserSession, deleleData, deleteImageFromCloudinary, getData } from "@/FBConfig/fbFunctions";
 import { message } from "antd";
+import DraggableButton from "@/components/DraggableButton";
 
 interface UserInfo {
     uid: string;
@@ -856,16 +857,6 @@ export default function PropertiesPage() {
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    handleEditProperty(property.id);
-                                                                }}
-                                                                className="p-2 hover:bg-purple-50 rounded-lg text-purple-600"
-                                                                title="Edit Property"
-                                                            >
-                                                                <Edit className="h-4 w-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
                                                                     deleteProperty(property.id);
                                                                 }}
                                                                 className="p-2 hover:bg-red-50 rounded-lg text-red-600"
@@ -906,12 +897,8 @@ export default function PropertiesPage() {
                 </div>
 
                 {/* Floating Action Button */}
-                <button
-                    onClick={handleAddProperty}
-                    className="fixed bottom-6 right-6 w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-shadow z-50"
-                >
-                    <Plus className="w-6 h-6" />
-                </button>
+                <DraggableButton onClick={handleAddProperty} />
+
             </main>
         </div>
     );

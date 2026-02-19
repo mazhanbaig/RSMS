@@ -105,7 +105,6 @@ export default function AdminDashboardPage() {
             setEvents(processedEvents);
 
         } catch (error) {
-            console.error("Error fetching data:", error);
             message.error("Error Occurred");
         } finally {
             setLoading(false);

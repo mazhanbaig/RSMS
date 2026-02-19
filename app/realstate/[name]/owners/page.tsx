@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import React from "react";
 import Loader from "@/components/Loader";
+import DraggableButton from "@/components/DraggableButton";
 
 export default function OwnersPage() {
     interface UserInfo {
@@ -426,6 +427,8 @@ export default function OwnersPage() {
                         </div>
                     </div>
                 </div>
+                <DraggableButton onClick={handleAddOwner} />
+
             </main>
         </div>
     );

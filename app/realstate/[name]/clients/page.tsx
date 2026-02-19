@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import React from "react";
 import Loader from "@/components/Loader";
+import DraggableButton from "@/components/DraggableButton";
 
 export default function ClientsPage() {
     interface UserInfo {
@@ -52,7 +53,7 @@ export default function ClientsPage() {
                     return;
                 }
 
-                const userData = JSON.parse(storedUser);
+                const userData: any = JSON.parse(storedUser);
                 setUserInfo(userData);
 
                 // 3. Fetch clients immediately (ONE API CALL)
@@ -102,11 +103,14 @@ export default function ClientsPage() {
     // ✅ Optimized delete function
     const deleteClient = useCallback(async (id: string) => {
         if (!confirm("Are you sure you want to delete this client?")) return;
-
+        if (!id) {
+            message.error("Something went wrong")
+            return
+        }
         try {
             if (!userInfo?.uid) {
                 message.error("Something went wrong")
-                return 
+                return
             }
             await deleleData(`clients/${userInfo?.uid}/${id}`);
             setClients(prev => prev.filter(client => client.id !== id));
@@ -115,7 +119,7 @@ export default function ClientsPage() {
             console.error(err);
             message.error("Something went wrong!");
         }
-    }, []);
+    }, [userInfo?.uid]);
 
     // ✅ Fast filtered clients (memoized)
     const filteredClients = useMemo(() => {
@@ -413,6 +417,8 @@ export default function ClientsPage() {
                         </div>
                     </div>
                 </div>
+                <DraggableButton onClick={handleAddClient} />
+
             </main>
         </div>
     );

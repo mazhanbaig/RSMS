@@ -66,21 +66,26 @@ export default function ViewOwnerPage() {
                 setUserInfo(parsed);
             } catch (err) {
                 message.error('Error loading user info');
+                setLoading(false);
             }
+        } else {
+            message.error('Please login first');
+            router.replace('/login');
         }
-    }, []);
+    }, [router]);
 
-    // Fetch owner data
+    // Fetch owner data - only when userInfo is available
     const fetchOwnerData = useCallback(async () => {
-        if (!id) return;
+        if (!id || !userInfo?.uid) return;
 
         try {
-            const ownerData: any = await getData(`owners/${userInfo?.uid}/${id}`);
+            setLoading(true);
+            const ownerData: any = await getData(`owners/${userInfo.uid}/${id}`);
             if (ownerData) {
                 setOwner(ownerData);
             } else {
                 message.error('Owner not found');
-                router.push(`/realstate/${userInfo?.uid}/owners`);
+                router.push(`/realstate/${userInfo.uid}/owners`);
             }
         } catch (error) {
             console.error("Error fetching owner:", error);
@@ -90,16 +95,48 @@ export default function ViewOwnerPage() {
         }
     }, [id, router, userInfo?.uid]);
 
+    // Only fetch when userInfo is available
     useEffect(() => {
-        fetchOwnerData();
+        if (userInfo?.uid) {
+            fetchOwnerData();
+        }
     }, [fetchOwnerData, userInfo?.uid]);
 
-    // Update status
+    // Fetch properties when owner is loaded
+    useEffect(() => {
+        const fetchOwnersProperties = async () => {
+            if (!userInfo?.uid || !owner?.id) return;
+
+            try {
+                const ownersProps: any = await getData(`properties/${userInfo.uid}`);
+                if (!ownersProps) {
+                    setOwnerProperties([]);
+                    return;
+                }
+
+                const propsArray = Object.entries(ownersProps)
+                    .map(([id, value]: [string, any]) => ({
+                        id,
+                        ...value
+                    }))
+                    .filter((p: any) => p.ownerId === owner.id);
+
+                setOwnerProperties(propsArray);
+            } catch (error) {
+                console.error("Failed to fetch properties", error);
+                setOwnerProperties([]);
+            }
+        };
+
+        fetchOwnersProperties();
+    }, [userInfo?.uid, owner?.id]);
+
+    // Update status - FIXED PATH
     const updateStatus = useCallback(async (newStatus: string) => {
-        if (!owner || !id) return;
+        if (!owner || !id || !userInfo?.uid) return;
 
         try {
-            await updateData(`owners/${id}`, {
+            await updateData(`owners/${userInfo.uid}/${id}`, {
                 ...owner,
                 status: newStatus,
                 lastContacted: new Date().toISOString().split('T')[0]
@@ -110,47 +147,19 @@ export default function ViewOwnerPage() {
             console.error("Error updating status:", error);
             message.error('Failed to update status');
         }
-    }, [owner, id]);
-
-    useEffect(() => {
-        const fetchOwnersProperties = async () => {
-            try {
-                const ownersProps: any = await getData('properties/');
-                if (!ownersProps) {
-                    setOwnerProperties([]);
-                    return;
-                }
-
-                const propsArray = Object.entries(ownersProps).map(
-                    ([id, value]: [string, any]) => ({
-                        id,
-                        ...value
-                    })
-                ).filter((p: any) => {
-                    return p.ownerId==owner?.id
-                })
-
-                setOwnerProperties(propsArray);
-                console.log(propsArray);
-            } catch (error) {
-                console.error("Failed to fetch properties", error);
-                setOwnerProperties([]);
-            }
-        };
-
-        fetchOwnersProperties();
-    }, [owner]);
-
+    }, [owner, id, userInfo?.uid]);
 
     // Helper functions
     const getStatusConfig = useCallback((status: string) => {
-        const configs = {
+        const configs: Record<string, { color: string; bg: string; border: string; icon: any }> = {
             'active': { color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', icon: <CheckCircle className="w-4 h-4" /> },
             'pending': { color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', icon: <Clock className="w-4 h-4" /> },
             'inactive': { color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200', icon: <div className="w-4 h-4">○</div> },
             'sold': { color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', icon: <CheckCircle className="w-4 h-4" /> },
+            'deal-Done': { color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', icon: <CheckCircle className="w-4 h-4" /> },
+            'lost': { color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', icon: <div className="w-4 h-4">✕</div> },
         };
-        return configs[status as keyof typeof configs] || configs.active;
+        return configs[status] || configs.active;
     }, []);
 
     const formatDate = useCallback((dateString?: string) => {
@@ -164,7 +173,7 @@ export default function ViewOwnerPage() {
 
     // Memoized values
     const ownerInitials = useMemo(() =>
-        owner ? `${owner.firstName.charAt(0)}${owner.lastName.charAt(0)}`.toUpperCase() : '',
+        owner ? `${owner.firstName?.charAt(0) || ''}${owner.lastName?.charAt(0) || ''}`.toUpperCase() : '',
         [owner]
     );
 
@@ -180,6 +189,11 @@ export default function ViewOwnerPage() {
         { id: 'notes', label: 'Notes', icon: <MessageSquare className="w-4 h-4" /> },
         { id: 'activity', label: 'Activity', icon: <Activity className="w-4 h-4" /> }
     ];
+
+    // Show loader while checking authentication
+    if (!userInfo) {
+        return <Loader />;
+    }
 
     if (loading) {
         return <Loader />;
@@ -208,7 +222,6 @@ export default function ViewOwnerPage() {
             </div>
         );
     }
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white">
             <Header userData={userInfo} />

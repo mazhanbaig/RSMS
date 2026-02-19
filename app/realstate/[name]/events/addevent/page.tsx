@@ -94,7 +94,7 @@ export default function AddEventPage() {
 
     setClientsLoading(true);
     try {
-      const clientsData: any = await getData("clients");
+      const clientsData: any = await getData(`clients/${uid}`);
 
       if (!clientsData) {
         setClients([]);
@@ -110,12 +110,11 @@ export default function AddEventPage() {
 
       setClients(clientsArray);
     } catch (error) {
-      console.error("Failed to load clients:", error);
       message.error("Failed to load clients");
     } finally {
       setClientsLoading(false);
     }
-  }, []);
+  }, [userInfo?.uid]);
 
   // Get selected clients
   const selectedClients = clients.filter(client => formData.clientIds.includes(client.id));
@@ -254,12 +253,8 @@ export default function AddEventPage() {
   };
 
   // Show loader while checking auth or loading clients
-  if (loading || clientsLoading) {
+  if (loading || clientsLoading || !userInfo?.uid) {
     return <Loader />;
-  }
-
-  if (!userInfo) {
-    return null;
   }
 
   return (
@@ -310,8 +305,8 @@ export default function AddEventPage() {
                       type="button"
                       onClick={() => handleInputChange('eventType', type.value)}
                       className={`px-3 py-2 rounded-lg border-2 transition-all duration-200 flex flex-col items-center justify-center gap-2 ${formData.eventType === type.value
-                          ? `${type.bg} border-purple-300`
-                          : 'border-gray-200 hover:border-gray-300'
+                        ? `${type.bg} border-purple-300`
+                        : 'border-gray-200 hover:border-gray-300'
                         }`}
                     >
                       <div className={`${type.color}`}>
