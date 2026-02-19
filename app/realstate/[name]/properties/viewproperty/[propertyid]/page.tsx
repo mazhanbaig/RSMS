@@ -11,7 +11,8 @@ import {
     LineChart, Clipboard, Eye, Building, AlertCircle,
     ChevronRight, CheckCircle, Clock, TrendingUp,
     MessageSquare, Plus, Mail, PhoneCall, ExternalLink,
-    Trash2
+    Trash2,
+    X
 } from "lucide-react"
 import Button from "@/components/Button"
 import { message } from "antd"
@@ -56,6 +57,7 @@ export default function ViewPropertyPage() {
     const [liked, setLiked] = useState(false)
     const [activePanel, setActivePanel] = useState('overview')
     const [isOpen, setIsOpen] = useState(false);
+    const [viewDesc, setViewDesc] = useState<boolean>(true)
 
     const { propertyid } = useParams()
     const router = useRouter()
@@ -197,7 +199,7 @@ export default function ViewPropertyPage() {
     const fetchRelatedProperties = useCallback((currentProperty?: PropertyFormData) => {
         if (!userInfo?.uid) return;
 
-        getData('properties')
+        getData(`properties/${userInfo?.uid}`)
             .then((allProps: any) => {
                 if (!allProps) return;
                 const propsArray = Object.entries(allProps).map(([key, value]: [string, any]) => ({ id: key, ...value }));
@@ -380,14 +382,6 @@ export default function ViewPropertyPage() {
                                     {currentTypeConfig.label}
                                 </span>
                             </div>
-
-                            <Button
-                                label="Edit"
-                                variant="theme"
-                                size="sm"
-                                icon={<Edit className="w-4 h-4" />}
-                                onClick={() => router.push(`/realstate/${userInfo?.uid}/properties/edit/${propertyid}`)}
-                            />
                         </div>
                     </div>
 
@@ -459,12 +453,22 @@ export default function ViewPropertyPage() {
                                             </div>
                                         )}
                                         {property.images && property.images.length > 1 && (
-                                            <button
-                                                onClick={handleNext}
-                                                className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:shadow transition-shadow"
-                                            >
-                                                Next <ChevronRight className="w-4 h-4 inline ml-1" />
-                                            </button>
+                                            <div>
+                                                <button
+                                                    onClick={handleNext}
+                                                    className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:shadow transition-shadow"
+                                                >
+                                                    Next <ChevronRight className="w-4 h-4 inline ml-1" />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setViewDesc(!viewDesc)
+                                                    }}
+                                                    className={`${viewDesc == true ? '' : 'hidden'} absolute top-4 left-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:shadow transition-shadow`}
+                                                >
+                                                    you can also click it to view on full scrren <X className="w-4 h-4 inline ml-1" />
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
 

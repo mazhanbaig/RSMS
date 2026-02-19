@@ -11,6 +11,7 @@ import { checkUserSession, getData } from "@/FBConfig/fbFunctions"
 import Loader from "@/components/Loader"
 import Header from "@/components/Header"
 import Button from "@/components/Button"
+import PropertyCard from "@/components/PropertyCard"
 
 export default function AdminDashboardPage() {
     const [loading, setLoading] = useState(true)
@@ -78,10 +79,10 @@ export default function AdminDashboardPage() {
 
             // Fetch all data in parallel
             const [clientsData, ownersData, propertiesData, eventsData]: any = await Promise.all([
-                getData('clients'),
-                getData('owners'),
-                getData('properties'),
-                getData('events')
+                getData(`clients/${userInfo?.uid}`),
+                getData(`owners/${userInfo?.uid}`),
+                getData(`properties/${userInfo?.uid}`),
+                getData(`events/${userInfo?.uid}`)
             ]);
 
             // Process data in parallel
@@ -378,66 +379,16 @@ export default function AdminDashboardPage() {
                                 />
                             </div>
 
-                            <div className="space-y-4 grid grid-cols-1 sm:grid-cols-2">
-                                {recentProperties.length > 0 ? (
-                                    recentProperties.map((property) => (
-                                        <div
-                                            key={property.id}
-                                            onClick={() => navigateToProperty(property.id)}
-                                            className="group flex items-center justify-between px-3 py-2
-      rounded-xl border border-gray-200 bg-white
-      hover:border-purple-300 hover:shadow-md transition-all cursor-pointer"
-                                        >
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className="p-2 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 text-white">
-                                                    <Home className="h-4 w-4" />
-                                                </div>
-
-                                                <div className="truncate">
-                                                    <p className="text-sm font-medium text-gray-900 truncate">
-                                                        {property.title || property.address}
-                                                    </p>
-
-                                                    <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-500">
-                                                        <span className="flex items-center gap-1">
-                                                            <Bed className="h-3 w-3" />
-                                                            {property.bedrooms || '—'}
-                                                        </span>
-                                                        <span className="flex items-center gap-1">
-                                                            <Bath className="h-3 w-3" />
-                                                            {property.bathrooms || '—'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center gap-3 shrink-0">
-                                                <span className="text-sm font-semibold text-gray-900">
-                                                    ${property.price ? parseFloat(property.price)?.toLocaleString() : '0'}
-                                                </span>
-
-                                                <span
-                                                    className={`text-[10px] px-2 py-0.5 rounded-full font-medium
-          ${getStatusColor(property.status)}`}
-                                                >
-                                                    {property.status || 'active'}
-                                                </span>
-
-                                                <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-purple-600 transition-colors" />
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="text-center py-6">
-                                        <Home className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                                        <Button
-                                            label="Add Property"
-                                            size="sm"
-                                            variant="theme"
-                                            onClick={() => navigateTo(`/realstate/${userInfo?.uid}/properties/addproperty`)}
-                                        />
-                                    </div>
-                                )}
+                            {/* Example of using list view in a different section */}
+                            <div className="space-y-4">
+                                {recentProperties.map((property) => (
+                                    <PropertyCard
+                                        key={property.id}
+                                        property={property}
+                                        userUid={userInfo?.uid}
+                                        variant="list"
+                                    />
+                                ))}
                             </div>
                         </div>
                     </div>

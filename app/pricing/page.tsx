@@ -34,47 +34,10 @@ interface UserData {
     };
 }
 
-// Custom Icons for Payment Methods
-const EasypaisaIcon = ({ size = 24, className = "" }) => (
-    <svg
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="none"
-        className={className}
-        xmlns="http://www.w3.org/2000/svg"
-    >
-        <rect x="2" y="5" width="20" height="14" rx="4" fill="currentColor" className="text-emerald-600" />
-        <circle cx="16" cy="12" r="2.5" fill="white" />
-        <rect x="4" y="8" width="8" height="8" rx="2" fill="white" fillOpacity="0.3" />
-        <path d="M7 11L9 13L13 9" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-);
-
-const JazzCashIcon = ({ size = 24, className = "" }) => (
-    <svg
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="none"
-        className={className}
-        xmlns="http://www.w3.org/2000/svg"
-    >
-        <rect x="2" y="5" width="20" height="14" rx="4" fill="currentColor" className="text-red-600" />
-        <path
-            d="M8 12C9.5 9 14.5 9 16 12C14.5 15 9.5 15 8 12Z"
-            fill="white"
-            fillOpacity="0.9"
-        />
-        <circle cx="12" cy="12" r="1.5" fill="white" />
-    </svg>
-);
-
 export default function PricingPage() {
     const [selectedPayment, setSelectedPayment] = useState<string>('easypaisa')
     const [userInfo, setUserInfo] = useState<UserData | null>(null)
     const [loading, setLoading] = useState(true)
-    const [showPaymentModal, setShowPaymentModal] = useState(false)
     const [transactionId, setTransactionId] = useState('')
     const [isProcessing, setIsProcessing] = useState(false)
     const [screenshot, setScreenshot] = useState<File | null>(null)
@@ -106,13 +69,10 @@ export default function PricingPage() {
                     'Unlimited Property Listings',
                     'Premium Property Showcase',
                     '360° Virtual Tours',
-                    'Property Comparison',
-                    'Featured Listings Priority',
                     'Advanced Property Search',
                     'Property Status Tracking',
                     'Image/Video Gallery',
                     'Location Mapping',
-                    'Nearby Places Integration'
                 ]
             },
             {
@@ -125,12 +85,9 @@ export default function PricingPage() {
                     'Client Database',
                     'Lead Tracking System',
                     'Client Communication History',
-                    'Favorite Properties',
                     'Client Requirements Tracker',
                     'Follow-up Reminders',
-                    'Email & WhatsApp Integration',
-                    'Client Analytics',
-                    'Feedback System'
+                    'Email & Call Integration',
                 ]
             },
             {
@@ -141,34 +98,11 @@ export default function PricingPage() {
                 items: [
                     'Unlimited Event Creation',
                     'Property Viewing Scheduling',
-                    'Open House Events',
                     'Client Meeting Management',
                     'Event Calendar View',
                     'Reminders & Notifications',
-                    'Virtual Meeting Integration',
-                    'Attendance Tracking',
-                    'Event Analytics',
-                    'Calendar Sync'
                 ]
             },
-            {
-                category: 'Premium',
-                icon: Sparkles,
-                color: 'text-amber-600',
-                bg: 'bg-amber-50/80',
-                items: [
-                    'Advanced Analytics Dashboard',
-                    'Revenue & Commission Tracking',
-                    'Document Management',
-                    'Contract Templates',
-                    'Social Media Integration',
-                    'Marketing Tools',
-                    'SMS & Email Campaigns',
-                    'Backup & Export',
-                    'Priority 24/7 Support',
-                    'Regular Updates'
-                ]
-            }
         ],
         benefits: [
             { icon: Shield, text: 'Secure Platform', color: 'text-emerald-600' },
@@ -178,46 +112,44 @@ export default function PricingPage() {
         ]
     }
 
-    // Payment Methods
+    // Payment Methods - Using authentic Pakistani icons
     const paymentMethods = useMemo(() => [
         {
             id: 'easypaisa',
             name: 'EasyPaisa',
-            icon: EasypaisaIcon,
-            gradient: 'from-emerald-400 to-emerald-500',
-            lightGradient: 'from-emerald-50/80 to-emerald-50/80',
-            color: 'text-emerald-600',
-            borderColor: 'border-emerald-100',
-            bgColor: 'bg-emerald-50/50',
+            gradient: 'from-[#107C10] to-[#4CAF50]',
+            lightGradient: 'from-[#E8F5E8] to-[#E8F5E8]',
+            color: 'text-[#107C10]',
+            borderColor: 'border-[#4CAF50]/30',
+            bgColor: 'bg-[#E8F5E8]',
             accountNumber: '0312-1234567',
             accountName: 'RealEstate Solutions PK',
             instructions: [
-                'Open EasyPaisa app',
-                'Select "Send Money"',
-                'Enter: 0312-1234567',
-                'Amount: 500 PKR',
-                'Add email in notes',
-                'Save transaction ID'
+                'Open EasyPaisa mobile app',
+                'Select "Send Money" from main menu',
+                'Enter account number: 0312-1234567',
+                'Enter amount: 500 PKR',
+                'Add your email in notes/description',
+                'Confirm and save transaction ID'
             ]
         },
         {
             id: 'jazzcash',
             name: 'JazzCash',
-            icon: JazzCashIcon,
-            gradient: 'from-rose-400 to-rose-500',
-            lightGradient: 'from-rose-50/80 to-rose-50/80',
-            color: 'text-rose-600',
-            borderColor: 'border-rose-100',
-            bgColor: 'bg-rose-50/50',
+            gradient: 'from-[#DA291C] to-[#E11B22]',
+            lightGradient: 'from-[#FCE8E7] to-[#FCE8E7]',
+            color: 'text-[#DA291C]',
+            borderColor: 'border-[#DA291C]/30',
+            bgColor: 'bg-[#FCE8E7]',
             accountNumber: '0300-7654321',
             accountName: 'RealEstate Solutions PK',
             instructions: [
-                'Open JazzCash app',
-                'Select "Send Money"',
-                'Enter: 0300-7654321',
-                'Amount: 500 PKR',
-                'Add email in notes',
-                'Save transaction ID'
+                'Open JazzCash mobile app',
+                'Select "Send Money" option',
+                'Enter account number: 0300-7654321',
+                'Enter amount: 500 PKR',
+                'Add your email in description',
+                'Complete transaction and save ID'
             ]
         }
     ], [])
@@ -295,7 +227,6 @@ export default function PricingPage() {
             }
 
             message.success('Payment submitted successfully! Verification within 2-3 hours.')
-            setShowPaymentModal(false)
             router.push(`/realstate/${userInfo?.uid}/payment-success`)
 
         } catch (error) {
@@ -320,7 +251,7 @@ export default function PricingPage() {
             <Header userData={userInfo} />
 
             <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-                {/* Header Section - Softer */}
+                {/* Header Section */}
                 <div className="mb-10">
                     <div className="flex items-center gap-2 mb-6 mt-6 sm:mt-3">
                         <div className="w-6 h-px bg-gradient-to-r from-purple-300 to-blue-300"></div>
@@ -347,7 +278,7 @@ export default function PricingPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     {/* Left Column - Package Overview */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Package Card - Softer */}
+                        {/* Package Card */}
                         <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-purple-100/50 shadow-sm overflow-hidden">
                             <div className={`bg-gradient-to-r ${ultimatePackage.gradient} px-6 py-4 opacity-90`}>
                                 <div className="flex items-center justify-between">
@@ -367,7 +298,7 @@ export default function PricingPage() {
                                 </div>
                             </div>
 
-                            {/* Features Grid - Softer */}
+                            {/* Features Grid */}
                             <div className="p-6">
                                 <div className="grid md:grid-cols-2 gap-6">
                                     {ultimatePackage.features.map((category, idx) => (
@@ -378,13 +309,24 @@ export default function PricingPage() {
                                                 </div>
                                                 <h3 className="font-semibold text-gray-700">{category.category}</h3>
                                             </div>
-                                            <ul className="space-y-2">
-                                                {category.items.slice(0, isExpanded ? 10 : 4).map((item, itemIdx) => (
-                                                    <li key={itemIdx} className="text-sm text-gray-600 flex items-start gap-2">
-                                                        <Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                                                        <span>{item}</span>
-                                                    </li>
-                                                ))}
+                                            <ul
+                                                className={`${category.category === "Events"
+                                                        ? "flex flex-wrap gap-3"
+                                                        : "space-y-2"
+                                                    }`}
+                                            >
+                                                {category.items
+                                                    .slice(0, isExpanded ? 10 : 4)
+                                                    .map((item, itemIdx) => (
+                                                        <li
+                                                            key={itemIdx}
+                                                            className="text-sm text-gray-600 flex items-start gap-2"
+                                                        >
+                                                            <Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                                                            <span>{item}</span>
+                                                        </li>
+                                                    ))}
+
                                                 {!isExpanded && category.items.length > 4 && (
                                                     <button
                                                         onClick={() => setIsExpanded(true)}
@@ -394,300 +336,98 @@ export default function PricingPage() {
                                                     </button>
                                                 )}
                                             </ul>
+
                                         </div>
                                     ))}
-                                </div>
-
-                                {/* Benefits - Softer */}
-                                <div className="mt-6 pt-6 border-t border-gray-100/80">
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        {ultimatePackage.benefits.map((benefit, idx) => (
-                                            <div key={idx} className="flex items-center gap-2">
-                                                <benefit.icon className={`w-4 h-4 ${benefit.color} opacity-80`} />
-                                                <span className="text-xs text-gray-500">{benefit.text}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right Column - Payment Options */}
-                    <div className="space-y-6">
-                        {/* Price Summary - Softer */}
-                        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-purple-100/50 p-5 shadow-sm">
-                            <div className="flex items-center gap-2 mb-4">
-                                <DollarSign className="w-5 h-5 text-purple-400" />
-                                <h3 className="font-semibold text-gray-700">Payment Summary</h3>
                             </div>
 
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-gray-500">Package</span>
-                                    <span className="font-medium text-gray-700">{ultimatePackage.name}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-gray-500">Duration</span>
-                                    <span className="font-medium text-gray-700">Monthly</span>
-                                </div>
-                                <div className="flex justify-between items-center text-lg font-bold pt-3 border-t border-gray-100">
-                                    <span className="text-gray-600">Total</span>
-                                    <span className="bg-gradient-to-r from-purple-500 to-blue-500 text-transparent bg-clip-text">
-                                        {ultimatePackage.currency} {ultimatePackage.price}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={() => setShowPaymentModal(true)}
-                                className="w-full mt-4 bg-gradient-to-r from-purple-400 to-blue-400 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-500 hover:to-blue-500 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-purple-200/50 flex items-center justify-center gap-2"
-                            >
-                                <Rocket className="w-4 h-4" />
-                                Proceed to Payment
-                                <ChevronRight className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        {/* Payment Methods Preview - With Icons */}
-                        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-100/80 p-5 shadow-sm">
-                            <div className="flex items-center gap-2 mb-4">
-                                <CreditCard className="w-5 h-5 text-blue-400" />
-                                <h3 className="font-semibold text-gray-700">Payment Methods</h3>
-                            </div>
-
-                            <div className="space-y-3">
-                                {paymentMethods.map((method) => (
-                                    <div
-                                        key={method.id}
-                                        onClick={() => {
-                                            setSelectedPayment(method.id)
-                                            setShowPaymentModal(true)
-                                        }}
-                                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all hover:shadow-sm ${method.borderColor} hover:${method.bgColor}`}
-                                    >
-                                        <div className={`p-2 rounded-lg bg-gradient-to-r ${method.gradient} text-white`}>
-                                            <method.icon size={20} />
+                            {/* Benefits */}
+                            <div className="mt-6 pt-6 border-t border-gray-100/80">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {ultimatePackage.benefits.map((benefit, idx) => (
+                                        <div key={idx} className="flex items-center gap-2">
+                                            <benefit.icon className={`w-4 h-4 ${benefit.color} opacity-80`} />
+                                            <span className="text-xs text-gray-500">{benefit.text}</span>
                                         </div>
-                                        <div className="flex-1">
-                                            <div className="font-medium text-gray-700">{method.name}</div>
-                                            <div className="text-xs text-gray-400">Pay 500 PKR instantly</div>
-                                        </div>
-                                        <ChevronRight className="w-4 h-4 text-gray-300" />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Trust Badge - Softer */}
-                        <div className="bg-gradient-to-r from-purple-50/50 to-blue-50/50 rounded-xl p-4 border border-purple-100/50">
-                            <div className="flex items-start gap-3">
-                                <ShieldCheck className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
-                                <div>
-                                    <h4 className="font-medium text-gray-600 text-sm">Secure Payment</h4>
-                                    <p className="text-xs text-gray-400 mt-1">
-                                        Your payment information is encrypted and secure. Account activation within 2-3 hours after verification.
-                                    </p>
+                                    ))}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Payment Modal - Softer */}
-                <Modal
-                    open={showPaymentModal}
-                    onCancel={() => {
-                        setShowPaymentModal(false)
-                        setTransactionId('')
-                        setScreenshot(null)
-                        setTermsAccepted(false)
-                        setPaymentStep(1)
-                    }}
-                    footer={null}
-                    width={500}
-                    className="rounded-xl overflow-hidden"
-                >
-                    <div className="p-6">
-                        {/* Modal Header */}
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2.5 rounded-lg bg-gradient-to-r ${paymentMethods.find(m => m.id === selectedPayment)?.gradient || 'from-purple-400 to-blue-400'} text-white`}>
-                                    {selectedPayment === 'easypaisa' && <EasypaisaIcon size={20} />}
-                                    {selectedPayment === 'jazzcash' && <JazzCashIcon size={20} />}
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-semibold text-gray-700">Complete Payment</h3>
-                                    <p className="text-sm text-gray-400">Amount: 500 PKR</p>
-                                </div>
+                {/* Right Column - Payment Options */}
+                <div className="space-y-6">
+                    {/* Price Summary */}
+                    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-purple-100/50 p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-4">
+                            <DollarSign className="w-5 h-5 text-purple-400" />
+                            <h3 className="font-semibold text-gray-700">Payment Summary</h3>
+                        </div>
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-500">Package</span>
+                                <span className="font-medium text-gray-700">{ultimatePackage.name}</span>
                             </div>
-                            <button
-                                onClick={() => setShowPaymentModal(false)}
-                                className="p-1 hover:bg-gray-100/80 rounded-lg"
-                            >
-                                <X className="w-5 h-5 text-gray-400" />
-                            </button>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-500">Duration</span>
+                                <span className="font-medium text-gray-700">Monthly</span>
+                            </div>
+                            <div className="flex justify-between items-center text-lg font-bold pt-3 border-t border-gray-100">
+                                <span className="text-gray-600">Total</span>
+                                <span className="bg-gradient-to-r from-purple-500 to-blue-500 text-transparent bg-clip-text">
+                                    {ultimatePackage.currency} {ultimatePackage.price}
+                                </span>
+                            </div>
                         </div>
 
-                        {paymentStep === 1 ? (
-                            /* Step 1: Select Payment Method */
-                            <div className="space-y-3">
-                                {paymentMethods.map((method) => (
-                                    <button
-                                        key={method.id}
-                                        onClick={() => {
-                                            setSelectedPayment(method.id)
-                                            setPaymentStep(2)
-                                        }}
-                                        className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${selectedPayment === method.id
-                                                ? `${method.borderColor} ${method.bgColor}`
-                                                : 'border-gray-100/80 hover:border-gray-200'
-                                            }`}
-                                    >
-                                        <div className={`p-3 rounded-lg bg-gradient-to-r ${method.gradient} text-white`}>
-                                            <method.icon size={24} />
-                                        </div>
-                                        <div className="flex-1 text-left">
-                                            <h4 className="font-semibold text-gray-700">{method.name}</h4>
-                                            <p className="text-sm text-gray-400">Pay 500 PKR instantly</p>
-                                        </div>
-                                        <ChevronRight className="w-5 h-5 text-gray-300" />
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            /* Step 2: Payment Details */
-                            <div className="space-y-4">
-                                {/* Account Details */}
-                                <div className={`p-4 rounded-xl ${paymentMethods.find(m => m.id === selectedPayment)?.bgColor} border ${paymentMethods.find(m => m.id === selectedPayment)?.borderColor}`}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm text-gray-500">Account Number</span>
-                                        <div className="flex items-center gap-2">
-                                            <code className="bg-white/80 px-3 py-1 rounded-lg text-sm font-mono">
-                                                {paymentMethods.find(m => m.id === selectedPayment)?.accountNumber}
-                                            </code>
-                                            <button
-                                                onClick={() => copyToClipboard(paymentMethods.find(m => m.id === selectedPayment)?.accountNumber || '')}
-                                                className="p-1.5 bg-white/80 rounded-lg hover:bg-white"
-                                            >
-                                                <Copy className="w-4 h-4 text-gray-400" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-500">Account Name</span>
-                                        <span className="font-medium text-gray-600">
-                                            {paymentMethods.find(m => m.id === selectedPayment)?.accountName}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Instructions */}
-                                <div className="bg-amber-50/50 rounded-xl p-4">
-                                    <h4 className="text-sm font-medium text-amber-700 mb-2 flex items-center gap-1.5">
-                                        <Info className="w-4 h-4" />
-                                        Instructions
-                                    </h4>
-                                    <ul className="space-y-1.5">
-                                        {paymentMethods.find(m => m.id === selectedPayment)?.instructions.map((inst, idx) => (
-                                            <li key={idx} className="text-xs text-amber-600/80 flex items-start gap-2">
-                                                <span className="w-4 h-4 rounded-full bg-amber-200/50 flex items-center justify-center text-amber-700 text-[10px] flex-shrink-0 mt-0.5">
-                                                    {idx + 1}
-                                                </span>
-                                                {inst}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-
-                                {/* Transaction ID */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600 mb-1.5">
-                                        Transaction ID <span className="text-rose-400">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={transactionId}
-                                        onChange={(e) => setTransactionId(e.target.value)}
-                                        placeholder="Enter transaction ID from your payment app"
-                                        className="w-full px-4 py-2.5 border border-gray-200/80 rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-transparent bg-white/80"
-                                    />
-                                </div>
-
-                                {/* Screenshot Upload */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-600 mb-1.5">
-                                        Payment Screenshot <span className="text-rose-400">*</span>
-                                    </label>
-                                    <div className="border-2 border-dashed border-gray-200/80 rounded-lg p-4 text-center hover:border-purple-300 transition-colors bg-white/50">
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) => e.target.files && setScreenshot(e.target.files[0])}
-                                            className="hidden"
-                                            id="screenshot"
-                                        />
-                                        <label htmlFor="screenshot" className="cursor-pointer block">
-                                            {screenshot ? (
-                                                <div className="flex items-center justify-center gap-2 text-emerald-500">
-                                                    <CheckCircle className="w-5 h-5" />
-                                                    <span className="text-sm">{screenshot.name}</span>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    <Upload className="w-6 h-6 mx-auto mb-2 text-gray-300" />
-                                                    <span className="text-sm text-purple-500 font-medium">Click to upload</span>
-                                                    <span className="text-xs text-gray-400 block">PNG, JPG up to 5MB</span>
-                                                </>
-                                            )}
-                                        </label>
-                                    </div>
-                                </div>
-
-                                {/* Terms */}
-                                <label className="flex items-start gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={termsAccepted}
-                                        onChange={(e) => setTermsAccepted(e.target.checked)}
-                                        className="mt-1 accent-purple-500"
-                                    />
-                                    <span className="text-xs text-gray-500">
-                                        I confirm that I've made the payment of 500 PKR and the details are correct
-                                    </span>
-                                </label>
-
-                                {/* Actions */}
-                                <div className="flex gap-3 pt-2">
-                                    <button
-                                        onClick={() => setPaymentStep(1)}
-                                        className="flex-1 px-4 py-2.5 border border-gray-200/80 rounded-lg font-medium text-gray-600 hover:bg-gray-50/80"
-                                    >
-                                        Back
-                                    </button>
-                                    <button
-                                        onClick={handleSubmitPayment}
-                                        disabled={isProcessing || !transactionId || !screenshot || !termsAccepted}
-                                        className="flex-1 bg-gradient-to-r from-purple-400 to-blue-400 text-white py-2.5 rounded-lg font-medium hover:from-purple-500 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                    >
-                                        {isProcessing ? (
-                                            <>
-                                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                                Processing...
-                                            </>
-                                        ) : (
-                                            <>
-                                                Submit Payment
-                                                <Check className="w-4 h-4" />
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+                        <button
+                            className="w-full mt-4 bg-gradient-to-r from-purple-400 to-blue-400 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-500 hover:to-blue-500 transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-purple-200/50 flex items-center justify-center gap-2"
+                        >
+                            <Rocket className="w-4 h-4" />
+                            Proceed to Payment
+                            <ChevronRight className="w-4 h-4" />
+                        </button>
                     </div>
-                </Modal>
-            </main>
+
+                    {/* Payment Methods Preview - With Authentic Pakistani Icons */}
+                    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-100/80 p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-4">
+                            <CreditCard className="w-5 h-5 text-blue-400" />
+                            <h3 className="font-semibold text-gray-700">Payment Methods</h3>
+                        </div>
+
+                        <div className="space-y-3">
+                            {paymentMethods.map((method) => (
+                                <div
+                                    key={method.id}
+                                    className={`flex items-center gap-3 px-3 py-1 rounded-lg border cursor-pointer transition-all hover:shadow-sm ${method.borderColor} hover:${method.bgColor}`}
+                                >
+                                    <div className="flex-1">
+                                        <div className="font-medium text-gray-700">{method.name}</div>
+                                        <div className="text-xs text-gray-400">Pay 500 PKR instantly</div>
+                                    </div>
+                                    <ChevronRight className="w-4 h-4 text-gray-300" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Trust Badge */}
+                    <div className="bg-gradient-to-r from-purple-50/50 to-blue-50/50 rounded-xl p-4 border border-purple-100/50">
+                        <div className="flex items-start gap-3">
+                            <ShieldCheck className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <h4 className="font-medium text-gray-600 text-sm">Secure Payment</h4>
+                                <p className="text-xs text-gray-400 mt-1">
+                                    Your payment information is encrypted and secure. Account activation within 2-3 hours after verification.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
         </div>
+            </main >
+        </div >
     )
 }
