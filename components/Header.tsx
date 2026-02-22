@@ -162,7 +162,7 @@ export default function Header({ userData }: { userData?: Partial<UserInfo> | nu
             {/* Logo */}
             <Link href={`/realstate/${userData?.uid}`} className="flex items-center">
                 <span className="text-2xl  font-extrabold text-gray-900">Z</span>
-                <span className="text-2xl  font-extrabold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">State</span>
+                <span className="text-2xl  font-extrabold ">STATE</span>
             </Link>
 
             {/* Desktop Navigation */}
