@@ -28,8 +28,7 @@ export default function LoginPage() {
                 })
             );
 
-            window.location.replace(`/realstate/${res.user.uid}`);
-
+            router.replace(`/realstate/${res.user.uid}`)
         } catch (err: any) {
             console.error("Google login error:", err);
             message.error(err?.message || "Login failed");

@@ -27,7 +27,7 @@ export default function Signup() {
         })
       );
       message.success('Account Created Successfully');
-      window.location.replace(`/realstate/${res.user.uid}`);
+      router.replace(`/realstate/${res.user.uid}`)
     } catch (err: any) {
       message.error('Error While Signup');
       setLoading(false);
