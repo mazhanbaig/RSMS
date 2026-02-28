@@ -4,14 +4,14 @@ import React from "react";
 
 interface ButtonProps {
     label: string;
-    onClick?: (e?:any) => any;
+    onClick?: (e?: any) => any;
     type?: "button" | "submit";
     variant?: "primary" | "secondary" | "danger" | "theme" | "theme2";
     size?: "sm" | "md" | "lg" | "xl";
     disabled?: boolean;
     classNameC?: string;
-    icon?: React.ReactNode; 
-
+    icon?: React.ReactNode;
+}
 export default function Button({
     label,
     onClick,
