@@ -15,16 +15,16 @@ export default function LoginPage() {
         try {
             const res: any = await loginWithGoogle();
             message.success('Login Successful!');
-console.log(res);
+            console.log(res);
 
 
             localStorage.setItem(
                 "userInfo",
                 JSON.stringify({
-                    uid: res.uid,
-                    email: res.email,
-                    name: res.name,
-                    photoURL:res.photoURL
+                    uid: res.user.uid,
+                    email: res.user.email,
+                    name: res.user.name,
+                    photoURL: res.user.photoURL
                 })
             );
 
@@ -48,7 +48,7 @@ console.log(res);
                         <div className="mb-6">
                             <div className="relative inline-block mb-4">
                                 <h1 className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 bg-clip-text text-transparent"
-                                    >
+                                >
                                     ZState
                                 </h1>
 

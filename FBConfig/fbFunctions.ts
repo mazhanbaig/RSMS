@@ -161,7 +161,7 @@ export const loginWithGoogle = async () => {
       name: user.displayName,
       email: user.email,
       picture: user.photoURL,
-    });
+     });    
     
     return {
       user: {

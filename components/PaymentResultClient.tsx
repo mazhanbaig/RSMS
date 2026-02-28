@@ -5,11 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { message } from "antd"
 import { updateData } from "@/FBConfig/fbFunctions"
 import { User } from "@/types/user"
+import Button from "./Button"
 
 export default function PaymentResultClient() {
-    const router = useRouter()
+    let router = useRouter()
     const searchParams = useSearchParams()
     const paymentMethod: any = searchParams.get('paymentMethod')
+    const [userInfo, setUserInfo] = useState<any>(null)
     const [status, setStatus] = useState<string>("Processing payment...")
 
     useEffect(() => {
@@ -25,6 +27,7 @@ export default function PaymentResultClient() {
             if (storedUser) {
                 const user: User = JSON.parse(storedUser)
 
+                setUserInfo(user)
                 const updatedSubscription = {
                     txnRef,
                     packageName: "Ultimate Package",
@@ -46,6 +49,9 @@ export default function PaymentResultClient() {
     return (
         <div className="min-h-screen flex items-center justify-center">
             <h1 className="text-xl font-semibold">{status}</h1>
+            <Button label={"Dashboard"} onClick={() => {
+                router.push(`/realstate/${userInfo?.uid}/`)
+            }} />
         </div>
     )
 }
