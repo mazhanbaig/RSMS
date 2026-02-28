@@ -184,15 +184,13 @@ export default function ElegantEventsPage() {
 
     const fetchEvents = async (uid: string) => {
         try {
-            const eventsData: any = await getData(`events`);
+            const eventsData: any = await getData(`events/${uid}`);
 
             if (eventsData) {
-                let eventsArray: EventData[] = Object.entries(eventsData)
-                    .map(([id, data]: [string, any]) => ({
-                        id,
-                        ...data,
-                    }))
-                    .filter((event: any) => event.agentUid === uid); // ✅ Filter by agentUid
+                let eventsArray: EventData[] = Object.entries(eventsData).map(([id, value]: any) => ({
+                    id,
+                    ...value
+                }))
 
                 eventsArray = eventsArray.reverse();
                 setEvents(eventsArray);
@@ -289,7 +287,7 @@ export default function ElegantEventsPage() {
         setDeletingId(eventId);
         try {
             // ✅ FIXED: Using deleleData function
-            await deleleData(`events/${eventId}`);
+            await deleleData(`events/${userInfo?.uid}/${eventId}`);
             setEvents(events.filter(event => event.id !== eventId));
             message.success('Event deleted successfully');
         } catch (error) {

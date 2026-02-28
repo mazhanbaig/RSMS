@@ -80,16 +80,9 @@ export default function ClientsPage() {
                 const clientsArray = Object.entries(res).map(([id, value]: any) => ({
                     id,
                     ...value
-                }));
-                console.log(clientsArray);
+                })).reverse()
 
-
-                // Optional: filter only this agent's clients
-                const ownerClients = clientsArray
-                    .filter(client => client.agentUid === uid)
-                    .reverse();
-
-                setClients(ownerClients);
+                setClients(clientsArray);
             } else {
                 setClients([]);
             }

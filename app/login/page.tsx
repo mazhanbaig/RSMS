@@ -15,13 +15,16 @@ export default function LoginPage() {
         try {
             const res: any = await loginWithGoogle();
             message.success('Login Successful!');
+console.log(res);
+
 
             localStorage.setItem(
                 "userInfo",
                 JSON.stringify({
-                    uid: res.user.uid,
-                    email: res.user.email,
-                    name: res.user.displayName,
+                    uid: res.uid,
+                    email: res.email,
+                    name: res.name,
+                    photoURL:res.photoURL
                 })
             );
 

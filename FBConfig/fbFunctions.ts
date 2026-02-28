@@ -126,8 +126,24 @@
 // };
 
 
-import axios from "axios";
 import api from "./api"
+
+interface PaymentData {
+  pp_Version: string;
+  pp_TxnType: string;
+  pp_Language: string;
+  pp_MerchantID: string;
+  pp_Password: string;
+  pp_TxnRefNo: string;
+  pp_Amount: string;
+  pp_TxnCurrency: string;
+  pp_TxnDateTime: string;
+  pp_BillReference: string;
+  pp_Description: string;
+  pp_ReturnURL: string;
+  pp_SecureHash: string;
+}
+
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
 import { app } from "./config";
 export const auth = getAuth(app);
@@ -264,5 +280,22 @@ export const deleteImageFromCloudinary = async (public_id: string) => {
   } catch (err) {
     console.error("Failed to delete image from Cloudinary:", err);
     return null;
+  }
+};
+
+
+// ---------------- CREATE PAYMENT ----------------
+export const createJazzCashPayment = async (amount: string, email: string, selectedPayment:string): Promise<PaymentData> => {
+  try {
+    const res = await api.post("/api/payment/create-payment", { amount, email,selectedPayment });
+    
+    if (res.data.success) {
+      return res.data.data; // contains all JazzCash payment fields + pp_SecureHash
+    } else {
+      throw new Error(res.data.message || "Payment creation failed");
+    }
+  } catch (err) {
+    console.error("Failed to create JazzCash payment:", err);
+    throw err;
   }
 };

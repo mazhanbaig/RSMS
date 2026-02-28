@@ -78,14 +78,9 @@ export default function OwnersPage() {
                 const ownersArray = Object.entries(res).map(([id, value]: any) => ({
                     id,
                     ...value
-                }));
+                })).reverse()
 
-                // Filter only this agent's owners
-                const userOwners = ownersArray
-                    .filter(owner => owner.agentUid === uid)
-                    .reverse();
-
-                setOwners(userOwners);
+                setOwners(ownersArray);
             } else {
                 setOwners([]);
             }
@@ -339,7 +334,7 @@ export default function OwnersPage() {
                                     <tr>
                                         <th className="text-left p-4 font-semibold text-gray-900">Owner</th>
                                         <th className="text-left p-4 font-semibold text-gray-900">Contact</th>
-                                        <th className="text-left p-4 font-semibold text-gray-900">Properties</th>
+                                        {/* <th className="text-left p-4 font-semibold text-gray-900">Properties</th> */}
                                         <th className="text-left p-4 font-semibold text-gray-900">Status</th>
                                         <th className="text-left p-4 font-semibold text-gray-900">Actions</th>
                                     </tr>
@@ -372,14 +367,14 @@ export default function OwnersPage() {
                                                         <div className="text-sm text-gray-500">{owner.phone}</div>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-2">
+                                                {/* <td className="px-4 py-2">
                                                     <div className="text-sm font-medium text-gray-900">
-                                                        {owner.propertyCount || 0} Properties
+                                                        {owner.propertyOwn || 0} Properties
                                                     </div>
                                                     <div className="text-sm text-gray-500">
                                                         {owner.propertyTypes || "Various types"}
                                                     </div>
-                                                </td>
+                                                </td> */}
                                                 <td className="px-4 py-2">
                                                     <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(owner.status)}`}>
                                                         {owner.status || 'Active'}

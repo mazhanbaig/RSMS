@@ -45,7 +45,7 @@ export default function AddPropertyPart3({
 
         const parsed = JSON.parse(userData);
 
-        getData('owners/')
+        getData(`owners/${parsed?.uid}`)
             .then((res: any) => {
                 if (!res) return;
 
@@ -133,7 +133,7 @@ export default function AddPropertyPart3({
                         onChange={handleOwnerSelect}
                         filterOption={(input, option) => {
                             const label = option?.children;
-                            if (!label) return false; 
+                            if (!label) return false;
                             return label.toString().toLowerCase().includes(input.toLowerCase());
                         }}
 

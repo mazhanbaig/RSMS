@@ -239,7 +239,7 @@ export default function AddEventPage() {
       };
 
       // ✅ FIXED: Save event with flat structure (matches your fetch pattern)
-      await saveData(`events/${eventId}`, eventData);
+      await saveData(`events/${userInfo?.uid}/${eventId}`, eventData);
 
       message.success('Event created successfully!');
       router.push(`/realstate/${userInfo.uid}/events`);

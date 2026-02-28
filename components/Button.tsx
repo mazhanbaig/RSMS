@@ -10,8 +10,7 @@ interface ButtonProps {
     size?: "sm" | "md" | "lg" | "xl";
     disabled?: boolean;
     classNameC?: string;
-    icon?: React.ReactNode;   // ✅ Added icon support
-}
+    icon?: React.ReactNode; 
 
 export default function Button({
     label,
@@ -21,7 +20,7 @@ export default function Button({
     size = "md",
     disabled = false,
     classNameC = "",
-    icon,                     // ✅ Added here
+    icon,                    
 }: ButtonProps) {
     const styles: Record<string, string> = {
         primary: "bg-blue-600 hover:bg-blue-700 text-white",
