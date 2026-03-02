@@ -67,8 +67,7 @@ export default function Header({ userData }: { userData?: Partial<UserInfo> | nu
         <>
             <header
                 className={`
-    fixed top-6 left-1/2 -translate-x-1/2 z-50
-    w-[95%] max-w-6xl
+    fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[97%]
     transition-all duration-500 ease-in-out
     ${isScrolled
                         ? "bg-white/80 backdrop-blur-xl shadow-lg border border-slate-200/60"
