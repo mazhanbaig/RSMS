@@ -1,101 +1,133 @@
 "use client";
 
-import { Menu, X, User, LogIn, Home, BookOpen } from "lucide-react";
+import { Menu, X, Home, BookOpen, LogIn, User } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 export default function HomeHeader() {
-    const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
+    const pathname = usePathname();
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const navLinks = [
-        { href: "/", label: "Home", icon: <Home size={18} /> },
-        { href: "/tutorial", label: "How to Use", icon: <BookOpen size={18} /> },
-        { href: "/login", label: "Login", icon: <LogIn size={18} /> },
-        { href: "/signup", label: "Sign Up", icon: <User size={18} /> },
+        { href: "/", label: "Home", icon: Home },
+        { href: "/tutorial", label: "How to Use", icon: BookOpen },
+        { href: "/login", label: "Login", icon: LogIn },
+        { href: "/signup", label: "Sign Up", icon: User },
     ];
 
+    const isActive = (href: string) => pathname === href;
+
     return (
-        <nav className="relative z-50 top-5 left-5 w-[95%] max-w-6xl bg-white/80 backdrop-blur-lg shadow-lg px-6 py-3 flex justify-between items-center rounded-xl border border-gray-100">
-            {/* Logo */}
-            <Link href="/" className="text-2xl font-extrabold text-gray-900 uppercase hover:opacity-80 transition-opacity">
-                Zstate
-            </Link>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-6">
-                {navLinks.map((link) => (
-                    <Link
-                        key={link.href}
-                        href={link.href}
-                        className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 font-medium text-gray-700 transition-colors"
-                    >
-                        {link.icon}
-                        <span>{link.label}</span>
+        <>
+            <header className={`
+                fixed top-6 left-1/2 -translate-x-1/2 z-50
+                w-[95%] max-w-6xl
+                transition-all duration-500 ease-in-out
+                ${isScrolled
+                    ? "bg-white/80 backdrop-blur-xl shadow-lg border border-slate-200/60"
+                    : "bg-white/60 backdrop-blur-md border border-slate-200/40"
+                }
+                rounded-2xl px-6 py-3
+            `}>
+                <nav className="flex items-center justify-between">
+                    {/* Logo */}
+                    <Link href="/" className="leading-tight">
+                        <p className="text-xl font-extrabold text-slate-900 tracking-tight">
+                            ZSTATE
+                        </p>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+                            Real Estate System
+                        </p>
                     </Link>
-                ))}
-            </div>
 
-            {/* Mobile & User Menu */}
-            <div className="flex items-center space-x-2">
-                {/* Mobile Hamburger */}
-                <button
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                    aria-label="Toggle menu"
-                >
-                    {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
+                    {/* Desktop Navigation */}
+                    <div className="hidden md:flex items-center bg-white/60 backdrop-blur-md rounded-2xl p-1 border border-slate-200/50 shadow-inner">
+                        {navLinks.map((link) => {
+                            const Icon = link.icon;
+                            const active = isActive(link.href);
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    className={`
+                                        relative px-5 py-2 rounded-2xl flex items-center gap-2 
+                                        text-sm font-medium transition-all duration-300
+                                        ${active
+                                            ? "text-slate-900"
+                                            : "text-slate-500 hover:text-slate-900"
+                                        }
+                                    `}
+                                >
+                                    {active && (
+                                        <span className="absolute inset-0 bg-white rounded-2xl shadow-md border border-slate-200/70"></span>
+                                    )}
+                                    <Icon size={17} className="relative z-10" />
+                                    <span className="relative z-10">{link.label}</span>
+                                </Link>
+                            );
+                        })}
+                    </div>
 
-                {/* User Dropdown for Desktop */}
-                <div className="hidden md:block relative">
+                    {/* Mobile Menu Button */}
                     <button
-                        onClick={() => setDropdownOpen(!dropdownOpen)}
-                        className="flex items-center space-x-2 p-2 rounded-xl hover:bg-gray-100 transition-colors border border-gray-200"
-                        aria-label="User menu"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        className="md:hidden p-2 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
                     >
-                        <User size={20} />
-                        <span className="font-medium">Account</span>
+                        {isMenuOpen ? <X size={20} className="text-slate-600" /> : <Menu size={20} className="text-slate-600" />}
                     </button>
+                </nav>
 
-                    {dropdownOpen && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-10 animate-in slide-in-from-top-2">
-                            <div className="py-2">
-                                {navLinks.slice(2).map((link) => ( // Show only Login and Sign Up in dropdown
+                {isMenuOpen && (
+                    <div className="md:hidden absolute left-0 right-0 top-full mt-2 bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                        <div className="p-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+                            <p className="text-sm font-medium text-slate-900">Welcome to ZSTATE</p>
+                            <p className="text-xs text-slate-500 mt-0.5">Real Estate Management System</p>
+                        </div>
+
+                        <div className="py-2">
+                            {navLinks.map((link) => {
+                                const Icon = link.icon;
+                                const active = isActive(link.href);
+                                return (
                                     <Link
                                         key={link.href}
                                         href={link.href}
-                                        onClick={() => setDropdownOpen(false)}
-                                        className="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 text-gray-700 transition-colors"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className={`
+                                            flex items-center space-x-3 px-4 py-3.5 transition-all
+                                            ${active
+                                                ? 'bg-slate-50 text-slate-900 border-l-2 border-slate-900'
+                                                : 'text-slate-600 hover:bg-slate-50'
+                                            }
+                                        `}
                                     >
-                                        {link.icon}
-                                        <span>{link.label}</span>
+                                        <Icon size={18} />
+                                        <span className="text-sm font-medium">{link.label}</span>
+                                        {link.label === "Sign Up" && (
+                                            <span className="ml-auto text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full">
+                                                Free
+                                            </span>
+                                        )}
                                     </Link>
-                                ))}
-                            </div>
+                                );
+                            })}
                         </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Mobile Navigation Menu */}
-            {isMenuOpen && (
-                <div className="absolute right-0 top-16 mt-1 w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-10 animate-in slide-in-from-top-2 md:hidden">
-                    <div className="py-2">
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                onClick={() => setIsMenuOpen(false)}
-                                className="flex items-center space-x-3 px-6 py-4 hover:bg-gray-50 text-gray-700 transition-colors border-b border-gray-100 last:border-b-0"
-                            >
-                                {link.icon}
-                                <span className="font-medium">{link.label}</span>
-                            </Link>
-                        ))}
                     </div>
-                </div>
-            )}
-        </nav>
+                )}
+            </header>
+
+            {/* Spacer */}
+            <div className="h-20"></div>
+        </>
     );
 }

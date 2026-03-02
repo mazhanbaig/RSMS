@@ -1,121 +1,16 @@
-// "use client";
-
-// import { logout } from "@/FBConfig/fbFunctions";
-// import { Menu, X } from "lucide-react";
-// import Link from "next/link";
-// import { useState } from "react";
-// import { useRouter } from "next/navigation";
-// import Image from "next/image";
-
-// interface UserInfo {
-//     name: string;
-//     uid: string;
-//     email: string;
-//     createdAt: string;
-//     // [key: string]: any;
-// }
-
-// export default function Header({ userData }: { userData?: Partial<UserInfo> | null }) {
-//     const [dropdownOpen, setDropdownOpen] = useState(false);
-//     const [isMenuOpen, setIsMenuOpen] = useState(false);
-//     const router = useRouter();
-
-//     const navLinks = [
-//         { label: "Dashboard", href: `/realstate/${userData?.uid}` },
-//         { label: "Properties", href: `/realstate/${userData?.uid}/properties` },
-//         { label: "Clients", href: `/realstate/${userData?.uid}/clients` },
-//         { label: "Owners", href: `/realstate/${userData?.uid}/owners` },
-//         { label: "Events", href: `/realstate/${userData?.uid}/events` },
-//     ];
-
-//     return (
-//         <nav className="relative z-50 top-5 right-5 left-5 w-[96%] bg-white/70 backdrop-blur-lg shadow-lg px-6 py-3 flex flex-wrap justify-between items-center rounded-xl">
-//             {/* Logo */}
-//             <div className="text-2xl font-extrabold text-gray-900 uppercase">
-//                 ZState
-//             </div>
-
-//             {/* Desktop Navigation */}
-//             <div className="hidden md:flex items-center space-x-4">
-//                 {navLinks.map((link) => (
-//                     <Link
-//                         key={link.href}
-//                         href={link.href}
-//                         className="px-3 py-2 rounded-lg hover:bg-gray-100 transition font-medium"
-//                     >
-//                         {link.label}
-//                     </Link>
-//                 ))}
-//             </div>
-
-//             {/* Right side */}
-//             <div className="flex items-center space-x-2">
-//                 {/* Mobile Hamburger */}
-//                 <button
-//                     onClick={() => setIsMenuOpen(!isMenuOpen)}
-//                     className="md:hidden p-2 rounded-lg hover:bg-gray-100"
-//                 >
-//                     {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-//                 </button>
-
-//                 {/* User Avatar */}
-//                 <div className="relative">
-//                     <button
-//                         onClick={() => setDropdownOpen(!dropdownOpen)}
-//                         className="flex items-center space-x-2 p-2 rounded-xl hover:bg-gray-100 transition"
-//                     >
-//                         <div className="rounded-full bg-black text-white w-8 h-8 flex justify-center items-center">
-//                             {userData?.name?.[0]?.toUpperCase() || "U"}
-//                         </div>
-//                     </button>
-
-//                     {dropdownOpen && (
-//                         <div className="absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-10">
-//                             <Link href="/profile" className="block px-4 py-2 hover:bg-gray-100">
-//                                 Profile
-//                             </Link>
-//                             <Link href="/settings" className="block px-4 py-2 hover:bg-gray-100">
-//                                 Settings
-//                             </Link>
-//                             <Link
-//                                 href="/login"
-//                                 onClick={() => logout()}
-//                                 className="block px-4 py-2 text-red-500 hover:bg-gray-100"
-//                             >
-//                                 Logout
-//                             </Link>
-//                         </div>
-//                     )}
-//                 </div>
-//             </div>
-
-//             {/* Mobile Navigation */}
-//             {isMenuOpen && (
-//                 <div className="absolute right-0 top-14 mt-2 w-44 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-10">
-//                     {navLinks.map((link) => (
-//                         <Link
-//                             key={link.href}
-//                             href={link.href}
-//                             onClick={() => setIsMenuOpen(false)}
-//                             className="block px-4 py-2 rounded-lg hover:bg-gray-100 font-medium"
-//                         >
-//                             {link.label}
-//                         </Link>
-//                     ))}
-//                 </div>
-//             )}
-//         </nav>
-//     );
-// }
 
 
 "use client";
 
 import { logout } from "@/FBConfig/fbFunctions";
-import { Menu, X, ChevronDown, User, Settings, LogOut, Home, Building2, Users, UserCircle, Calendar } from "lucide-react";
+import {
+    Menu, X, LayoutDashboard, Building2, Users, UserCircle,
+    Calendar, LogOut, Settings, ChevronDown, Bell, Search
+} from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import Image from "next/image";
 
 interface UserInfo {
     name: string;
@@ -127,6 +22,8 @@ interface UserInfo {
 export default function Header({ userData }: { userData?: Partial<UserInfo> | null }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
     const pathname = usePathname();
@@ -137,12 +34,22 @@ export default function Header({ userData }: { userData?: Partial<UserInfo> | nu
                 setDropdownOpen(false);
             }
         };
+
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 10);
+        };
+
         document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        window.addEventListener('scroll', handleScroll);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll);
+        };
     }, []);
 
     const navLinks = [
-        { label: "Dashboard", href: `/realstate/${userData?.uid}`, icon: Home },
+        { label: "Dashboard", href: `/realstate/${userData?.uid}`, icon: LayoutDashboard },
         { label: "Properties", href: `/realstate/${userData?.uid}/properties`, icon: Building2 },
         { label: "Clients", href: `/realstate/${userData?.uid}/clients`, icon: Users },
         { label: "Owners", href: `/realstate/${userData?.uid}/owners`, icon: UserCircle },
@@ -151,111 +58,208 @@ export default function Header({ userData }: { userData?: Partial<UserInfo> | nu
 
     const isActive = (href: string) => pathname === href;
 
-
     const handleLogout = async () => {
         await logout();
         router.push('/login');
     };
 
     return (
-        <nav className="relative z-50 top-5 right-5 left-5 w-[96%] bg-white/70 backdrop-blur-lg shadow-lg px-6 py-3 flex flex-wrap justify-between items-center rounded-xl">
-            {/* Logo */}
-            <Link href={`/realstate/${userData?.uid}`} className="flex items-center">
-                <span className="text-2xl  font-extrabold text-gray-900">Z</span>
-                <span className="text-2xl  font-extrabold ">STATE</span>
-            </Link>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-1">
-                {navLinks.map((link) => {
-                    const Icon = link.icon;
-                    return (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 ${isActive(link.href)
-                                    ? "bg-blue-50 text-blue-600 font-medium"
-                                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                                }`}
-                        >
-                            <Icon size={18} />
-                            <span>{link.label}</span>
-                        </Link>
-                    );
-                })}
-            </div>
-
-            {/* Right Section */}
-            <div className="flex items-center space-x-2">
-                {/* Mobile Menu Button */}
-                <button
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="md:hidden p-2 rounded-full hover:bg-gray-100 transition-colors"
-                >
-                    {isMenuOpen ? <X size={18} /> : <Menu size={18} />}
-                </button>
-
-                {/* User Menu */}
-                <div className="relative" ref={dropdownRef}>
-                    <button
-                        onClick={() => setDropdownOpen(!dropdownOpen)}
-                        className="flex items-center space-x-2 pl-3 pr-2 py-1.5 rounded-full hover:bg-gray-100 transition-all"
+        <>
+            <header
+                className={`
+    fixed top-6 left-1/2 -translate-x-1/2 z-50
+    w-[95%] max-w-6xl
+    transition-all duration-500 ease-in-out
+    ${isScrolled
+                        ? "bg-white/80 backdrop-blur-xl shadow-lg border border-slate-200/60"
+                        : "bg-white/60 backdrop-blur-md border border-slate-200/40"
+                    }
+    rounded-2xl px-6 py-3
+  `}
+            >
+                <nav className="flex items-center justify-between">     {/* Logo Section */}
+                    <Link
+                        href={`/realstate/${userData?.uid}`}
+                        className="flex items-center gap-3"
                     >
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 flex items-center justify-center">
-                            <span className="text-sm font-medium text-gray-700">
-                                {userData?.name?.[0]?.toUpperCase() || "U"}
-                            </span>
+                        <div className="leading-tight">
+                            <p className="text-xl font-extrabold text-slate-900 tracking-tight">
+                                ZSTATE
+                            </p>
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+                                Real Estate System
+                            </p>
                         </div>
-                        <ChevronDown size={14} className={`text-gray-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
+                    </Link>
 
-                    {dropdownOpen && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1">
-                            <div className="px-4 py-2 border-b border-gray-100">
-                                <p className="text-sm font-medium text-gray-900">{userData?.name || "User"}</p>
-                                <p className="text-xs text-gray-500 truncate">{userData?.email}</p>
-                            </div>
-                            <Link
-                                href="/settings"
-                                onClick={() => setDropdownOpen(false)}
-                                className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                            >
-                                <Settings size={14} />
-                                <span>Settings</span>
-                            </Link>
+                    {/* Desktop Navigation - Centered */}
+                    <div className="hidden md:flex items-center bg-white/60 backdrop-blur-md rounded-2xl p-1 border border-slate-200/50 shadow-inner">
+                        {navLinks.map((link) => {
+                            const Icon = link.icon;
+                            const active = pathname.startsWith(link.href);
+
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    className={`
+          relative px-5 py-2 rounded-2xl flex items-center gap-2 
+          text-sm font-medium transition-all duration-300
+          ${active
+                                            ? "text-slate-900 "
+                                            : "text-slate-500 hover:text-slate-900"
+                                        }
+        `}
+                                >
+                                    {active && (
+                                        <span className="absolute inset-0 bg-white rounded-2xl shadow-md border border-slate-200/70"></span>
+                                    )}
+
+                                    <Icon size={17} className="relative z-10 " />
+                                    <span className="relative z-1">{link.label}</span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+
+                    {/* Right Section */}
+                    <div className="flex items-center space-x-3">
+                        {/* Mobile Menu Button */}
+                        <button
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            className="md:hidden relative p-2 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                        >
+                            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                        </button>
+
+                        {/* User Menu */}
+                        <div className="relative" ref={dropdownRef}>
                             <button
-                                onClick={handleLogout}
-                                className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                onClick={() => setDropdownOpen(!dropdownOpen)}
+                                className="flex items-center space-x-3 pl-2 pr-1 py-1 rounded-full hover:bg-slate-100 transition-all group"
                             >
-                                <LogOut size={14} />
-                                <span>Logout</span>
+                                <div className="relative">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white shadow-sm">
+                                        <span className="text-sm font-medium">
+                                            {userData?.name?.[0]?.toUpperCase() || "U"}
+                                        </span>
+                                    </div>
+                                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
+                                </div>
+                                <div className="hidden sm:block text-left">
+                                    <p className="text-xs font-medium text-slate-700">
+                                        {userData?.name?.split(' ')[0] || "User"}
+                                    </p>
+                                    <p className="text-[10px] text-slate-400">Online</p>
+                                </div>
+                                <ChevronDown
+                                    size={16}
+                                    className={`
+                                        text-slate-400 transition-transform duration-200
+                                        ${dropdownOpen ? 'rotate-180' : ''}
+                                    `}
+                                />
                             </button>
-                        </div>
-                    )}
-                </div>
-            </div>
 
-            {/* Mobile Menu */}
-            {isMenuOpen && (
-                <div className="md:hidden absolute left-0 right-0 top-full mt-2 mx-4 bg-white rounded-2xl shadow-lg border border-gray-100 py-2">
-                    {navLinks.map((link) => {
-                        const isActive = pathname === link.href;
-                        return (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                onClick={() => setIsMenuOpen(false)}
-                                className={`block px-4 py-3 text-sm ${isActive
-                                    ? 'text-purple-600 bg-purple-50'
-                                    : 'text-gray-600 hover:bg-gray-50'
-                                    }`}
-                            >
-                                {link.label}
-                            </Link>
-                        );
-                    })}
+                            {/* Dropdown Menu */}
+                            {dropdownOpen && (
+                                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    {/* User Info */}
+                                    <div className="px-4 py-3 border-b border-slate-100">
+                                        <p className="text-sm font-semibold text-slate-900">{userData?.name || "User Name"}</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">{userData?.email || "user@example.com"}</p>
+                                    </div>
+
+                                    {/* Menu Items */}
+                                    <div className="py-1">
+                                        <Link
+                                            href="/profile"
+                                            onClick={() => setDropdownOpen(false)}
+                                            className="flex items-center space-x-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                                        >
+                                            <UserCircle size={18} className="text-slate-400" />
+                                            <span>Profile</span>
+                                        </Link>
+                                        <Link
+                                            href={`/realstate/${userData?.uid}/settings`}
+                                            onClick={() => setDropdownOpen(false)}
+                                            className="flex items-center space-x-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                                        >
+                                            <Settings size={18} className="text-slate-400" />
+                                            <span>Settings</span>
+                                        </Link>
+                                    </div>
+
+                                    {/* Logout */}
+                                    <div className="border-t border-slate-100 pt-1">
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full flex items-center space-x-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                        >
+                                            <LogOut size={18} />
+                                            <span>Logout</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </nav>
+
+                {/* Mobile Menu */}
+                <div className={`
+                    md:hidden fixed inset-x-4 top-20 transition-all duration-300 transform
+                    ${isMenuOpen
+                        ? 'opacity-100 translate-y-0 pointer-events-auto'
+                        : 'opacity-0 -translate-y-4 pointer-events-none'
+                    }
+                `}>
+                    <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                        {/* Mobile Search */}
+                        <div className="p-3 border-b border-slate-100">
+                            <div className="flex items-center bg-slate-50 rounded-xl px-3 py-2">
+                                <Search size={18} className="text-slate-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    className="bg-transparent border-none outline-none text-sm px-2 w-full placeholder-slate-400"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Mobile Navigation Links */}
+                        <div className="py-2">
+                            {navLinks.map((link) => {
+                                const Icon = link.icon;
+                                const active = isActive(link.href);
+                                return (
+                                    <Link
+                                        key={link.href}
+                                        href={link.href}
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className={`
+                                            flex items-center space-x-3 px-4 py-3 transition-colors
+                                            ${active
+                                                ? 'bg-slate-50 text-slate-900'
+                                                : 'text-slate-600 hover:bg-slate-50'
+                                            }
+                                        `}
+                                    >
+                                        <Icon size={18} />
+                                        <span className="text-sm font-medium">{link.label}</span>
+                                        {active && (
+                                            <span className="ml-auto w-1.5 h-1.5 bg-slate-900 rounded-full"></span>
+                                        )}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
-            )}
-        </nav>
+            </header>
+
+            {/* Spacer for fixed header */}
+            <div className="h-20"></div>
+        </>
     );
 }
