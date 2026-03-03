@@ -21,9 +21,8 @@ export default function Signup() {
         JSON.stringify({
           uid: res.user.uid,
           email: res.user.email,
-          name: res.user.displayName,
+          name: res.user.name,
           photoURL: res.user.photoURL
-
         })
       );
       message.success('Account Created Successfully');
