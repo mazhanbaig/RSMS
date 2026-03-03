@@ -15,7 +15,7 @@ import {
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import Loader from "@/components/Loader";
-import { checkUserSession, getData, saveData, updateData } from "@/FBConfig/fbFunctions";
+import { checkUserSession, getData, saveData } from "@/FBConfig/fbFunctions";
 
 interface UserInfo {
   uid: string;
