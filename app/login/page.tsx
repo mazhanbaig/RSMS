@@ -43,7 +43,7 @@ export default function LoginPage() {
                 <div className="flex flex-col lg:flex-row bg-white/95 backdrop-blur-sm rounded-xl sm:border border-gray-200 sm:shadow-lg overflow-hidden">
 
                     {/* Left side - Compact Branding */}
-                    <div className="lg:w-1/2 p-8 sm:bg-gradient-to-br from-blue-50 to-cyan-50 flex flex-col justify-center">
+                    <div className="hidden sm:block  lg:w-1/2 p-8 sm:bg-gradient-to-br from-blue-50 to-cyan-50 flex flex-col justify-center">
                         <div className="mb-6">
                             <div className="relative inline-block mb-4">
                                 <h1 className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 bg-clip-text text-transparent"
@@ -112,6 +112,15 @@ export default function LoginPage() {
 
                     {/* Right side - Compact Login form */}
                     <div className="lg:w-1/2 px-8  flex flex-col justify-center">
+                        <div className="sm:hidden text-center relative inline-block mb-4">
+                            <h1 className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 bg-clip-text text-transparent"
+                            >
+                                ZState
+                            </h1>
+
+                            <div className="absolute -top-1 -left-1 w-3 h-3 bg-cyan-400/20 rounded"></div>
+                            <div className="absolute -bottom-0.5 -right-2 w-2 h-2 bg-blue-400/20 rounded"></div>
+                        </div>
                         <div className="text-center mb-6">
                             <h2 className="text-2xl font-bold text-gray-800 mb-1">Welcome Back</h2>
                             <p className="text-gray-500 text-sm">Sign in to access your property dashboard</p>
