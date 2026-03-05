@@ -57,11 +57,12 @@ export default function AddOwnerPage() {
     }, [router]);
 
     useEffect(() => {
-        onAuthStateChanged(auth, async (user) => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 router.replace(`/login`)
             }
         })
+
         const storedUser = localStorage.getItem("userInfo");
         if (!storedUser) return;
 
@@ -70,10 +71,10 @@ export default function AddOwnerPage() {
         getData(`users/${uid}`)
             .then((res: any) => {
                 setUserInfo(res);
-                console.log(userInfo);
             })
-    }, [])
 
+        return () => unsubscribe();
+    }, [router])
 
     // Prefill form if editing
     useEffect(() => {
