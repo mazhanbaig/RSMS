@@ -41,7 +41,7 @@ export default function HomePage() {
       <ProblemsSolutions />
       <FeaturesGrid />
       <HowItWorks />
-      <PricingSection />
+      {/* <PricingSection /> */}
       <CTASection />
     </div>
   );
