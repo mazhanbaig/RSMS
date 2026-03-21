@@ -323,14 +323,18 @@ export default function ViewClientPage() {
                                     variant="theme"
                                     icon={<Mail className="w-4 h-4" />}
                                     size="sm"
-                                    onClick={() => window.location.href = `mailto:${client.email}`}
+                                    onClick={() => {
+                                        window.location.href = `mailto:${client.email}`
+                                    }}
                                 />
                                 <Button
                                     label="Make Call"
                                     variant="theme2"
                                     icon={<PhoneCall className="w-4 h-4" />}
                                     size="sm"
-                                    onClick={() => window.location.href = `tel:${client.phone}`}
+                                    onClick={() => {
+                                        window.location.href = `tel:${client.phone}`
+                                    }}
                                 />
                                 <Button
                                     label="Schedule Viewing"
