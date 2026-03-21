@@ -13,25 +13,24 @@ export default function LoginPage() {
     const handleGoogleLogin = async () => {
         setLoading(true);
         try {
-            const res: any = await loginWithGoogle();
+            const res = await loginWithGoogle();
+
+            // Store user info
+            localStorage.setItem("userInfo", JSON.stringify({
+                uid: res.user.uid,
+                email: res.user.email,
+                name: res.user.name,
+                photoURL: res.user.picture
+            }));
+
             message.success('Login Successful!');
-            console.log(res);
 
+            // Redirect to dashboard
+            router.push(`/realstate/${res.user.uid}`);
 
-            localStorage.setItem(
-                "userInfo",
-                JSON.stringify({
-                    uid: res.user.uid,
-                    email: res.user.email,
-                    name: res.user.name,
-                    photoURL: res.user.photoURL
-                })
-            );
-
-            router.replace(`/realstate/${res.user.uid}`)
-        } catch (err: any) {
-            console.error("Google login error:", err);
-            message.error(err?.message || "Login failed");
+        } catch (error: any) {
+            console.error("Login error:", error);
+            message.error(error?.message || "Login failed");
             setLoading(false);
         }
     };

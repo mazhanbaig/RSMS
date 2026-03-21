@@ -20,34 +20,62 @@ import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signO
 import { app } from "./config";
 export const auth = getAuth(app);
 
+// export const loginWithGoogle = async () => {
+//   try {
+//     // 1. Sign in with Google
+//     const provider = new GoogleAuthProvider();
+//     const result = await signInWithPopup(auth, provider);
+//     const user = result.user;
+    
+//     // 3. Send user data to your backend API
+//      await api.post("/api/auth", {
+//       uid: user.uid,
+//       name: user.displayName,
+//       email: user.email,
+//       picture: user.photoURL,
+//      });
+    
+//     return {
+//       user: {
+//       uid: user.uid,
+//       name: user.displayName,
+//       email: user.email,
+//       picture: user.photoURL,
+//       }
+//     };
+    
+//   } catch (error) {
+//     throw error;
+//   }
+// };
+
 export const loginWithGoogle = async () => {
   try {
-    // 1. Sign in with Google
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
     
-    // 3. Send user data to your backend API
-     await api.post("/api/auth", {
+    // Send to your backend
+    await api.post("/api/auth", {
       uid: user.uid,
       name: user.displayName,
       email: user.email,
       picture: user.photoURL,
-     });    
+    });
     
     return {
       user: {
-      uid: user.uid,
-      name: user.displayName,
-      email: user.email,
-      picture: user.photoURL,
+        uid: user.uid,
+        name: user.displayName,
+        email: user.email,
+        picture: user.photoURL,
       }
     };
-    
   } catch (error) {
     throw error;
   }
 };
+
 
 // ---------------- LOGOUT ----------------
 export const logout = async () => {
