@@ -348,14 +348,14 @@ export default function ViewOwnerPage() {
                                     variant="theme"
                                     icon={<Mail className="w-4 h-4" />}
                                     size="sm"
-                                    onClick={() => window.location.href = `mailto:${owner.email}`}
+                                    onClick={() =>{ window.location.href = `mailto:${owner.email}`}}
                                 />
                                 <Button
                                     label="Make Call"
                                     variant="theme2"
                                     icon={<PhoneCall className="w-4 h-4" />}
                                     size="sm"
-                                    onClick={() => window.location.href = `tel:${owner.phone}`}
+                                    onClick={() => {window.location.href = `tel:${owner.phone}`}}
                                 />
                                 <Button
                                     label="Add Property"
