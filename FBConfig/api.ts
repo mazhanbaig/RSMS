@@ -26,7 +26,7 @@ import axios from "axios";
 import { auth } from "./config";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+  baseURL: "https://zstate-backend.vercel.app",
 });
 
 api.interceptors.request.use(async (config) => {
