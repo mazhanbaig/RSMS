@@ -711,7 +711,7 @@ export default function ViewPropertyPage() {
                                     variant="theme"
                                     icon={<PhoneCall className="w-4 h-4" />}
                                     size="sm"
-                                    onClick={() => property.ownerContact && window.open(`tel:${property.ownerContact}`)}
+                                    onClick={() => {property.ownerContact && window.open(`tel:${property.ownerContact}`)}}
                                     disabled={!property.ownerContact}
                                 />
                                 <Button
