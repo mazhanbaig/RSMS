@@ -327,7 +327,7 @@ export default function AdminDashboardPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column */}
                     <div className="lg:col-span-2 space-y-8">
-                        {/* Quick Actions - Optimized */}
+                        Quick Actions - Optimized
                         <div className="bg-white rounded-xl border border-gray-100 px-6 pt-3 pb-4 shadow-lg shadow-black/5">
                             <div className="flex items-center justify-between mb-3">
                                 <div>

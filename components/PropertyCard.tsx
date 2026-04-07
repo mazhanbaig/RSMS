@@ -85,7 +85,7 @@ export default function PropertyCard({
                          flex flex-col sm:flex-row"
         >
             {/* Image Section - Responsive */}
-            <div className="mt-3">
+            <div className="my-auto">
                 <Image src={property.images[0].url} alt={"Image"} width={200} height={100} className="object-cover w-full sm:w-100 max-h-60 rounded-lg" />
 
             </div>
