@@ -5,7 +5,9 @@ import { useEffect, useState, useMemo, useCallback, useRef } from "react"
 import {
     Users, Home, DollarSign, Building,
     ChevronRight, Bed, Bath, Crown,
-    CalendarClock
+    CalendarClock,
+    Clock,
+    MapPin
 } from "lucide-react"
 import { checkUserSession, getData } from "@/FBConfig/fbFunctions"
 import Loader from "@/components/Loader"
@@ -394,6 +396,45 @@ export default function AdminDashboardPage() {
 
                     {/* Right Column */}
                     <div className="space-y-8">
+                        {/* Upcoming Events - Enhanced */}
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                            <div className="flex items-center justify-between mb-3">
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-900">Schedule</h2>
+                                    <p className="text-sm text-gray-500 mt-1">Upcoming appointments</p>
+                                </div>
+                                <Button
+                                    label="View Calendar"
+                                    variant="theme2"
+                                    size="sm"
+                                    onClick={() => navigateTo(`/realstate/${userInfo?.uid}/events`)}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                {events.slice(0, 3).map((event, idx) => (
+                                    <div key={event.id || idx} className="flex items-start gap-3 px-3 py-1 rounded-lg border border-gray-200 hover:bg-gray-50">
+                                        <div className="min-w-[50px] my-auto text-center">
+                                            <div className="text-xl font-bold text-indigo-600">
+                                                {event.date ? new Date(event.date).getDate() : '??'}
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                {event.date ? new Date(event.date).toLocaleString('default', { month: 'short' }) : ''}
+                                            </div>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h4 className="font-semibold text-gray-900 text-sm">{event.title}</h4>
+                                            <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                                                <Clock className="h-3 w-3" />
+                                                <span>{event.startTime || 'TBD'}</span>
+                                                <MapPin className="h-3 w-3 ml-2" />
+                                                <span className="truncate">{event.address || 'Location TBD'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                         {/* Recent Clients - Optimized */}
                         <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-lg shadow-black/5">
                             <div className="flex items-center justify-between mb-3">
@@ -506,7 +547,7 @@ export default function AdminDashboardPage() {
                             </div>
                         </div>
 
-                        {/* Upcoming Events */}
+                        {/* Upcoming Events
                         <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-lg shadow-black/5">
                             <div className="flex items-center justify-between mb-3">
                                 <div>
@@ -558,7 +599,8 @@ export default function AdminDashboardPage() {
                                     </div>
                                 )}
                             </div>
-                        </div>
+                        </div> */}
+                        
                     </div>
                 </div>
             </main>

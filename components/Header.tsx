@@ -171,14 +171,14 @@ export default function Header({ userData }: { userData?: Partial<UserInfo> | nu
 
                                     {/* Menu Items */}
                                     <div className="py-1">
-                                        <Link
+                                        {/* <Link
                                             href="/profile"
                                             onClick={() => setDropdownOpen(false)}
                                             className="flex items-center space-x-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                                         >
                                             <UserCircle size={18} className="text-slate-400" />
                                             <span>Profile</span>
-                                        </Link>
+                                        </Link> */}
                                         <Link
                                             href={`/realstate/${userData?.uid}/settings`}
                                             onClick={() => setDropdownOpen(false)}
