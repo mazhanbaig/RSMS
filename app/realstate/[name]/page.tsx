@@ -327,8 +327,8 @@ export default function AdminDashboardPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column */}
                     <div className="lg:col-span-2 space-y-8">
-                        Quick Actions - Optimized
-                        <div className="bg-white rounded-xl border border-gray-100 px-6 pt-3 pb-4 shadow-lg shadow-black/5">
+                        {/* Quick Actions - Optimized */}
+                        {/* <div className="bg-white rounded-xl border border-gray-100 px-6 pt-3 pb-4 shadow-lg shadow-black/5">
                             <div className="flex items-center justify-between mb-3">
                                 <div>
                                     <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 text-transparent bg-clip-text">
@@ -364,7 +364,9 @@ export default function AdminDashboardPage() {
                                     </div>
                                 ))}
                             </div>
-                        </div>
+                        </div> */}
+
+                        
 
                         {/* Recent Properties - Optimized */}
                         <div className="bg-white rounded-2xl border border-gray-100 px-6 py-4 shadow-lg shadow-black/5">
@@ -439,13 +441,13 @@ export default function AdminDashboardPage() {
                         <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-lg shadow-black/5">
                             <div className="flex items-center justify-between mb-3">
                                 <div>
-                                    <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                                        Recent Clients
+                                    <h2 className="text-xl font-bold text-gray-900">
+                                        Clients
                                     </h2>
                                     <p className="mt-1 text-sm text-gray-600">Latest client inquiries</p>
                                 </div>
                                 <Button
-                                    label="View All"
+                                    label="View Clients"
                                     variant="theme2"
                                     size="sm"
                                     onClick={() => navigateTo(`/realstate/${userInfo?.uid}/clients`)}
@@ -461,8 +463,10 @@ export default function AdminDashboardPage() {
                                             onClick={() => navigateToClient(client.id)}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 text-lg sm:text-xl rounded-lg bg-black text-white flex items-center justify-center font-semibold shadow-md">
-                                                    {client.firstName?.charAt(0) || 'C'}
+                                                <div className="min-w-[50px] my-auto text-center">
+                                                    <div className="text-xl font-bold text-indigo-600">
+                                                        {client.firstName?.charAt(0) || 'C'}
+                                                    </div>
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-gray-900 text-sm">
@@ -495,13 +499,13 @@ export default function AdminDashboardPage() {
                         <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-lg shadow-black/5">
                             <div className="flex items-center justify-between mb-3">
                                 <div>
-                                    <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                                        Recent Owners
+                                    <h2 className="text-xl font-bold text-gray-900">
+                                        Owners
                                     </h2>
                                     <p className="mt-1 text-sm text-gray-600">Latest owners inquiries</p>
                                 </div>
                                 <Button
-                                    label="View All"
+                                    label="View Owners"
                                     variant="theme2"
                                     size="sm"
                                     onClick={() => navigateTo(`/realstate/${userInfo?.uid}/owners`)}
@@ -517,8 +521,10 @@ export default function AdminDashboardPage() {
                                             onClick={() => navigateToOwner(owner.id)}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 text-lg sm:text-xl rounded-lg bg-black text-white flex items-center justify-center font-semibold shadow-md">
-                                                    {owner.firstName?.charAt(0) || 'O'}
+                                                <div className="min-w-[50px] my-auto text-center">
+                                                    <div className="text-xl font-bold text-indigo-600">
+                                                        {owner.firstName?.charAt(0) || 'O'}
+                                                    </div>
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-gray-900 text-sm">
@@ -600,7 +606,7 @@ export default function AdminDashboardPage() {
                                 )}
                             </div>
                         </div> */}
-                        
+
                     </div>
                 </div>
             </main>
