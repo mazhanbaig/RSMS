@@ -7,25 +7,47 @@ const DraggableButton = ({ onClick }: any) => {
     const buttonRef = useRef<any>(null);
     const dragOffset = useRef({ x: 0, y: 0 });
 
-    const handleMouseDown = (e: any) => {
+    const startDrag = (clientX: number, clientY: number) => {
         const rect = buttonRef.current.getBoundingClientRect();
         dragOffset.current = {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
+            x: clientX - rect.left,
+            y: clientY - rect.top
         };
         setIsDragging(true);
     };
 
-    const handleMouseMove = (e: any) => {
-        if (!isDragging) return;
+    const handleMouseDown = (e: any) => {
+        startDrag(e.clientX, e.clientY);
+    };
 
+    const handleTouchStart = (e: any) => {
+        const touch = e.touches[0];
+        startDrag(touch.clientX, touch.clientY);
+    };
+
+    const moveDrag = (clientX: number, clientY: number) => {
         setPosition({
-            x: e.clientX - dragOffset.current.x,
-            y: e.clientY - dragOffset.current.y
+            x: clientX - dragOffset.current.x,
+            y: clientY - dragOffset.current.y
         });
     };
 
+    const handleMouseMove = (e: any) => {
+        if (!isDragging) return;
+        moveDrag(e.clientX, e.clientY);
+    };
+
+    const handleTouchMove = (e: any) => {
+        if (!isDragging) return;
+        const touch = e.touches[0];
+        moveDrag(touch.clientX, touch.clientY);
+    };
+
     const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const handleTouchEnd = () => {
         setIsDragging(false);
     };
 
@@ -33,10 +55,14 @@ const DraggableButton = ({ onClick }: any) => {
         if (isDragging) {
             window.addEventListener('mousemove', handleMouseMove);
             window.addEventListener('mouseup', handleMouseUp);
+            window.addEventListener('touchmove', handleTouchMove);
+            window.addEventListener('touchend', handleTouchEnd);
         }
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
+            window.removeEventListener('touchmove', handleTouchMove);
+            window.removeEventListener('touchend', handleTouchEnd);
         };
     }, [isDragging]);
 
@@ -44,6 +70,7 @@ const DraggableButton = ({ onClick }: any) => {
         <button
             ref={buttonRef}
             onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
             onClick={!isDragging ? onClick : undefined}
             style={{
                 position: 'fixed',
