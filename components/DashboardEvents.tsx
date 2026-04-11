@@ -3,7 +3,7 @@
 import { ChevronRight, CalendarClock, Clock, MapPin } from "lucide-react";
 import Button from "@/components/Button";
 
-export default function UpcomingEvents({ events, userUid, onViewAll, onNavigate }:any) {
+export default function UpcomingEvents({ events, userUid, onViewAll, onNavigate }: any) {
     return (
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-3">
@@ -19,7 +19,7 @@ export default function UpcomingEvents({ events, userUid, onViewAll, onNavigate 
                 />
             </div>
             <div className="space-y-2">
-                {events.slice(0, 3).map((event:any, idx:number) => (
+                {events.slice(0, 3).map((event: any, idx: number) => (
                     <div key={event.id || idx} className="flex items-start gap-3 px-3 py-1 rounded-lg border border-gray-200 hover:bg-gray-50">
                         <div className="min-w-[50px] my-auto text-center">
                             <div className="text-xl font-bold text-indigo-600">

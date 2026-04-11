@@ -9,7 +9,7 @@ export default function RecentProperties({ properties, userUid, onViewAll, onNav
     return (
         <div className="bg-white rounded-2xl border border-gray-100 px-6 py-4 shadow-lg shadow-black/5">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                <h2 className="text-xl font-bold">
                     Recent Properties
                 </h2>
                 <Button
