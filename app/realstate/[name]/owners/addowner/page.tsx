@@ -300,16 +300,10 @@ export default function AddOwnerPage() {
                         </div>
                         
                         <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-100 to-blue-100">
-                                <Building className="h-6 w-6 text-purple-600" />
-                            </div>
                             <div>
                                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
                                     {formData.id ? 'Edit Owner' : 'Add New Owner'}
                                 </h1>
-                                <p className="text-gray-600 mt-1">
-                                    {formData.id ? 'Update owner information' : 'Register a new property owner in the system'}
-                                </p>
                             </div>
                         </div>
                     </div>
