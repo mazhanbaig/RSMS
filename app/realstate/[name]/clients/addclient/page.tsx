@@ -10,6 +10,7 @@ import { checkUserSession, getData, saveData, updateData } from "@/FBConfig/fbFu
 import { useRouter, useSearchParams } from "next/navigation";
 import { message } from "antd";
 import { UserPlus, ArrowLeft, ArrowRight, Save, User, Home, FileText, CheckCircle } from "lucide-react";
+import Loader from "@/components/Loader";
 
 interface UserInfo {
     uid: string;
@@ -168,9 +169,7 @@ export default function AddClientPage() {
 
     if (!userInfo) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-white via-white to-purple-50 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-            </div>
+           <Loader/>
         );
     }
 
