@@ -228,7 +228,7 @@ export default function ViewPropertyPage() {
             navigator.share({
                 title: property?.title,
                 text: shareText,
-                url: window.location.href
+                url: `https://zstate.vercel.app/viewproperty/${propertyid}`
             });
         } else {
             navigator.clipboard.writeText(shareText);

@@ -1,21 +1,19 @@
 'use client'
 
-import { auth, checkUserSession, getData, updateData, deleleData } from "@/FBConfig/fbFunctions"
+import { getData } from "@/FBConfig/fbFunctions"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState, useCallback, useMemo } from "react"
 import {
     Home, MapPin, Bed, Bath, Square, Calendar,
-    Phone, Check, Share2, Heart, Car, Trees, Shield,
-    Edit, ArrowLeft, DollarSign, Star, Target, Users,
-    FileText, Activity, Zap, Briefcase, Layers, Compass,
-    LineChart, Clipboard, Eye, Building, AlertCircle,
-    ChevronRight, CheckCircle, Clock, TrendingUp,
-    MessageSquare, Plus, Mail, PhoneCall, ExternalLink,
-    Trash2, X, LogIn, UserPlus, Award
+    Phone, Check, Share2, Car, Trees, Shield,
+    ArrowLeft, DollarSign, Target, Users,
+    FileText, Activity, Briefcase,
+    Clipboard, Eye, Building,
+    ChevronRight, CheckCircle, Clock,
+    PhoneCall, X, Award, Globe, Sparkles
 } from "lucide-react"
 import Button from "@/components/Button"
 import { message } from "antd"
-import Header from "@/components/Header"
 import Link from "next/link"
 
 interface PropertyFormData {
@@ -44,11 +42,8 @@ interface PropertyFormData {
     hasSecurity: boolean;
     images?: any;
     propertyStatus: 'available' | 'rented' | 'sold' | 'under-Negotiation'
-    dealType: 'sold' | 'rented'
-    createdAt?: string;
-    updatedAt?: string;
-    agentUid?: string;
     agentName?: string;
+    agentUid?: string;
 }
 
 export default function ViewPropertyPage() {
@@ -56,13 +51,8 @@ export default function ViewPropertyPage() {
     const [relatedProperties, setRelatedProperties] = useState<any[]>([])
     const [currIndex, setCurrIndex] = useState(0)
     const [loading, setLoading] = useState(true)
-    const [userInfo, setUserInfo] = useState<any>(null)
-    const [liked, setLiked] = useState(false)
     const [activePanel, setActivePanel] = useState('overview')
-    const [isOpen, setIsOpen] = useState(false);
-    const [viewDesc, setViewDesc] = useState<boolean>(true)
-    const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const [isAgentOwner, setIsAgentOwner] = useState(false)
+    const [isOpen, setIsOpen] = useState(false)
 
     const { propertyid } = useParams()
     const router = useRouter()
@@ -101,29 +91,35 @@ export default function ViewPropertyPage() {
 
     // Property type configuration
     const propertyTypeConfig = useMemo(() => ({
-        'House': {
+        'house': {
             label: 'House',
             icon: <Home className="w-4 h-4" />,
             color: 'text-green-600',
             bg: 'bg-gradient-to-br from-green-50 to-green-100',
         },
-        'Flat/Apartment': {
-            label: 'Flat/Apartment',
+        'apartment': {
+            label: 'Apartment',
             icon: <Building className="w-4 h-4" />,
             color: 'text-blue-600',
             bg: 'bg-gradient-to-br from-blue-50 to-blue-100',
         },
-        'Commercial': {
+        'commercial': {
             label: 'Commercial',
             icon: <Briefcase className="w-4 h-4" />,
             color: 'text-purple-600',
             bg: 'bg-gradient-to-br from-purple-50 to-purple-100',
         },
-        'Plot': {
-            label: 'Plot',
+        'land': {
+            label: 'Land',
             icon: <Square className="w-4 h-4" />,
             color: 'text-amber-600',
             bg: 'bg-gradient-to-br from-amber-50 to-amber-100',
+        },
+        'villa': {
+            label: 'Villa',
+            icon: <Home className="w-4 h-4" />,
+            color: 'text-rose-600',
+            bg: 'bg-gradient-to-br from-rose-50 to-rose-100',
         }
     }), [])
 
@@ -135,28 +131,7 @@ export default function ViewPropertyPage() {
         { id: 'media', label: 'Media', icon: <FileText className="w-4 h-4" /> }
     ], [])
 
-    // Check authentication without redirecting
-    useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const user: any = await checkUserSession();
-                if (user) {
-                    const storedUser = localStorage.getItem('userInfo');
-                    if (storedUser) {
-                        const userData = JSON.parse(storedUser);
-                        setUserInfo(userData);
-                        setIsAuthenticated(true);
-                    }
-                }
-            } catch (err) {
-                console.error('Auth check error:', err);
-                setIsAuthenticated(false);
-            }
-        };
-        checkAuth();
-    }, []);
-
-    // Fetch property (public access - no auth required)
+    // Fetch property from public collection (no auth required)
     useEffect(() => {
         if (!propertyid) return;
         const id = Array.isArray(propertyid) ? propertyid[0] : propertyid;
@@ -166,20 +141,13 @@ export default function ViewPropertyPage() {
     const fetchPropertyData = useCallback(async (id: string) => {
         setLoading(true);
         try {
-            // First, find which agent owns this property
-            // You might need to store properties in a global collection for public access
-            // For now, we'll try to fetch from a public properties collection
+            // Fetch from public properties collection
             const publicProperty = await getData(`public_properties/${id}`);
 
             if (publicProperty) {
                 setProperty(publicProperty);
-                // Check if current logged-in agent owns this property
-                if (userInfo?.uid && publicProperty.agentUid === userInfo.uid) {
-                    setIsAgentOwner(true);
-                }
                 fetchRelatedProperties(publicProperty);
             } else {
-                // Try to find property across all agents (you'll need an index)
                 message.error("Property not found");
                 router.push('/');
             }
@@ -189,10 +157,9 @@ export default function ViewPropertyPage() {
         } finally {
             setLoading(false);
         }
-    }, [userInfo?.uid, router]);
+    }, [router]);
 
     const fetchRelatedProperties = useCallback((currentProperty?: PropertyFormData) => {
-        // Fetch related properties from public collection
         getData(`public_properties`)
             .then((allProps: any) => {
                 if (!allProps) return;
@@ -217,7 +184,7 @@ export default function ViewPropertyPage() {
     }, [property]);
 
     const handleShare = useCallback(() => {
-        const shareText = `Check out ${property?.title} at ${property?.location}, ${property?.city}. Price: ₹${property?.price} ${property?.priceUnit}`;
+        const shareText = `🏠 Check out ${property?.title} at ${property?.location}, ${property?.city}. Price: ₹${property?.price} ${property?.priceUnit}`;
         if (navigator.share) {
             navigator.share({
                 title: property?.title,
@@ -226,37 +193,9 @@ export default function ViewPropertyPage() {
             });
         } else {
             navigator.clipboard.writeText(shareText);
-            message.success('Copied to clipboard!');
+            message.success('Property details copied to clipboard!');
         }
     }, [property]);
-
-    const handleStatusChange = useCallback((newStatus: PropertyFormData['propertyStatus']) => {
-        if (!propertyid || !userInfo?.uid || !isAgentOwner) return;
-
-        updateData(`properties/${userInfo.uid}/${propertyid}`, { propertyStatus: newStatus })
-            .then(() => {
-                setProperty(prev => prev ? { ...prev, propertyStatus: newStatus } : null);
-                message.success(`Property marked as ${propertyStatusConfig[newStatus].label}`);
-            })
-            .catch((err) => {
-                console.error(err);
-                message.error('Failed to change status of property');
-            });
-    }, [propertyid, userInfo?.uid, propertyStatusConfig, isAgentOwner]);
-
-    const handleDeleteProperty = useCallback(() => {
-        if (!propertyid || !userInfo?.uid || !isAgentOwner || !window.confirm("Are you sure you want to delete this property?")) return;
-
-        deleleData(`properties/${userInfo.uid}/${propertyid}`)
-            .then(() => {
-                message.success("Property deleted successfully");
-                router.replace(`/realstate/${userInfo.uid}/properties`);
-            })
-            .catch((err) => {
-                console.error(err);
-                message.error("Failed to delete property");
-            });
-    }, [propertyid, userInfo?.uid, router, isAgentOwner]);
 
     const formatDate = useCallback((dateString?: string) => {
         if (!dateString) return 'Not specified';
@@ -273,7 +212,7 @@ export default function ViewPropertyPage() {
     );
 
     const currentTypeConfig = useMemo(() =>
-        property ? propertyTypeConfig[property.propertyType as keyof typeof propertyTypeConfig] || propertyTypeConfig.House : propertyTypeConfig.House,
+        property ? propertyTypeConfig[property.propertyType?.toLowerCase() as keyof typeof propertyTypeConfig] || propertyTypeConfig.house : propertyTypeConfig.house,
         [property, propertyTypeConfig]
     );
 
@@ -303,19 +242,20 @@ export default function ViewPropertyPage() {
         return (
             <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-                        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                            <div className="text-2xl">✕</div>
+                    <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                        <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                            <Home className="w-10 h-10 text-gray-400" />
                         </div>
-                        <h2 className="text-xl font-semibold text-gray-900 mb-2">Property Not Found</h2>
-                        <p className="text-gray-600 mb-6">The property you're looking for doesn't exist.</p>
-                        <Button
-                            label="Back to Home"
-                            onClick={() => router.push('/')}
-                            variant="theme"
-                            size="md"
-                            icon={<ArrowLeft className="w-4 h-4" />}
-                        />
+                        <h2 className="text-2xl font-semibold text-gray-900 mb-2">Property Not Found</h2>
+                        <p className="text-gray-600 mb-6">The property you're looking for doesn't exist or has been removed.</p>
+                        <Link href="/">
+                            <Button
+                                label="Browse Properties"
+                                variant="theme"
+                                size="md"
+                                icon={<ArrowLeft className="w-4 h-4" />}
+                            />
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -324,43 +264,35 @@ export default function ViewPropertyPage() {
 
     return (
         <div className="min-h-screen w-full bg-gradient-to-br from-white via-gray-50 to-white">
-            {/* Public Header - No login required */}
-            <div className="bg-white border-b border-gray-100 sticky top-0 z-40">
+            {/* Public Header - No Login Required */}
+            <div className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
-                        <Link href="/" className="flex items-center gap-2">
-                            <Building className="h-6 w-6 text-purple-600" />
+                        <Link href="/" className="flex items-center gap-2 group">
+                            <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-100 to-blue-100 group-hover:scale-105 transition-transform">
+                                <Building className="h-5 w-5 text-purple-600" />
+                            </div>
                             <span className="font-bold text-xl bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                                 Z-RealEstate
                             </span>
                         </Link>
 
                         <div className="flex items-center gap-3">
-                            {!isAuthenticated ? (
-                                <>
-                                    <Button
-                                        label="Login"
-                                        variant="secondary"
-                                        size="sm"
-                                        icon={<LogIn className="w-4 h-4" />}
-                                        onClick={() => router.push('/login')}
-                                    />
-                                    <Button
-                                        label="Join as Agent"
-                                        variant="theme"
-                                        size="sm"
-                                        icon={<UserPlus className="w-4 h-4" />}
-                                        onClick={() => router.push('/signup')}
-                                    />
-                                </>
-                            ) : (
+                            <Link href="/">
                                 <Button
-                                    label="Dashboard"
-                                    variant="theme2"
+                                    label="Home"
+                                    variant="secondary"
                                     size="sm"
-                                    onClick={() => router.push(`/realstate/${userInfo?.uid}/dashboard`)}
                                 />
-                            )}
+                            </Link>
+                            <Link href="/signup">
+                                <Button
+                                    label="Join as Agent"
+                                    variant="theme"
+                                    size="sm"
+                                    icon={<Award className="w-4 h-4" />}
+                                />
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -382,10 +314,7 @@ export default function ViewPropertyPage() {
 
                             <div>
                                 <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 leading-tight">
-                                    {property.title}{" "}
-                                    <span className="bg-gradient-to-br from-purple-500 to-blue-500 text-transparent bg-clip-text">
-                                        Property
-                                    </span>
+                                    {property.title}
                                 </h1>
                                 <div className="flex flex-wrap items-center gap-2 mt-1">
                                     <p className="text-sm text-gray-600 flex items-center gap-1">
@@ -411,9 +340,9 @@ export default function ViewPropertyPage() {
                     <div className="mt-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-5 border border-purple-100">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <div className="text-sm font-medium text-gray-700">Total Price</div>
+                                <div className="text-sm font-medium text-gray-700">Property Price</div>
                                 <div className="text-3xl font-bold text-gray-900 mt-1">
-                                    ₹{property.price} {property.priceUnit}
+                                    ₹{Number(property.price).toLocaleString('en-IN')} {property.priceUnit}
                                 </div>
                                 <div className="text-sm text-gray-600 mt-2">
                                     {property.area} {property.areaUnit} • {property.bedrooms} Beds • {property.bathrooms} Baths
@@ -422,9 +351,9 @@ export default function ViewPropertyPage() {
                             <div className="flex items-center gap-3 mt-4 sm:mt-0">
                                 <button
                                     onClick={handleShare}
-                                    className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                                    className="p-2 rounded-lg bg-white hover:bg-gray-50 transition-colors shadow-sm"
                                 >
-                                    <Share2 className="w-5 h-5" />
+                                    <Share2 className="w-5 h-5 text-gray-600" />
                                 </button>
                             </div>
                         </div>
@@ -460,26 +389,28 @@ export default function ViewPropertyPage() {
                             {activePanel === 'overview' && (
                                 <div className="p-6">
                                     {/* Image Carousel */}
-                                    <div className="relative h-64 md:h-80 rounded-xl overflow-hidden mb-6">
-                                        {property.images?.[currIndex] ? (
-                                            <img
-                                                src={property.images[currIndex]?.url || property.images[currIndex]}
-                                                alt={property.title}
-                                                className="w-full h-full object-cover cursor-pointer"
-                                                onClick={() => setIsOpen(true)}
-                                            />
+                                    <div className="relative h-64 md:h-80 rounded-xl overflow-hidden mb-6 bg-gray-100">
+                                        {property.images && property.images.length > 0 ? (
+                                            <>
+                                                <img
+                                                    src={property.images[currIndex]?.url || property.images[currIndex]}
+                                                    alt={property.title}
+                                                    className="w-full h-full object-cover cursor-pointer"
+                                                    onClick={() => setIsOpen(true)}
+                                                />
+                                                {property.images.length > 1 && (
+                                                    <button
+                                                        onClick={handleNext}
+                                                        className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:shadow transition-shadow text-sm font-medium"
+                                                    >
+                                                        Next <ChevronRight className="w-4 h-4 inline ml-1" />
+                                                    </button>
+                                                )}
+                                            </>
                                         ) : (
                                             <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 to-gray-200">
                                                 <Home className="w-16 h-16 text-gray-400" />
                                             </div>
-                                        )}
-                                        {property.images && property.images.length > 1 && (
-                                            <button
-                                                onClick={handleNext}
-                                                className="absolute bottom-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:shadow transition-shadow"
-                                            >
-                                                Next <ChevronRight className="w-4 h-4 inline ml-1" />
-                                            </button>
                                         )}
                                     </div>
 
@@ -531,7 +462,7 @@ export default function ViewPropertyPage() {
                                     <h3 className="text-xl font-semibold text-gray-900">Property Details</h3>
 
                                     <div className="space-y-4">
-                                        <div className="flex items-start gap-4 px-4 py-2 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors">
+                                        <div className="flex items-start gap-4 px-4 py-3 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors">
                                             <div className="p-2 bg-blue-100 rounded-lg">
                                                 <MapPin className="w-5 h-5 text-blue-600" />
                                             </div>
@@ -543,19 +474,19 @@ export default function ViewPropertyPage() {
                                             </div>
                                         </div>
 
-                                        <div className="flex items-start gap-4 px-4 py-2 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors">
+                                        <div className="flex items-start gap-4 px-4 py-3 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors">
                                             <div className="p-2 bg-purple-100 rounded-lg">
                                                 <DollarSign className="w-5 h-5 text-purple-600" />
                                             </div>
                                             <div className="flex-1">
                                                 <div className="font-medium text-gray-900">Pricing Details</div>
                                                 <div className="text-gray-700 mt-1">
-                                                    ₹{property.price} {property.priceUnit} • {property.propertyCondition}
+                                                    ₹{Number(property.price).toLocaleString('en-IN')} {property.priceUnit} • {property.propertyCondition || 'Standard'}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-start gap-4 px-4 py-2 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors">
+                                        <div className="flex items-start gap-4 px-4 py-3 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors">
                                             <div className="p-2 bg-green-100 rounded-lg">
                                                 <Building className="w-5 h-5 text-green-600" />
                                             </div>
@@ -574,7 +505,7 @@ export default function ViewPropertyPage() {
                                 <div className="p-6 space-y-6">
                                     <h3 className="text-xl font-semibold text-gray-900">Features & Amenities</h3>
 
-                                    {property.features?.length > 0 && (
+                                    {property.features && property.features.length > 0 && (
                                         <div className="space-y-3">
                                             <h4 className="font-medium text-gray-900">Key Features</h4>
                                             <div className="grid grid-cols-2 gap-3">
@@ -600,7 +531,7 @@ export default function ViewPropertyPage() {
                                             <div className={`flex items-center gap-2 p-2 ${property.hasParking ? 'bg-green-50' : 'bg-gray-50'} rounded-lg`}>
                                                 <Car className={`w-4 h-4 ${property.hasParking ? 'text-green-600' : 'text-gray-400'}`} />
                                                 <span className={property.hasParking ? 'text-gray-700' : 'text-gray-500'}>
-                                                    {property.hasParking ? "Parking" : "No Parking"}
+                                                    {property.hasParking ? "Parking Available" : "No Parking"}
                                                 </span>
                                             </div>
                                             <div className={`flex items-center gap-2 p-2 ${property.hasGarden ? 'bg-green-50' : 'bg-gray-50'} rounded-lg`}>
@@ -628,13 +559,13 @@ export default function ViewPropertyPage() {
                                             {property.images.map((image: any, index: number) => (
                                                 <div
                                                     key={index}
-                                                    className="relative aspect-square rounded-lg overflow-hidden cursor-pointer"
+                                                    className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
                                                     onClick={() => setCurrIndex(index)}
                                                 >
                                                     <img
                                                         src={image.url || image}
                                                         alt={`Property ${index + 1}`}
-                                                        className="w-full h-full object-cover hover:scale-105 transition-transform"
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                     />
                                                     {index === currIndex && (
                                                         <div className="absolute inset-0 border-2 border-purple-500"></div>
@@ -643,8 +574,8 @@ export default function ViewPropertyPage() {
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="text-center py-8 text-gray-500">
-                                            <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                                        <div className="text-center py-12 text-gray-500">
+                                            <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                                             <p>No images available for this property.</p>
                                         </div>
                                     )}
@@ -655,15 +586,17 @@ export default function ViewPropertyPage() {
 
                     {/* Right Column - Sidebar */}
                     <div className="space-y-6">
-                        {/* Agent/Owner Info */}
+                        {/* Agent Info */}
                         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
                             <div className="flex items-center gap-2 mb-4">
-                                <Users className="w-5 h-5 text-purple-600" />
+                                <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-100 to-blue-100">
+                                    <Users className="w-4 h-4 text-purple-600" />
+                                </div>
                                 <h3 className="font-semibold text-gray-900">Listed By</h3>
                             </div>
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md">
                                         {property.agentName?.charAt(0).toUpperCase() || property.ownerName?.charAt(0).toUpperCase() || 'A'}
                                     </div>
                                     <div>
@@ -671,149 +604,94 @@ export default function ViewPropertyPage() {
                                             {property.agentName || property.ownerName || 'Professional Agent'}
                                         </div>
                                         <div className="text-sm text-gray-600">
-                                            Real Estate Agent
+                                            Real Estate Professional
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Contact Info - Only show if agent is logged in or public contact available */}
                                 {property.ownerContact && (
-                                    <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                                        <Phone className="w-4 h-4 text-gray-600" />
+                                    <a
+                                        href={`tel:${property.ownerContact}`}
+                                        className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group"
+                                    >
+                                        <Phone className="w-4 h-4 text-gray-600 group-hover:text-green-600" />
                                         <span className="text-sm font-medium text-gray-900">{property.ownerContact}</span>
-                                    </div>
+                                        <PhoneCall className="w-3 h-3 text-gray-400 ml-auto" />
+                                    </a>
                                 )}
                             </div>
                         </div>
 
-                        {/* Call to Action - For non-authenticated users */}
-                        {!isAuthenticated && (
-                            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-5 border border-purple-100">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Award className="w-5 h-5 text-purple-600" />
-                                    <h3 className="font-semibold text-gray-900">Interested in this property?</h3>
+                        {/* Call to Action - Join as Agent */}
+                        <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-5 border border-purple-100">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="p-1.5 rounded-lg bg-white shadow-sm">
+                                    <Sparkles className="w-4 h-4 text-purple-600" />
                                 </div>
-                                <p className="text-sm text-gray-600 mb-4">
-                                    Sign up as a real estate agent to contact the owner and access more properties.
-                                </p>
-                                <div className="space-y-2">
+                                <h3 className="font-semibold text-gray-900">Interested in this property?</h3>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Join Z-RealEstate as an agent to contact property owners, schedule viewings, and access thousands of properties.
+                            </p>
+                            <div className="space-y-2">
+                                <Link href="/signup">
                                     <Button
-                                        label="Join as Agent"
+                                        label="Join as Agent - It's Free"
                                         variant="theme"
                                         size="md"
-                                        icon={<UserPlus className="w-4 h-4" />}
-                                        onClick={() => router.push('/signup')}
+                                        icon={<Award className="w-4 h-4" />}
                                     />
-                                    <Button
-                                        label="Login to Account"
-                                        variant="secondary"
-                                        size="md"
-                                        icon={<LogIn className="w-4 h-4" />}
-                                        onClick={() => router.push('/login')}
-                                    />
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Management Section - Only for property owner agent */}
-                        {isAuthenticated && isAgentOwner && (
-                            <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <Activity className="w-5 h-5 text-blue-600" />
-                                    <h3 className="font-semibold text-gray-900">Manage Property</h3>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <label className="block text-sm font-medium text-gray-700">Update Status</label>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {Object.entries(propertyStatusConfig).map(([key, config]: any) => (
-                                            <button
-                                                key={key}
-                                                onClick={() => handleStatusChange(key as PropertyFormData['propertyStatus'])}
-                                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border flex items-center justify-center gap-2
-                                                    ${property.propertyStatus === key
-                                                        ? `${config.bg} ${config.color} border-${config.color.split('-')[1]}-200`
-                                                        : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
-                                                    }`}
-                                            >
-                                                {config.icon}
-                                                {config.label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2 mt-4">
-                                    <Button
-                                        label="Contact Owner"
-                                        variant="theme"
-                                        icon={<PhoneCall className="w-4 h-4" />}
-                                        size="sm"
-                                        onClick={() => { property.ownerContact && window.open(`tel:${property.ownerContact}`) }}
-                                        disabled={!property.ownerContact}
-                                    />
-                                    <Button
-                                        label="Schedule Viewing"
-                                        variant="theme2"
-                                        icon={<Calendar className="w-4 h-4" />}
-                                        size="sm"
-                                        onClick={() => router.push(`/realstate/${userInfo?.uid}/events/addevent`)}
-                                    />
-                                </div>
-
-                                <button
-                                    onClick={handleDeleteProperty}
-                                    className="w-full mt-4 px-4 py-2.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors flex items-center justify-center gap-2"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                    Delete Property
-                                </button>
-                            </div>
-                        )}
-
-                        {/* For logged-in agents who don't own this property */}
-                        {isAuthenticated && !isAgentOwner && (
-                            <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <MessageSquare className="w-5 h-5 text-green-600" />
-                                    <h3 className="font-semibold text-gray-900">Interested?</h3>
-                                </div>
-                                <p className="text-sm text-gray-600 mb-4">
-                                    Contact the listing agent to schedule a viewing or get more information.
+                                </Link>
+                                <p className="text-xs text-center text-gray-500 mt-3">
+                                    No credit card required • Cancel anytime
                                 </p>
-                                <Button
-                                    label="Contact Agent"
-                                    variant="theme"
-                                    icon={<Mail className="w-4 h-4" />}
-                                    size="md"
-                                    onClick={() => router.push(`/realstate/${userInfo?.uid}/messages`)}
-                                />
                             </div>
-                        )}
+                        </div>
+
+                        {/* Share Property */}
+                        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Globe className="w-4 h-4 text-blue-600" />
+                                <h3 className="font-semibold text-gray-900">Share this Property</h3>
+                            </div>
+                            <p className="text-xs text-gray-500 mb-3">
+                                Share this property link with potential buyers
+                            </p>
+                            <button
+                                onClick={handleShare}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-sm font-medium text-gray-700"
+                            >
+                                <Share2 className="w-4 h-4" />
+                                Copy Property Link
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 {/* Related Properties */}
                 {relatedProperties.length > 0 && (
-                    <div className="mt-10">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-xl font-semibold text-gray-900">Similar Properties</h2>
+                    <div className="mt-12">
+                        <div className="flex items-center justify-between mb-5">
+                            <div>
+                                <h2 className="text-xl font-semibold text-gray-900">Similar Properties</h2>
+                                <p className="text-sm text-gray-500 mt-1">You might also like these</p>
+                            </div>
                         </div>
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
                             {relatedProperties.map((prop) => {
-                                const propTypeConfig: any = propertyTypeConfig[prop.propertyType as keyof typeof propertyTypeConfig] || propertyTypeConfig.House
+                                const propTypeConfig: any = propertyTypeConfig[prop.propertyType?.toLowerCase() as keyof typeof propertyTypeConfig] || propertyTypeConfig.house
                                 const propStatusConfig = propertyStatusConfig[prop.propertyStatus]
 
                                 return (
                                     <div
                                         key={prop.id}
                                         onClick={() => {
-                                            window.location.href = `/property/${prop.id}`;
+                                            window.location.href = `/viewproperty/${prop.id}`;
                                         }}
-                                        className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+                                        className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
                                     >
-                                        <div className="relative h-40">
-                                            {prop.images?.[0] ? (
+                                        <div className="relative h-48">
+                                            {prop.images && prop.images[0] ? (
                                                 <img
                                                     src={prop.images[0].url || prop.images[0]}
                                                     alt={prop.title}
@@ -821,7 +699,7 @@ export default function ViewPropertyPage() {
                                                 />
                                             ) : (
                                                 <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-100 to-gray-200">
-                                                    <Home className="w-8 h-8 text-gray-400" />
+                                                    <Home className="w-10 h-10 text-gray-400" />
                                                 </div>
                                             )}
                                             <div className="absolute top-3 left-3">
@@ -837,17 +715,20 @@ export default function ViewPropertyPage() {
                                                         {propTypeConfig.icon}
                                                     </div>
                                                 </div>
-                                                <h3 className="font-bold text-gray-900 truncate">{prop.title}</h3>
+                                                <h3 className="font-semibold text-gray-900 truncate flex-1">{prop.title}</h3>
                                             </div>
                                             <div className="flex items-center gap-1 text-sm text-gray-600 mb-3">
-                                                <MapPin className="w-3.5 h-3.5" />
-                                                <span className="truncate">{prop.location}</span>
+                                                <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                                                <span className="truncate">{prop.location}, {prop.city}</span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <div className="font-bold text-gray-900">
-                                                    ₹{Number(prop.price).toLocaleString('en-IN')} {prop.priceUnit}
+                                                <div>
+                                                    <div className="text-xs text-gray-500">Price</div>
+                                                    <div className="font-bold text-gray-900">
+                                                        ₹{Number(prop.price).toLocaleString('en-IN')} {prop.priceUnit}
+                                                    </div>
                                                 </div>
-                                                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-purple-600 transition-colors" />
+                                                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
                                             </div>
                                         </div>
                                     </div>
@@ -858,23 +739,34 @@ export default function ViewPropertyPage() {
                 )}
 
                 {/* Fullscreen Image Modal */}
-                {isOpen && (
+                {isOpen && property.images && property.images[currIndex] && (
                     <div
-                        className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
+                        className="fixed inset-0 bg-black/95 flex items-center justify-center z-50"
                         onClick={() => setIsOpen(false)}
                     >
                         <img
                             src={property.images[currIndex]?.url || property.images[currIndex]}
                             alt={property.title}
-                            className="max-h-[95vh] max-w-[95vw] object-contain"
+                            className="max-h-[90vh] max-w-[90vw] object-contain"
                             onClick={(e) => e.stopPropagation()}
                         />
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="absolute top-5 right-5 text-white text-3xl font-bold hover:text-gray-300 transition-colors"
+                            className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white text-2xl font-bold flex items-center justify-center"
                         >
                             ✕
                         </button>
+                        {property.images.length > 1 && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleNext();
+                                }}
+                                className="absolute right-5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white flex items-center justify-center"
+                            >
+                                <ChevronRight className="w-6 h-6" />
+                            </button>
+                        )}
                     </div>
                 )}
             </main>
