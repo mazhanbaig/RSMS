@@ -12,6 +12,11 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark mode support */
+html.dark {
+  color-scheme: dark;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     /* --background: #0a0a0a; */
@@ -19,10 +24,20 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 300ms ease-in-out, color 300ms ease-in-out;
+}
+
+html.dark body {
+  background: #0f1117;
+  color: #f0f6fc;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -68,4 +83,40 @@ body {
 
 .bg-black-gold {
   background: linear-gradient(to bottom, #000000, #0A0A0A);
+}
+
+/* Animation utilities */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-50 {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-in {
+  animation: fade-in-50 300ms ease-out forwards;
 }

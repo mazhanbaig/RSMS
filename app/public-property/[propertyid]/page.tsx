@@ -65,7 +65,7 @@ export default function PublicPropertyPage() {
     const fetchPublicProperty = async (id: string) => {
         setLoading(true)
         try {
-            const data = await getData(`public_properties/${id}`)
+            const data = await getData(`properties/${id}`)
             if (data) {
                 setProperty(data)
             } else {

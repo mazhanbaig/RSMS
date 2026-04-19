@@ -16,7 +16,9 @@ import {
 import { useRouter } from "next/navigation";
 import { message } from "antd";
 import DraggableButton from "@/components/DraggableButton";
+import AdvancedPropertyFilter from "@/components/AdvancedPropertyFilter";
 import { checkUserSession, deleleData, deleteImageFromCloudinary, getData } from "@/FBConfig/fbFunctions";
+import { applyAdvancedFilters, type AdvancedFilters } from "@/lib/propertyFilters";
 
 interface UserInfo {
     uid: string;
@@ -66,6 +68,18 @@ export default function PropertiesPage() {
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
+    const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({
+        priceRange: [0, 10000000],
+        bedrooms: [],
+        bathrooms: [],
+        areaRange: [0, 50000],
+        condition: [],
+        isFurnished: null,
+        hasParking: null,
+        hasGarden: null,
+        hasSecurity: null
+    });
 
     // Property type configuration
     const propertyTypeConfig = useMemo(() => ({
@@ -254,9 +268,40 @@ export default function PropertiesPage() {
             const matchesType = filterType === 'all' || property.propertyType === filterType;
             const matchesStatus = filterStatus === 'all' || property.propertyStatus === filterStatus;
 
-            return matchesSearch && matchesType && matchesStatus;
+            // Advanced filters
+            const price = parseFloat(property.price) || 0;
+            const matchesPrice = price >= advancedFilters.priceRange[0] && price <= advancedFilters.priceRange[1];
+
+            const beds = property.bedrooms?.toString();
+            const matchesBeds = advancedFilters.bedrooms.length === 0 ||
+                advancedFilters.bedrooms.includes(beds) ||
+                (advancedFilters.bedrooms.includes('5+') && parseInt(beds) >= 5);
+
+            const baths = property.bathrooms?.toString();
+            const matchesBaths = advancedFilters.bathrooms.length === 0 ||
+                advancedFilters.bathrooms.includes(baths) ||
+                (advancedFilters.bathrooms.includes('5+') && parseInt(baths) >= 5);
+
+            const area = parseFloat(property.area) || 0;
+            const matchesArea = area >= advancedFilters.areaRange[0] && area <= advancedFilters.areaRange[1];
+
+            const matchesCondition = advancedFilters.condition.length === 0 ||
+                advancedFilters.condition.includes(property.propertyCondition);
+
+            const matchesFurnished = advancedFilters.isFurnished === null ||
+                property.isFurnished === advancedFilters.isFurnished;
+            const matchesParking = advancedFilters.hasParking === null ||
+                property.hasParking === advancedFilters.hasParking;
+            const matchesGarden = advancedFilters.hasGarden === null ||
+                property.hasGarden === advancedFilters.hasGarden;
+            const matchesSecurity = advancedFilters.hasSecurity === null ||
+                property.hasSecurity === advancedFilters.hasSecurity;
+
+            return matchesSearch && matchesType && matchesStatus && matchesPrice &&
+                   matchesBeds && matchesBaths && matchesArea && matchesCondition &&
+                   matchesFurnished && matchesParking && matchesGarden && matchesSecurity;
         });
-    }, [properties, searchTerm, filterType, filterStatus]);
+    }, [properties, searchTerm, filterType, filterStatus, advancedFilters]);
 
     // Property statistics
     const propertyStats = useMemo(() => ({
@@ -427,7 +472,7 @@ export default function PropertiesPage() {
 
                 {/* Search and Filter Bar */}
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 mb-6">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                         {/* Action Buttons */}
                         <div className="flex flex-wrap gap-3">
                             <Button
@@ -439,8 +484,13 @@ export default function PropertiesPage() {
                             />
                         </div>
 
-                        {/* Search Input */}
+                        {/* Search Input & Advanced Filter */}
                         <div className="flex flex-wrap gap-3">
+                            <AdvancedPropertyFilter
+                                isOpen={advancedFiltersOpen}
+                                onToggle={setAdvancedFiltersOpen}
+                                onFilterChange={setAdvancedFilters}
+                            />
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                                 <input

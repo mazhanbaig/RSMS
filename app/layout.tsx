@@ -82,6 +82,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import 'antd/dist/antd.css';
+import { AppProvider } from '@/lib/context/AppContext';
 
 export const metadata: Metadata = {
   title: {
@@ -183,8 +184,10 @@ export default function RootLayout({
         {/* Canonical Tag */}
         <link rel="canonical" href="https://zstate.vercel.app" />
       </head>
-      <body className="antialiased">
-        {children}
+      <body className="antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        <AppProvider>
+          {children}
+        </AppProvider>
       </body>
     </html>
   );
