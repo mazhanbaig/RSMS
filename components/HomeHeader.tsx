@@ -11,7 +11,7 @@ export default function HomeHeader() {
     const pathname = usePathname();
 
     useEffect(() => {
-        const handleScroll = () => {
+        const handleScroll = ():any => {
             setIsScrolled(window.scrollY > 20);
         };
         window.addEventListener('scroll', handleScroll);

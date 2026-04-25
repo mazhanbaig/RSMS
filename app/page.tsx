@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
 import HomeHeader from "@/components/HomeHeader";
-import { auth, checkUserSession } from "@/FBConfig/fbFunctions";
+import { checkUserSession } from "@/FBConfig/fbFunctions";
 import HeroSection from "@/components/HeroSection";
 import ProblemsSolutions from "@/components/ProblemsSolutions";
 import FeaturesGrid from "@/components/FeaturesGrid";

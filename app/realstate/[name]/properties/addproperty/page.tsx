@@ -592,11 +592,21 @@ export default function AddPropertyPage() {
         try {
             if (isEditing && propertyId) {
                 await updateData(`properties/${userInfo.uid}/${propertyId}`, propertyData);
+                await updateData(`public_properties/${propertyId}`, {
+                    ...propertyData,
+                    publicViewable: true,
+                    updatedAt: new Date().toISOString()
+                });
                 message.success('Property updated successfully!');
+                
                 router.push(`/realstate/${userInfo.uid}/properties`);
             } else {
                 await saveData(`properties/${userInfo.uid}/${propertyData.id}`, propertyData);
-                message.success('Property saved successfully!');
+                await saveData(`public_properties/${propertyData.id}`, {
+                    ...propertyData,
+                    publicViewable: true,
+                    publishedAt: new Date().toISOString()
+                });
                 router.push(`/realstate/${userInfo.uid}/properties`);
             }
         } catch (err) {
