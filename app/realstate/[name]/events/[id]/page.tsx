@@ -16,6 +16,7 @@ import Header from "@/components/Header";
 import Button from "@/components/Button";
 import Loader from "@/components/Loader";
 import { checkUserSession, getData } from "@/FBConfig/fbFunctions";
+import { useEventReminder } from "@/hooks/useEventReminder";
 
 interface UserInfo {
     uid: string;
@@ -59,6 +60,12 @@ export default function ViewEventPage() {
     const [loading, setLoading] = useState(true);
     const [activePanel, setActivePanel] = useState('overview');
     const [clients, setClients] = useState<ClientDetail[]>([]);
+
+    useEventReminder(
+        event,
+        clients,
+        userInfo ? { email: userInfo.email || "", name: userInfo.name } : null
+    );
 
     // Event type configuration matching your theme
     const eventTypeConfig = useMemo(() => ({
@@ -628,6 +635,7 @@ export default function ViewEventPage() {
                     </div>
                 </div>
             </main>
+            
         </div>
     );
 }

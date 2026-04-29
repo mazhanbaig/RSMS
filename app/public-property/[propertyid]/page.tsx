@@ -14,7 +14,6 @@ import Link from "next/link";
 import { message, Tooltip, Modal, Input, Button as AntButton } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import Head from "next/head";
 import HomeHeader from "@/components/HomeHeader";
 
 // ==================== TYPES ====================
@@ -307,14 +306,6 @@ export default function PublicPropertyPage() {
 
     return (
         <>
-            <Head>
-                <title>{property.title} | EstateLuxury</title>
-                <meta name="description" content={property.description?.slice(0, 160) || `Beautiful ${property.propertyType} for sale in ${property.city}`} />
-                <meta property="og:title" content={property.title} />
-                <meta property="og:description" content={property.description?.slice(0, 160)} />
-                <meta property="og:image" content={typeof property.images?.[0] === 'string' ? property.images[0] : property.images?.[0]?.url} />
-            </Head>
-
             <div className="min-h-screen w-full bg-gradient-to-br from-white via-gray-50 to-white">
                 <HomeHeader />
                 <main className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
