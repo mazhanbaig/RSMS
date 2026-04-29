@@ -878,12 +878,12 @@ export default function PublicPropertyPage() {
                     </div>
                 )}
             </div>
-            <ClientChat
+            {/* <ClientChat
                 propertyId={property.id}
                 propertyTitle={property.title}
                 agentId="admin"
                 agentName="Support Team"
-            />
+            /> */}
         </>
     );
 }
