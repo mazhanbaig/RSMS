@@ -20,7 +20,11 @@ export default function UpcomingEvents({ events, userUid, onViewAll, onNavigate 
             </div>
             <div className="space-y-2">
                 {events.slice(0, 3).map((event: any, idx: number) => (
-                    <div key={event.id || idx} className="flex items-start gap-3 px-3 py-1 rounded-lg border border-gray-200 hover:bg-gray-50">
+                    <div
+                        onClick={() => onNavigate(event.id)}  // Fixed: Proper function call
+                        key={event.id || idx} 
+                        className="flex items-start gap-3 px-3 py-1 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"  // Added cursor-pointer
+                    >
                         <div className="min-w-[50px] my-auto text-center">
                             <div className="text-xl font-bold text-indigo-600">
                                 {event.date ? new Date(event.date).getDate() : '??'}

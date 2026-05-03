@@ -431,6 +431,12 @@ export default function AdminDashboardPage() {
         }
     }, [router, userInfo?.uid]);
 
+    const navigateToEvent = useCallback((id: string) => {
+        if (userInfo?.uid) {
+            router.push(`/realstate/${userInfo.uid}/events/${id}`);
+        }
+    }, [router, userInfo?.uid]);
+
     const handleQuickAction = useCallback((path: string, e?: any, customHandler?: () => void) => {
         if (e) e.stopPropagation();
         if (customHandler) {
@@ -556,7 +562,7 @@ export default function AdminDashboardPage() {
                         <DashboardProperties
                             properties={properties}
                             userUid={userInfo?.uid}
-                            onViewAll={() => navigateTo(`/realstate/${userInfo?.uid}/properties`)}
+                             onViewAll={() => navigateTo(`/realstate/${userInfo?.uid}/properties`)}
                         />
                     </div>
 
@@ -564,7 +570,9 @@ export default function AdminDashboardPage() {
                         <DashboardEvents
                             events={events}
                             userUid={userInfo?.uid}
-                            onViewAll={handleViewAllEvents}
+ onNavigate={(eventId:any) => {
+                            navigateToEvent(eventId)                      
+                            }}                            onNavigate={navigateToEvent}
                         />
 
                         <DashboardClients
