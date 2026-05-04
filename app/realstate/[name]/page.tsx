@@ -570,9 +570,9 @@ export default function AdminDashboardPage() {
                         <DashboardEvents
                             events={events}
                             userUid={userInfo?.uid}
- onNavigate={(eventId:any) => {
+                            onNavigate={(eventId:any) => {
                             navigateToEvent(eventId)                      
-                            }}                            onNavigate={navigateToEvent}
+                            }}
                         />
 
                         <DashboardClients
