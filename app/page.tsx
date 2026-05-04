@@ -61,6 +61,7 @@ import { FeaturesGrid } from "@/components/layout/FeaturesGrid";
 import { HowItWorks } from "@/components/layout/HowItWorks";
 import { PricingSection } from "@/components/layout/PricingSection";
 import { CTASection } from "@/components/layout/CTASection";
+import Loader from "@/components/Loader";
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
@@ -72,21 +73,7 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 rounded-full border-3 border-purple-200 border-t-purple-600"
-        />
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mt-4 text-slate-400 text-sm"
-        >
-          Loading ZSTATE...
-        </motion.p>
-      </div>
+      <Loader/>
     );
   }
 
