@@ -1,364 +1,37 @@
-// // components/sections/HeroSection.tsx
-// 'use client';
-
-// import { useRef, useState, useEffect } from "react";
-// import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-// import {
-//     ArrowRight, Play, Sparkles, Shield, Zap, TrendingUp, Star,
-//     ChevronRight, Globe, Award, Rocket, Users
-// } from "lucide-react";
-// import Button from "../Button";
-
-// export const HeroSection = () => {
-//     const containerRef = useRef<HTMLDivElement>(null);
-//     const [activeWord, setActiveWord] = useState(0);
-//     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-//     const { scrollYProgress } = useScroll({
-//         target: containerRef,
-//         offset: ["start start", "end start"]
-//     });
-
-//     const backgroundY = useTransform(scrollYProgress, [0, 1], [0, 150]);
-//     const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
-
-//     // Rotating words for dynamic effect
-//     const rotatingWords = ["properties", "clients", "deals", "growth"];
-
-//     useEffect(() => {
-//         const interval = setInterval(() => {
-//             setActiveWord((prev) => (prev + 1) % rotatingWords.length);
-//         }, 2000);
-//         return () => clearInterval(interval);
-//     }, [rotatingWords.length]);
-
-//     useEffect(() => {
-//         const handleMouseMove = (e: MouseEvent) => {
-//             setMousePosition({
-//                 x: (e.clientX / window.innerWidth - 0.5) * 20,
-//                 y: (e.clientY / window.innerHeight - 0.5) * 20
-//             });
-//         };
-//         window.addEventListener("mousemove", handleMouseMove);
-//         return () => window.removeEventListener("mousemove", handleMouseMove);
-//     }, []);
-
-//     const fadeUp = {
-//         hidden: { opacity: 0, y: 30 },
-//         visible: { opacity: 1, y: 0 }
-//     };
-
-//     const staggerChildren = {
-//         hidden: { opacity: 0 },
-//         visible: {
-//             opacity: 1,
-//             transition: { staggerChildren: 0.1, delayChildren: 0.1 }
-//         }
-//     };
-
-//     return (
-//         <section
-//             id="home"
-//             ref={containerRef}
-//             className="relative min-h-screen w-full overflow-hidden"
-//         >
-//             {/* Premium Gradient Background */}
-//             <div className="absolute inset-0 bg-gradient-to-br from-[#f8fafc] via-white to-[#f3e8ff]" />
-
-//             {/* Animated Gradient Mesh */}
-//             <div className="absolute inset-0 overflow-hidden">
-//                 <div className="absolute top-0 left-0 w-full h-full">
-//                     <div className="absolute top-[20%] left-[10%] w-96 h-96 bg-gradient-to-r from-purple-300/30 to-pink-300/30 rounded-full blur-3xl animate-pulse" />
-//                     <div className="absolute bottom-[30%] right-[5%] w-80 h-80 bg-gradient-to-l from-blue-300/30 to-cyan-300/30 rounded-full blur-3xl animate-pulse delay-1000" />
-//                     <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-tr from-indigo-200/20 to-purple-200/20 rounded-full blur-3xl" />
-//                 </div>
-//             </div>
-
-//             {/* Floating Particles */}
-//             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-//                 {[...Array(20)].map((_, i) => (
-//                     <motion.div
-//                         key={i}
-//                         className="absolute w-1 h-1 bg-purple-400/40 rounded-full"
-//                         initial={{
-//                             x: Math.random() * window.innerWidth,
-//                             y: Math.random() * window.innerHeight,
-//                         }}
-//                         animate={{
-//                             y: [null, -100, -200],
-//                             opacity: [0, 1, 0],
-//                         }}
-//                         transition={{
-//                             duration: Math.random() * 5 + 3,
-//                             repeat: Infinity,
-//                             delay: Math.random() * 5,
-//                             ease: "linear",
-//                         }}
-//                         style={{
-//                             left: `${Math.random() * 100}%`,
-//                         }}
-//                     />
-//                 ))}
-//             </div>
-
-//             {/* Main Content */}
-//             <motion.div
-//                 style={{ scale }}
-//                 className="relative max-w-6xl mx-auto px-6 lg:px-8 min-h-screen flex flex-col justify-center items-center text-center"
-//             >
-//                 <motion.div
-//                     variants={staggerChildren}
-//                     initial="hidden"
-//                     animate="visible"
-//                     className="w-full"
-//                 >
-//                     {/* Premium Badge with Glow */}
-//                     <motion.div
-//                         variants={fadeUp}
-//                         className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-md border border-purple-100/50 shadow-lg mb-10 relative group"
-//                         whileHover={{ scale: 1.05 }}
-//                     >
-//                         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-//                         <span className="relative flex h-3 w-3">
-//                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-500 opacity-75" />
-//                             <span className="relative inline-flex rounded-full h-3 w-3 bg-purple-600" />
-//                         </span>
-//                         <span className="text-sm mt-5 font-semibold bg-gradient-to-r from-purple-700 to-blue-700 bg-clip-text text-transparent">
-//                           LAUNCHING SOON — BE THE FIRST TO ACCESS
-//                         </span>
-//                         <ChevronRight size={14} className="text-purple-500" />
-//                     </motion.div>
-
-//                     {/* Dynamic Main Heading */}
-//                     <motion.div variants={fadeUp} className="space-y-4">
-//                         <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-tighter leading-[1.05]">
-//                             <span className="text-slate-900">Manage</span>
-//                             <br />
-//                             <div className="relative inline-block mt-2">
-//                                 <AnimatePresence mode="wait">
-//                                     <motion.span
-//                                         key={activeWord}
-//                                         initial={{ opacity: 0, y: 20, rotateX: -90 }}
-//                                         animate={{ opacity: 1, y: 0, rotateX: 0 }}
-//                                         exit={{ opacity: 0, y: -20, rotateX: 90 }}
-//                                         transition={{ duration: 0.5, type: "spring" }}
-//                                         className="absolute inset-0 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 bg-clip-text text-transparent whitespace-nowrap"
-//                                         style={{
-//                                             backgroundSize: "200% auto",
-//                                             animation: "gradient 5s ease infinite"
-//                                         }}
-//                                     >
-//                                         {rotatingWords[activeWord]}
-//                                     </motion.span>
-//                                 </AnimatePresence>
-//                                 <span className="opacity-0">{rotatingWords[activeWord]}{""}</span>
-//                                 {/* <span className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 bg-clip-text text-transparent">
-//                                     {rotatingWords[activeWord]}
-//                                 </span> */}
-//                                 <span>{""}</span>
-//                             </div>
-//                             <span className="text-slate-900">{""} faster</span>
-//                         </h1>
-//                     </motion.div>
-
-//                     {/* Description with Gradient */}
-//                     <motion.p
-//                         variants={fadeUp}
-//                         className="text-lg sm:text-xl text-slate-500 mt-8 leading-relaxed max-w-2xl mx-auto"
-//                     >
-//                         Transform your real estate workflow with our AI-powered platform.
-//                         <span className="block mt-1 text-purple-600 font-medium">
-//                             Join 5,000+ agents already scaling their business.
-//                         </span>
-//                     </motion.p>
-
-//                     {/* CTA Buttons with Hover Effects */}
-//                     <motion.div
-//                         variants={fadeUp}
-//                         className="flex flex-wrap gap-5 mt-10 justify-center"
-//                     >
-//                         <motion.button
-//                             whileHover={{ scale: 1.05 }}
-//                             whileTap={{ scale: 0.95 }}
-//                             className="group relative px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-600 via-purple-500 to-blue-600 text-white font-semibold text-lg shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 overflow-hidden"
-//                         >
-//                             <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-//                             <span className="relative flex items-center gap-2">
-//                                 Start Free Trial
-//                                 <Rocket size={18} className="group-hover:translate-x-1 transition-transform" />
-//                             </span>
-//                         </motion.button>
-
-//                         <motion.button
-//                             whileHover={{ scale: 1.05 }}
-//                             whileTap={{ scale: 0.95 }}
-//                             className="px-8 py-4 rounded-2xl bg-white/90 backdrop-blur-sm border-2 border-slate-200 text-slate-700 font-semibold text-lg hover:border-purple-300 hover:bg-white transition-all duration-300 flex items-center gap-2 shadow-lg"
-//                         >
-//                             <Play size={18} className="text-purple-500" />
-//                             Watch Demo
-//                         </motion.button>
-//                     </motion.div>
-
-//                     {/* Feature Cards - Interactive */}
-//                     <motion.div
-//                         variants={fadeUp}
-//                         className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto mt-16"
-//                     >
-//                         {[
-//                             { icon: Shield, title: "Enterprise Security", desc: "Bank-level encryption", color: "from-purple-50 to-purple-100", iconColor: "text-purple-600" },
-//                             { icon: Zap, title: "Lightning Fast", desc: "Real-time sync", color: "from-blue-50 to-blue-100", iconColor: "text-blue-600" },
-//                             { icon: Award, title: "Award Winning", desc: "Best Real Estate SaaS 2024", color: "from-amber-50 to-amber-100", iconColor: "text-amber-600" },
-//                         ].map((feature, i) => (
-//                             <motion.div
-//                                 key={i}
-//                                 whileHover={{ y: -5, scale: 1.02 }}
-//                                 className={`relative rounded-2xl p-4 bg-gradient-to-br ${feature.color} border border-white/50 shadow-sm cursor-pointer group`}
-//                             >
-//                                 <div className="flex items-center gap-3">
-//                                     <div className={`p-2 rounded-xl bg-white/80 ${feature.iconColor}`}>
-//                                         <feature.icon size={20} />
-//                                     </div>
-//                                     <div className="text-left">
-//                                         <h4 className="font-semibold text-slate-800 text-sm">{feature.title}</h4>
-//                                         <p className="text-xs text-slate-500">{feature.desc}</p>
-//                                     </div>
-//                                 </div>
-//                             </motion.div>
-//                         ))}
-//                     </motion.div>
-
-//                     {/* Stats with Animated Numbers */}
-//                     <motion.div
-//                         variants={fadeUp}
-//                         className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto mt-16 pt-8 border-t border-slate-100"
-//                     >
-//                         {[
-//                             { value: 5000, label: "Active Agents", suffix: "+", icon: Users },
-//                             { value: 98, label: "Satisfaction", suffix: "%", icon: Star },
-//                             { value: 2.1, label: "Property Volume", suffix: "B", icon: Globe, prefix: "$" },
-//                             { value: 70, label: "Time Saved", suffix: "%", icon: TrendingUp },
-//                         ].map((stat, i) => (
-//                             <motion.div
-//                                 key={i}
-//                                 whileHover={{ scale: 1.05 }}
-//                                 className="text-center group cursor-pointer"
-//                             >
-//                                 <div className="flex justify-center mb-2 opacity-60 group-hover:opacity-100 transition-opacity">
-//                                     <stat.icon size={20} className="text-purple-500" />
-//                                 </div>
-//                                 <div className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-//                                     {stat.prefix}
-//                                     <motion.span
-//                                         initial={{ opacity: 0, y: 20 }}
-//                                         animate={{ opacity: 1, y: 0 }}
-//                                         transition={{ delay: 0.5 + i * 0.1 }}
-//                                     >
-//                                         {stat.value}
-//                                     </motion.span>
-//                                     {stat.suffix}
-//                                 </div>
-//                                 <div className="text-sm text-slate-400 mt-1">{stat.label}</div>
-//                             </motion.div>
-//                         ))}
-//                     </motion.div>
-//                 </motion.div>
-//             </motion.div>
-
-//             {/* 3D Floating Elements */}
-//             <motion.div
-//                 style={{
-//                     x: mousePosition.x,
-//                     y: mousePosition.y,
-//                 }}
-//                 className="absolute top-1/4 right-[5%] hidden lg:block pointer-events-none"
-//             >
-//                 <div className="relative">
-//                     <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 opacity-20 blur-xl" />
-//                     <div className="absolute inset-0 flex items-center justify-center">
-//                         <Sparkles size={32} className="text-purple-500" />
-//                     </div>
-//                 </div>
-//             </motion.div>
-
-//             <motion.div
-//                 style={{
-//                     x: -mousePosition.x,
-//                     y: -mousePosition.y,
-//                 }}
-//                 className="absolute bottom-1/4 left-[5%] hidden lg:block pointer-events-none"
-//             >
-//                 <div className="relative">
-//                     <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-500 opacity-20 blur-xl" />
-//                     <div className="absolute inset-0 flex items-center justify-center">
-//                         <Award size={28} className="text-blue-500" />
-//                     </div>
-//                 </div>
-//             </motion.div>
-
-//             {/* Gradient Border Bottom */}
-//             <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent pointer-events-none" />
-
-//             {/* Scroll Indicator with Progress Ring */}
-//             <motion.div
-//                 initial={{ opacity: 0 }}
-//                 animate={{ opacity: 1 }}
-//                 transition={{ delay: 1.5 }}
-//                 className="absolute bottom-8 left-1/2 -translate-x-1/2"
-//             >
-//                 <motion.div
-//                     animate={{ y: [0, 8, 0] }}
-//                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-//                     className="flex flex-col items-center gap-2 cursor-pointer group"
-//                     onClick={() => {
-//                         document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
-//                     }}
-//                 >
-//                     <span className="text-[10px] text-slate-400 font-bold tracking-[0.2em] uppercase group-hover:text-purple-500 transition-colors">
-//                         SCROLL
-//                     </span>
-//                     <div className="relative">
-//                         <div className="w-6 h-10 rounded-full border-2 border-slate-300 group-hover:border-purple-400 transition-colors flex justify-center">
-//                             <motion.div
-//                                 animate={{ y: [0, 12, 0] }}
-//                                 transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-//                                 className="w-1 h-2 bg-slate-400 group-hover:bg-purple-500 rounded-full mt-2"
-//                             />
-//                         </div>
-//                     </div>
-//                 </motion.div>
-//             </motion.div>
-
-//             <style jsx>{`
-//                 @keyframes gradient {
-//                     0%, 100% { background-position: 0% 50%; }
-//                     50% { background-position: 100% 50%; }
-//                 }
-//                 .animate-gradient {
-//                     background-size: 200% auto;
-//                     animation: gradient 2s ease infinite;
-//                 }
-//             `}</style>
-//         </section>
-//     );
-// };
-
-
-
-
-
-
-
-
 // components/sections/HeroSection.tsx
 'use client';
 
-import { useRef, useEffect } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Play, Shield, Zap, TrendingUp, CheckCircle, Infinity, Target, Layers } from "lucide-react";
+import { useRef, useEffect, useState } from "react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import {
+    ArrowRight,
+    Play,
+    Sparkles,
+    ChevronRight,
+    Star,
+    Fingerprint,
+    Globe,
+    Cpu,
+    Radar,
+    Rocket,
+    Calendar,
+    UserCheck,
+    Building2,
+    CircuitBoard,
+    Hexagon,
+    TrendingUp,
+    Shield,
+    Zap
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export const HeroSection = () => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const videoRef = useRef<HTMLVideoElement>(null);
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const [activeWord, setActiveWord] = useState<number | null>(null);
+    const [isHoveringGlobe, setIsHoveringGlobe] = useState(false);
+
+    let router = useRouter()
 
     const { scrollYProgress } = useScroll({
         target: containerRef,
@@ -366,130 +39,299 @@ export const HeroSection = () => {
     });
 
     const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-    const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
+    const y = useTransform(scrollYProgress, [0, 1], [0, 150]);
 
-    // Auto-play background video effect simulation
     useEffect(() => {
-        const timer = setTimeout(() => {
-            if (videoRef.current) {
-                videoRef.current.play();
-            }
-        }, 500);
-        return () => clearTimeout(timer);
+        const handleMouseMove = (e: MouseEvent) => {
+            setMousePosition({ x: e.clientX, y: e.clientY });
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
     }, []);
+
+    const headlineWords = ["Real", "estate", "intelligence,", "orchestrated."];
+    const gradientWords = ["intelligence,", "orchestrated."];
+
+    const floatingStats = [
+        { value: "73%", label: "faster deal closure", icon: Rocket, delay: 0 },
+        { value: "15K+", label: "properties managed", icon: Building2, delay: 0.1 },
+        { value: "99.9%", label: "uptime SLA", icon: CircuitBoard, delay: 0.2 },
+    ];
+
+    const features = [
+        { icon: Zap, text: "Real-time sync", color: "text-amber-500", bg: "bg-amber-50" },
+        { icon: Shield, text: "Bank-grade security", color: "text-emerald-500", bg: "bg-emerald-50" },
+        { icon: TrendingUp, text: "AI-powered insights", color: "text-purple-500", bg: "bg-purple-50" },
+    ];
 
     return (
         <section
             id="home"
             ref={containerRef}
-            className="relative min-h-screen w-full overflow-hidden bg-white"
+            className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-slate-50 via-white to-indigo-50/30"
         >
-            {/* Subtle Background Pattern */}
-            <div className="absolute inset-0">
-                <div className="absolute inset-0 bg-[linear-gradient(60deg,#f8fafc_1px,transparent_1px),linear-gradient(-60deg,#f8fafc_1px,transparent_1px)] bg-[size:40px_70px] opacity-40" />
-                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-purple-100/30 to-transparent rounded-full blur-3xl" />
-                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-blue-100/20 to-transparent rounded-full blur-3xl" />
+            {/* Immersive Light Background Effect */}
+            <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_40%,rgba(99,102,241,0.04),transparent_50%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_60%,rgba(168,85,247,0.04),transparent_50%)]" />
+
+                {/* Subtle Grid Pattern */}
+                <div className="absolute inset-0" style={{
+                    backgroundImage: `linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px)`,
+                    backgroundSize: '60px 60px'
+                }} />
+
+                {/* Interactive Orb - Light Version */}
+                <motion.div
+                    animate={{
+                        x: mousePosition.x - 300,
+                        y: mousePosition.y - 300,
+                    }}
+                    transition={{ type: "spring", damping: 25, stiffness: 80 }}
+                    className="absolute w-[600px] h-[600px] rounded-full bg-gradient-to-r from-indigo-200/30 via-purple-200/30 to-pink-200/30 blur-3xl pointer-events-none"
+                />
             </div>
 
             <div className="relative max-w-7xl mx-auto px-6 lg:px-8 min-h-screen flex flex-col justify-center">
-                <div className="max-w-4xl mx-auto text-center">
-                    
+                <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                    {/* Left Column - Content */}
+                    <div>
+                        {/* Premium Badge */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm mt-6 mb-6"
+                        >
+                            <Sparkles size={12} className="text-purple-500" />
+                            <span className="text-xs font-medium text-slate-600 tracking-wide">THE NEW STANDARD</span>
+                            <ChevronRight size={10} className="text-slate-400" />
+                        </motion.div>
 
-                    {/* Main Heading */}
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.1 }}
-                        className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-slate-900 leading-[1.1]"
-                    >
-                        Real estate
-                        <span className="block mt-2 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                            intelligence,
-                        </span>
-                        <span className="block">redefined.</span>
-                    </motion.h1>
+                        {/* Dynamic Headline */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.7 }}
+                            className="space-y-2"
+                        >
+                            <h1 className="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tight">
+                                {headlineWords.map((word, idx) => (
+                                    <motion.span
+                                        key={idx}
+                                        onHoverStart={() => setActiveWord(idx)}
+                                        onHoverEnd={() => setActiveWord(null)}
+                                        animate={{
+                                            scale: activeWord === idx ? 1.05 : 1,
+                                        }}
+                                        className={`inline-block mr-4 relative ${gradientWords.includes(word)
+                                            ? "bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent"
+                                            : "text-slate-900"
+                                            } transition-all duration-200 cursor-default`}
+                                    >
+                                        {word}
+                                        {activeWord === idx && gradientWords.includes(word) && (
+                                            <motion.span
+                                                layoutId="underline"
+                                                className="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full"
+                                                initial={{ scaleX: 0 }}
+                                                animate={{ scaleX: 1 }}
+                                                transition={{ duration: 0.3 }}
+                                            />
+                                        )}
+                                    </motion.span>
+                                ))}
+                            </h1>
+                        </motion.div>
 
-                    {/* Description */}
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        className="text-lg text-slate-500 mt-6 leading-relaxed max-w-2xl mx-auto"
-                    >
-                        The complete operating system for modern real estate professionals.
-                        Manage clients, properties, and deals with unprecedented clarity and speed.
-                    </motion.p>
+                        {/* Description */}
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.7, delay: 0.1 }}
+                            className="text-lg text-slate-500 leading-relaxed mt-6 max-w-lg"
+                        >
+                            The intelligent operating system for elite real estate professionals.
+                            Where data becomes intuition, and intuition becomes action.
+                        </motion.p>
 
-                    {/* CTA Buttons */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.3 }}
-                        className="flex flex-wrap gap-4 mt-8 justify-center"
-                    >
-                        <button className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-slate-900 text-white font-medium hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl">
-                            Start free trial
-                            <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
-                        </button>
-                        <button className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 text-slate-700 font-medium hover:bg-slate-50 transition-all duration-300">
-                            <Play size={16} />
-                            Watch demo
-                        </button>
-                    </motion.div>
+                        {/* CTA Section */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.7, delay: 0.2 }}
+                            className="flex flex-wrap gap-4 mt-8"
+                        >
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => router.push("/login") }
+                                className="group relative inline-flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-medium shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 overflow-hidden"
+                            >
+                                <span className="absolute inset-0 bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                <span className="relative z-10 flex items-center gap-2">
+                                    Start Today
+                                    <Rocket size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                </span>
+                            </motion.button>
 
-                    {/* Benefits Row */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.4 }}
-                        className="flex flex-wrap justify-center gap-6 mt-12"
-                    >
-                        {[
-                            { text: "No credit card required", icon: CheckCircle },
-                            { text: "14-day free trial", icon: Infinity },
-                            { text: "Cancel anytime", icon: Target },
-                        ].map((item, i) => (
-                            <div key={i} className="flex items-center gap-2 text-sm text-slate-500">
-                                <item.icon size={14} className="text-green-500" />
-                                <span>{item.text}</span>
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="inline-flex items-center gap-2 px-8 py-3 rounded-full border border-slate-200 bg-white text-slate-700 font-medium hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 shadow-sm"
+                            >
+                                <Play size={16} className="text-purple-500" />
+                                Watch demo
+                            </motion.button>
+                        </motion.div>
+
+                        {/* Trust Indicators */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.7, delay: 0.3 }}
+                            className="flex items-center gap-6 mt-10"
+                        >
+                            <div className="flex -space-x-2">
+                                {[1, 2, 3, 4].map((i) => (
+                                    <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 border-2 border-white shadow-sm" />
+                                ))}
                             </div>
-                        ))}
-                    </motion.div>
-                </div>
-                {/* Trust Badge */}
-                <div className="flex justify-center mt-6">
-                    <div className="inline-flex items-center gap-4 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-slate-100 text-sm text-slate-500">
-                        <div className="flex -space-x-2">
-                            {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 border-2 border-white" />
+                            <div className="text-sm text-slate-400">
+                                Trusted by <span className="text-slate-700 font-semibold">5,000+</span> forward-thinking firms
+                            </div>
+                        </motion.div>
+
+                        {/* Feature Pills */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.7, delay: 0.4 }}
+                            className="flex flex-wrap gap-3 mt-8"
+                        >
+                            {features.map((feature, idx) => (
+                                <div key={idx} className={`flex items-center gap-2 mb-5 px-4 py-2 rounded-full ${feature.bg} border border-slate-100`}>
+                                    <feature.icon size={14} className={feature.color} />
+                                    <span className="text-sm font-medium text-slate-700">{feature.text}</span>
+                                </div>
                             ))}
-                        </div>
-                        <span>Trusted by <strong className="text-slate-700">5,000+</strong> real estate professionals</span>
+                        </motion.div>
                     </div>
+
+                    {/* Right Column - Interactive Visualization */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                        className="relative"
+                    >
+                        <div className="relative aspect-square max-w-lg mx-auto lg:ml-auto">
+                            {/* Rotating Rings - Light Version */}
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+                                className="absolute inset-0"
+                            >
+                                <div className="w-full h-full rounded-full border border-slate-200" />
+                                <div className="absolute inset-[15%] rounded-full border border-slate-100" />
+                                <div className="absolute inset-[30%] rounded-full border border-purple-200" />
+                            </motion.div>
+
+                            {/* Central Hub */}
+                            <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                onHoverStart={() => setIsHoveringGlobe(true)}
+                                onHoverEnd={() => setIsHoveringGlobe(false)}
+                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 shadow-xl shadow-purple-500/20 flex items-center justify-center cursor-pointer group"
+                            >
+                                <Fingerprint size={48} className="text-white" />
+                                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500" />
+                            </motion.div>
+
+                            {/* Orbiting Nodes - Light Theme */}
+                            {[
+                                { icon: Radar, angle: 0, delay: 0, label: "Insights" },
+                                { icon: Globe, angle: 72, delay: 0.2, label: "Global" },
+                                { icon: Cpu, angle: 144, delay: 0.4, label: "Neural" },
+                                { icon: UserCheck, angle: 216, delay: 0.6, label: "Trust" },
+                                { icon: Calendar, angle: 288, delay: 0.8, label: "Future" },
+                            ].map((node, idx) => {
+                                const radius = 140;
+                                const radian = (node.angle * Math.PI) / 180;
+                                const x = Math.cos(radian) * radius;
+                                const y = Math.sin(radian) * radius;
+
+                                return (
+                                    <motion.div
+                                        key={idx}
+                                        initial={{ opacity: 0, scale: 0 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ delay: 0.5 + node.delay, type: "spring" }}
+                                        style={{ x, y }}
+                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                                    >
+                                        <motion.div
+                                            animate={{
+                                                rotate: isHoveringGlobe ? 360 : 0
+                                            }}
+                                            transition={{ duration: 2 }}
+                                            className="w-12 h-12 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center group hover:border-purple-300 hover:shadow-md transition-all duration-300 cursor-pointer"
+                                        >
+                                            <node.icon size={20} className="text-slate-500 group-hover:text-purple-500 transition-colors" />
+                                        </motion.div>
+                                        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-slate-400 font-medium whitespace-nowrap">
+                                            {node.label}
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
+
+                            {/* Energy Particles - Light Version */}
+                            {[...Array(12)].map((_, i) => {
+                                const angle = (i * 30) * Math.PI / 180;
+                                const radius = 100;
+                                const x = Math.cos(angle) * radius;
+                                const y = Math.sin(angle) * radius;
+
+                                return (
+                                    <motion.div
+                                        key={i}
+                                        animate={{
+                                            scale: [1, 1.5, 1],
+                                            opacity: [0.2, 0.6, 0.2],
+                                        }}
+                                        transition={{
+                                            duration: 2 + i * 0.3,
+                                            repeat: Infinity,
+                                            delay: i * 0.2,
+                                        }}
+                                        style={{ x, y }}
+                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                                    >
+                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.8 }}
+                            className="absolute -top-8 -right-8 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-3 border border-purple-100 shadow-sm"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Hexagon size={12} className="text-purple-500" />
+                                <span className="text-xs text-slate-700 font-medium">AI-powered • Real-time</span>
+                            </div>
+                        </motion.div>
+                    </motion.div>
                 </div>
             </div>
 
-            {/* Simple Scroll Indicator */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1 }}
-                className="absolute bottom-6 left-1/2 -translate-x-1/2"
-            >
-                <div className="flex flex-col items-center gap-1 opacity-40 hover:opacity-100 transition-opacity cursor-pointer">
-                    <span className="text-[10px] text-slate-400 tracking-wider">SCROLL</span>
-                    <svg width="16" height="24" viewBox="0 0 16 24" fill="none" className="animate-bounce">
-                        <path d="M8 0L8 22M8 22L2 16M8 22L14 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400" />
-                    </svg>
-                </div>
-            </motion.div>
 
-            <style jsx>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 1; }
-        }
-      `}</style>
+            {/* Gradient Border Bottom - Light */}
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-300/50 to-transparent" />
         </section>
     );
 };
