@@ -313,18 +313,6 @@ export const HeroSection = () => {
                                 );
                             })}
                         </div>
-
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.8 }}
-                            className="absolute -top-8 -right-8 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-3 border border-purple-100 shadow-sm"
-                        >
-                            <div className="flex items-center gap-2">
-                                <Hexagon size={12} className="text-purple-500" />
-                                <span className="text-xs text-slate-700 font-medium">AI-powered • Real-time</span>
-                            </div>
-                        </motion.div>
                     </motion.div>
                 </div>
             </div>
