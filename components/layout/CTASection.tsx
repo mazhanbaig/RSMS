@@ -17,23 +17,35 @@ import {
     Users,
     TrendingUp,
     Calendar,
-    Check
+    Check,
+    Mail,
+    Bell,
+    MessageCircle,
+    Database,
+    BarChart3
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const benefits = [
-    { icon: CheckCircle2, text: "14-day free trial", color: "text-emerald-300" },
-    { icon: CheckCircle2, text: "No credit card required", color: "text-emerald-300" },
+    { icon: CheckCircle2, text: "Instant access", color: "text-emerald-300" },
+    { icon: CheckCircle2, text: "No commitment needed", color: "text-emerald-300" },
     { icon: CheckCircle2, text: "Cancel anytime", color: "text-emerald-300" },
-    { icon: Shield, text: "Enterprise security", color: "text-blue-300" },
-    { icon: Zap, text: "24/7 priority support", color: "text-amber-300" },
-    { icon: TrendingUp, text: "AI-powered insights", color: "text-purple-300" },
+    { icon: Shield, text: "Free forever tier", color: "text-blue-300" },
+    { icon: Zap, text: "Email support", color: "text-amber-300" },
+    { icon: TrendingUp, text: "Basic analytics", color: "text-purple-300" },
 ];
 
 const socialProof = [
     { label: "Active users", value: "5,000+", icon: Users },
-    { label: "Customer satisfaction", value: "4.9", icon: Star, suffix: "/5" },
-    { label: "Average time to value", value: "14", icon: Clock, suffix: "days" },
+    { label: "User rating", value: "4.9", icon: Star, suffix: "/5" },
+    { label: "Platform uptime", value: "99.9", icon: Clock, suffix: "%" },
+];
+
+const freeFeatures = [
+    { icon: Database, text: "Up to 100 contacts", color: "text-indigo-300" },
+    { icon: BarChart3, text: "Basic analytics", color: "text-purple-300" },
+    { icon: MessageCircle, text: "Email templates", color: "text-pink-300" },
+    { icon: Bell, text: "Real-time alerts", color: "text-amber-300" },
 ];
 
 export const CTASection = () => {
@@ -42,6 +54,7 @@ export const CTASection = () => {
     const [email, setEmail] = useState("");
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [name, setName] = useState("");
 
     useEffect(() => {
         const checkMobile = () => {
@@ -66,6 +79,7 @@ export const CTASection = () => {
             setIsSubmitted(true);
             setTimeout(() => setIsSubmitted(false), 3000);
             setEmail("");
+            setName("");
         }
     };
 
@@ -150,7 +164,7 @@ export const CTASection = () => {
                                 className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 shadow-sm mx-auto mb-4 sm:mb-6 w-fit"
                             >
                                 <Sparkles size={10} className="text-amber-300 sm:w-3 sm:h-3" />
-                                <span className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">Limited Time Offer</span>
+                                <span className="text-[10px] sm:text-xs font-medium text-white uppercase tracking-wider">Get Started Free</span>
                                 <ChevronRight size={8} className="text-white/60 sm:w-2.5 sm:h-2.5" />
                             </motion.div>
 
@@ -167,18 +181,18 @@ export const CTASection = () => {
                                 }}
                                 className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto mb-4 sm:mb-6 rounded-xl sm:rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-lg"
                             >
-                                <Gift size={24} className="text-white sm:w-7 sm:h-7 md:w-9 md:h-9" />
+                                <Rocket size={24} className="text-white sm:w-7 sm:h-7 md:w-9 md:h-9" />
                             </motion.div>
 
                             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white text-center mb-3 sm:mb-4 px-2">
-                                Ready to Transform{" "}
+                                Start Your{" "}
                                 <span className="bg-gradient-to-r from-amber-200 to-yellow-200 bg-clip-text text-transparent whitespace-nowrap">
-                                    Your Business?
+                                    Real Estate Journey
                                 </span>
                             </h2>
 
                             <p className="text-indigo-100 text-sm sm:text-base md:text-lg lg:text-xl text-center mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
-                                Join 5,000+ real estate professionals who are already saving time, fuel, and increasing their efficiency.
+                                Join thousands of real estate professionals using our platform to streamline their workflow and grow their business.
                             </p>
 
                             {/* Social Proof Stats - Responsive Grid */}
@@ -201,6 +215,27 @@ export const CTASection = () => {
                                 ))}
                             </div>
 
+                            {/* Free Features Showcase */}
+                            <div className="bg-white/5 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 mb-6 sm:mb-8 max-w-3xl mx-auto">
+                                <p className="text-center text-white/80 text-xs sm:text-sm mb-3 sm:mb-4">
+                                    ✨ Free forever plan includes:
+                                </p>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                                    {freeFeatures.map((feature, idx) => (
+                                        <motion.div
+                                            key={idx}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.3 + idx * 0.05 }}
+                                            className="flex items-center justify-center gap-1.5 sm:gap-2"
+                                        >
+                                            <feature.icon size={12} className={feature.color} />
+                                            <span className="text-[10px] sm:text-xs text-white/80">{feature.text}</span>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* CTA Buttons - Responsive */}
                             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-6 sm:mb-8 px-4 sm:px-0">
                                 <motion.button
@@ -211,7 +246,7 @@ export const CTASection = () => {
                                 >
                                     <span className="absolute inset-0 bg-gradient-to-r from-purple-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                     <span className="relative z-10 flex items-center gap-2">
-                                        Start Free Trial
+                                        Create Free Account
                                         <Rocket size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform sm:w-4 sm:h-4" />
                                     </span>
                                 </motion.button>
@@ -223,7 +258,7 @@ export const CTASection = () => {
                                     className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 rounded-full border border-white/30 bg-white/10 backdrop-blur-sm text-white font-medium hover:bg-white/20 transition-all duration-300 shadow-sm text-sm sm:text-base"
                                 >
                                     <Calendar size={14} className="sm:w-4 sm:h-4" />
-                                    Schedule Demo
+                                    See Platform Demo
                                 </motion.button>
                             </div>
 
@@ -242,49 +277,6 @@ export const CTASection = () => {
                                     </motion.div>
                                 ))}
                             </div>
-
-                            {/* Email Signup Form - Responsive */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.5 }}
-                                className="max-w-md mx-auto mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-white/20 px-4 sm:px-0"
-                            >
-                                <p className="text-center text-xs sm:text-sm text-indigo-200 mb-2 sm:mb-3">
-                                    Get early access & exclusive tips
-                                </p>
-                                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="Enter your email"
-                                        className="flex-1 px-3 sm:px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-white/40 transition-all text-xs sm:text-sm"
-                                        required
-                                    />
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        type="submit"
-                                        className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 rounded-full bg-white text-purple-600 text-xs sm:text-sm font-medium hover:bg-indigo-50 transition-all"
-                                    >
-                                        {isSubmitted ? (
-                                            <>
-                                                <Check size={12} />
-                                                Subscribed!
-                                            </>
-                                        ) : (
-                                            <>
-                                                Subscribe
-                                                <ArrowRight size={10} />
-                                            </>
-                                        )}
-                                    </motion.button>
-                                </form>
-                                <p className="text-center text-[10px] sm:text-xs text-indigo-200/60 mt-2 sm:mt-3">
-                                    We respect your privacy. Unsubscribe at any time.
-                                </p>
-                            </motion.div>
                         </div>
                     </div>
 
@@ -303,7 +295,7 @@ export const CTASection = () => {
                                     ))}
                                 </div>
                                 <div className="text-[9px] sm:text-xs">
-                                    <span className="font-semibold text-slate-700">Trusted by</span>
+                                    <span className="font-semibold text-slate-700">Join</span>
                                     <span className="text-purple-600 font-bold ml-1">5,000+</span>
                                 </div>
                             </div>

@@ -98,7 +98,7 @@ export const ProblemsSolutions = () => {
     return (
         <section
             ref={sectionRef}
-            className="relative py-16 sm:py-20 md:py-28 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-indigo-50/20"
+            className="relative py-7 sm:py-13 md:py-14 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-indigo-50/20"
         >
             {/* Animated Background Elements - Responsive sizing */}
             <motion.div
@@ -218,69 +218,6 @@ export const ProblemsSolutions = () => {
                         </motion.div>
                     ))}
                 </div>
-
-                {/* Impact Metrics Section - Responsive */}
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.4 }}
-                    viewport={{ once: true }}
-                    className="relative px-4 sm:px-0"
-                >
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5 rounded-2xl sm:rounded-3xl blur-2xl" />
-                    <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-slate-200 p-5 sm:p-6 md:p-8 shadow-sm">
-                        <div className="text-center mb-6 sm:mb-8">
-                            <h3 className="text-xl sm:text-2xl font-bold text-slate-800">Proven Impact, Measured Results</h3>
-                            <p className="text-slate-500 mt-1 sm:mt-2 text-sm sm:text-base">Trusted by industry leaders worldwide</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
-                            {additionalMetrics.map((metric, idx) => (
-                                <motion.div
-                                    key={idx}
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    whileInView={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: 0.6 + idx * 0.1 }}
-                                    viewport={{ once: true }}
-                                    className="text-center"
-                                >
-                                    <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                        {metric.value}
-                                    </div>
-                                    <div className="text-xs sm:text-sm text-slate-500 mt-1">{metric.label}</div>
-                                    <motion.div
-                                        animate={{ opacity: [0.7, 1, 0.7] }}
-                                        transition={{ duration: 2, repeat: Infinity }}
-                                        className={`text-[10px] sm:text-xs font-medium mt-1.5 sm:mt-2 ${metric.positive ? 'text-emerald-500' : 'text-red-500'}`}
-                                    >
-                                        {metric.change} vs last quarter
-                                    </motion.div>
-                                </motion.div>
-                            ))}
-                        </div>
-
-                        {/* Trust Badge - Responsive wrapping */}
-                        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-slate-100">
-                            <div className="flex -space-x-2">
-                                {[1, 2, 3].map((i) => (
-                                    <div key={i} className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 border-2 border-white shadow-sm" />
-                                ))}
-                            </div>
-                            <div className="text-[10px] sm:text-xs text-slate-400">
-                                <span className="text-slate-600 font-semibold">5,000+</span> firms transformed
-                            </div>
-                            <div className="hidden sm:block w-px h-4 bg-slate-200" />
-                            <div className="flex gap-0.5">
-                                {[...Array(5)].map((_, i) => (
-                                    <Star key={i} size={10} className="fill-amber-400 text-amber-400 sm:w-3 sm:h-3" />
-                                ))}
-                            </div>
-                            <div className="text-[10px] sm:text-xs text-slate-400">
-                                4.9/5 from <span className="text-slate-600 font-semibold">2,500+</span> reviews
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
             </div>
 
             {/* Bottom Gradient Border */}

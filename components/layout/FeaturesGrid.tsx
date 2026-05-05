@@ -106,7 +106,7 @@ export const FeaturesGrid = () => {
         <section
             id="features"
             ref={sectionRef}
-            className="relative py-16 sm:py-20 md:py-28 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-indigo-50/20"
+            className="relative py-7 sm:py-13 md:py-14 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-indigo-50/20"
         >
             {/* Animated Background - Responsive */}
             <motion.div
@@ -245,7 +245,7 @@ export const FeaturesGrid = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.4 }}
                     viewport={{ once: true }}
-                    className="relative mb-8 sm:mb-12 md:mb-16 px-4 sm:px-0"
+                    className="relative mb-8 sm:mb-12 md:mb-16"
                 >
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5 rounded-xl sm:rounded-2xl blur-xl" />
                     <div className="relative bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-slate-200 p-4 sm:p-5 md:p-6 shadow-sm">
