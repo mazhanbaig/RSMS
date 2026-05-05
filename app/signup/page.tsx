@@ -1,9 +1,213 @@
+// "use client";
+// import { useState } from "react";
+// import { useRouter } from "next/navigation";
+// import Link from "next/link";
+// import { message } from "antd";
+// import { loginWithGoogle } from "@/FBConfig/fbFunctions";
+
+// export default function Signup() {
+//   const [loading, setLoading] = useState(false);
+//   const router = useRouter();
+
+//   const handleGoogleSignup = async () => {
+//     setLoading(true);
+
+//     try {
+//       const res: any = await loginWithGoogle();
+//       console.log(res);
+
+//       localStorage.setItem(
+//         "userInfo",
+//         JSON.stringify({
+//           uid: res.user.uid,
+//           email: res.user.email,
+//           name: res.user.name,
+//           photoURL: res.user.photoURL
+//         })
+//       );
+//       message.success('Account Created Successfully');
+//       router.replace(`/realstate/${res.user.uid}`)
+//     } catch (err: any) {
+//       message.error('Error While Signup');
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-4">
+//       <div className="relative w-full max-w-3xl">
+//         {/* Compact Horizontal container */}
+//         <div className="flex flex-col lg:flex-row bg-white/95 backdrop-blur-sm rounded-xl sm:border border-gray-200 sm:shadow-lg overflow-hidden">
+
+//           {/* Left side - Compact Branding */}
+//           <div className="lg:w-1/2 p-8 sm:bg-gradient-to-br from-blue-50 to-cyan-50 flex flex-col justify-center">
+//             <div className="mb-6">
+//               <div className="relative inline-block mb-4">
+//                 <h1 className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 bg-clip-text text-transparent">
+//                   ZState
+//                 </h1>
+
+//                 <div className="absolute -top-1 -left-1 w-3 h-3 bg-cyan-400/20 rounded"></div>
+//                 <div className="absolute -bottom-0.5 -right-2 w-2 h-2 bg-blue-400/20 rounded"></div>
+//               </div>
+
+//               <p className="text-gray-700 font-medium mb-1 text-sm">
+//                 Intelligent real estate management
+//               </p>
+//               <p className="text-gray-500 text-xs">
+//                 Start your property management journey with ZState
+//               </p>
+//             </div>
+
+//             {/* Compact Features */}
+//             <div className="hidden sm:block space-y-3 mb-6">
+//               <div className="flex items-center gap-2">
+//                 <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
+//                   <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+//                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+//                   </svg>
+//                 </div>
+//                 <p className="text-sm font-medium text-gray-800">Secure & Encrypted</p>
+//               </div>
+
+//               <div className="flex items-center gap-2">
+//                 <div className="w-6 h-6 bg-cyan-100 rounded flex items-center justify-center flex-shrink-0">
+//                   <svg className="w-3 h-3 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+//                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+//                   </svg>
+//                 </div>
+//                 <p className="text-sm font-medium text-gray-800">Real-time Sync</p>
+//               </div>
+
+//               <div className="flex items-center gap-2">
+//                 <div className="w-6 h-6 bg-indigo-100 rounded flex items-center justify-center flex-shrink-0">
+//                   <svg className="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+//                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+//                   </svg>
+//                 </div>
+//                 <p className="text-sm font-medium text-gray-800">Fast Setup</p>
+//               </div>
+//             </div>
+
+//             {/* Compact Stats */}
+//             <div className="hidden sm:grid grid-cols-3 gap-3">
+//               <div className="bg-white/50 rounded p-2 text-center">
+//                 <div className="text-lg font-bold text-blue-600">Free</div>
+//                 <div className="text-xs text-gray-500">Forever Plan</div>
+//               </div>
+//               <div className="bg-white/50 rounded p-2 text-center">
+//                 <div className="text-lg font-bold text-cyan-600">5K+</div>
+//                 <div className="text-xs text-gray-500">New Users</div>
+//               </div>
+//               <div className="bg-white/50 rounded p-2 text-center">
+//                 <div className="text-lg font-bold text-indigo-600">14-day</div>
+//                 <div className="text-xs text-gray-500">Trial</div>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Right side - Compact Signup form */}
+//           <div className="lg:w-1/2 px-8 flex flex-col justify-center">
+//             <div className="text-center mb-6">
+//               <h2 className="text-2xl font-bold text-gray-800 mb-1">Create Your Account</h2>
+//               <p className="text-gray-500 text-sm">Sign up to start managing properties efficiently</p>
+//             </div>
+
+//             {/* Google Signup Button */}
+//             <div className="mb-4">
+//               <button
+//                 onClick={handleGoogleSignup}
+//                 disabled={loading}
+//                 className="w-full flex items-center justify-center gap-3 py-3 px-4
+//                          bg-white border border-gray-200 rounded-lg
+//                          hover:border-blue-300 hover:shadow-sm
+//                          active:scale-[0.98] transition-all duration-200
+//                          disabled:opacity-50 disabled:cursor-not-allowed"
+//               >
+//                 <svg className="w-4 h-4" viewBox="0 0 24 24">
+//                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+//                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+//                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+//                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+//                 </svg>
+//                 <span className="font-medium text-gray-800 text-sm">
+//                   {loading ? 'Creating account...' : 'Sign up with Google'}
+//                 </span>
+//               </button>
+//             </div>
+
+//             {/* Compact Links Section */}
+//             <div className="flex justify-between text-xs mb-4">
+//               <Link
+//                 href="#"
+//                 className="text-gray-500 hover:text-blue-600 hover:underline transition-colors px-2 py-1 rounded hover:bg-blue-50"
+//               >
+//                 Need help?
+//               </Link>
+//               <Link
+//                 href="/login"
+//                 className="text-blue-600 hover:text-blue-700 hover:underline font-medium transition-colors px-2 py-1 rounded hover:bg-blue-50"
+//               >
+//                 Already have an account? →
+//               </Link>
+//             </div>
+
+//             {/* Compact Social proof */}
+//             <div className="mb-4">
+//               <div className="flex items-center justify-center gap-3">
+//                 <div className="flex -space-x-2">
+//                   {[1, 2, 3].map((i) => (
+//                     <div key={i} className="w-7 h-7 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full border-2 border-white"></div>
+//                   ))}
+//                 </div>
+//                 <div>
+//                   <p className="text-xs font-medium text-gray-700">Join 5,000+ new users this month</p>
+//                 </div>
+//               </div>
+//             </div>
+
+//             {/* Compact Benefits */}
+//             <div className="hidden sm:block mb-4 px-3 py-2 bg-blue-50/50 rounded-lg border border-blue-100">
+//               <div className="flex items-center gap-2">
+//                 <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+//                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+//                 </svg>
+//                 <span className="text-xs font-medium text-blue-700">Get started in 60 seconds</span>
+//               </div>
+//             </div>
+
+//             {/* Compact Footer */}
+//             <div className="pt-4 border-t border-gray-200">
+//               <p className="text-xs text-gray-400 text-center">
+//                 By signing up, you agree to our{' '}
+//                 <Link href="#" className="text-blue-500 hover:text-blue-600 hover:underline">Terms</Link>
+//                 {' '}&{' '}
+//                 <Link href="#" className="text-blue-500 hover:text-blue-600 hover:underline">Privacy</Link>
+//               </p>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Background elements */}
+//       <div className="fixed inset-0 -z-10 overflow-hidden">
+//         <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-gradient-to-r from-cyan-200/10 to-blue-200/10 rounded-full blur-2xl"></div>
+//         <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-indigo-200/10 to-purple-200/10 rounded-full blur-2xl"></div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { message } from "antd";
 import { loginWithGoogle } from "@/FBConfig/fbFunctions";
+import { motion } from "framer-motion";
+import { Sparkles, Shield, Zap, TrendingUp, CheckCircle2, Rocket, Users, Clock } from "lucide-react";
 
 export default function Signup() {
   const [loading, setLoading] = useState(false);
@@ -34,165 +238,178 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-4">
-      <div className="relative w-full max-w-3xl">
-        {/* Compact Horizontal container */}
-        <div className="flex flex-col lg:flex-row bg-white/95 backdrop-blur-sm rounded-xl sm:border border-gray-200 sm:shadow-lg overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 p-4">
+      {/* Animated Background */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-indigo-200/20 to-purple-200/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-purple-200/20 to-pink-200/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.03),transparent_70%)]" />
+      </div>
 
-          {/* Left side - Compact Branding */}
-          <div className="lg:w-1/2 p-8 sm:bg-gradient-to-br from-blue-50 to-cyan-50 flex flex-col justify-center">
-            <div className="mb-6">
-              <div className="relative inline-block mb-4">
-                <h1 className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 bg-clip-text text-transparent">
-                  ZState
-                </h1>
+      <div className="relative w-full max-w-4xl">
+        {/* Main Container */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col lg:flex-row bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden"
+        >
+          {/* Left side - Enhanced Branding */}
+          <div className="lg:w-1/2 p-8 bg-gradient-to-br from-indigo-50/50 via-purple-50/30 to-pink-50/50 flex flex-col justify-center relative overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-200/30 to-purple-200/30 rounded-full blur-2xl" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-br from-pink-200/30 to-purple-200/30 rounded-full blur-2xl" />
 
-                <div className="absolute -top-1 -left-1 w-3 h-3 bg-cyan-400/20 rounded"></div>
-                <div className="absolute -bottom-0.5 -right-2 w-2 h-2 bg-blue-400/20 rounded"></div>
-              </div>
-
-              <p className="text-gray-700 font-medium mb-1 text-sm">
-                Intelligent real estate management
-              </p>
-              <p className="text-gray-500 text-xs">
-                Start your property management journey with ZState
-              </p>
-            </div>
-
-            {/* Compact Features */}
-            <div className="hidden sm:block space-y-3 mb-6">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
-                  <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
+            <div className="relative z-10">
+              <div className="mb-6">
+                <div className="relative inline-block mb-4">
+                  <h1 className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    ZState
+                  </h1>
+                  <div className="absolute -top-1 -left-1 w-3 h-3 bg-purple-400/30 rounded-full animate-ping" />
+                  <div className="absolute -bottom-0.5 -right-2 w-2 h-2 bg-pink-400/30 rounded-full animate-ping delay-300" />
                 </div>
-                <p className="text-sm font-medium text-gray-800">Secure & Encrypted</p>
+                <p className="text-slate-700 font-medium mb-1 text-sm">
+                  Intelligent real estate management
+                </p>
+                <p className="text-slate-500 text-xs">
+                  Start your property management journey with ZState
+                </p>
               </div>
 
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-cyan-100 rounded flex items-center justify-center flex-shrink-0">
-                  <svg className="w-3 h-3 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+              {/* Enhanced Features */}
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center gap-2 group cursor-pointer">
+                  <div className="w-7 h-7 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-200 transition-all">
+                    <Shield size={14} className="text-indigo-600" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-700 group-hover:text-slate-900">Secure & Encrypted</p>
                 </div>
-                <p className="text-sm font-medium text-gray-800">Real-time Sync</p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-indigo-100 rounded flex items-center justify-center flex-shrink-0">
-                  <svg className="w-3 h-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
+                <div className="flex items-center gap-2 group cursor-pointer">
+                  <div className="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-purple-200 transition-all">
+                    <Zap size={14} className="text-purple-600" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-700 group-hover:text-slate-900">Real-time Sync</p>
                 </div>
-                <p className="text-sm font-medium text-gray-800">Fast Setup</p>
+                <div className="flex items-center gap-2 group cursor-pointer">
+                  <div className="w-7 h-7 bg-pink-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-pink-200 transition-all">
+                    <Rocket size={14} className="text-pink-600" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-700 group-hover:text-slate-900">Fast Setup</p>
+                </div>
               </div>
-            </div>
 
-            {/* Compact Stats */}
-            <div className="hidden sm:grid grid-cols-3 gap-3">
-              <div className="bg-white/50 rounded p-2 text-center">
-                <div className="text-lg font-bold text-blue-600">Free</div>
-                <div className="text-xs text-gray-500">Forever Plan</div>
-              </div>
-              <div className="bg-white/50 rounded p-2 text-center">
-                <div className="text-lg font-bold text-cyan-600">5K+</div>
-                <div className="text-xs text-gray-500">New Users</div>
-              </div>
-              <div className="bg-white/50 rounded p-2 text-center">
-                <div className="text-lg font-bold text-indigo-600">14-day</div>
-                <div className="text-xs text-gray-500">Trial</div>
+              {/* Enhanced Stats */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-2 text-center border border-slate-100 hover:border-indigo-200 transition-all">
+                  <div className="text-lg font-bold text-indigo-600">Free</div>
+                  <div className="text-xs text-slate-500">Forever Plan</div>
+                </div>
+                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-2 text-center border border-slate-100 hover:border-purple-200 transition-all">
+                  <div className="text-lg font-bold text-purple-600">5K+</div>
+                  <div className="text-xs text-slate-500">New Users</div>
+                </div>
+                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-2 text-center border border-slate-100 hover:border-pink-200 transition-all">
+                  <div className="text-lg font-bold text-pink-600">14-day</div>
+                  <div className="text-xs text-slate-500">Trial</div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Right side - Compact Signup form */}
-          <div className="lg:w-1/2 px-8 flex flex-col justify-center">
+          {/* Right side - Enhanced Signup form */}
+          <div className="lg:w-1/2 px-6 sm:px-8 py-8 flex flex-col justify-center">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-1">Create Your Account</h2>
-              <p className="text-gray-500 text-sm">Sign up to start managing properties efficiently</p>
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 mb-3">
+                <Sparkles size={20} className="text-purple-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-800 mb-1">Create Your Account</h2>
+              <p className="text-slate-500 text-sm">Sign up to start managing properties efficiently</p>
             </div>
 
-            {/* Google Signup Button */}
+            {/* Enhanced Google Signup Button */}
             <div className="mb-4">
               <button
                 onClick={handleGoogleSignup}
                 disabled={loading}
                 className="w-full flex items-center justify-center gap-3 py-3 px-4 
-                         bg-white border border-gray-200 rounded-lg 
-                         hover:border-blue-300 hover:shadow-sm 
+                         bg-white border border-slate-200 rounded-xl 
+                         hover:border-purple-300 hover:shadow-md hover:shadow-purple-100
                          active:scale-[0.98] transition-all duration-200 
-                         disabled:opacity-50 disabled:cursor-not-allowed"
+                         disabled:opacity-50 disabled:cursor-not-allowed
+                         group"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
-                <span className="font-medium text-gray-800 text-sm">
+                <span className="font-medium text-slate-700 group-hover:text-purple-600 transition-colors text-sm">
                   {loading ? 'Creating account...' : 'Sign up with Google'}
                 </span>
               </button>
             </div>
 
-            {/* Compact Links Section */}
-            <div className="flex justify-between text-xs mb-4">
+            {/* Divider */}
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-3 bg-white text-slate-400">or</span>
+              </div>
+            </div>
+
+            {/* Enhanced Links Section */}
+            <div className="flex justify-between text-sm mb-4">
               <Link
                 href="#"
-                className="text-gray-500 hover:text-blue-600 hover:underline transition-colors px-2 py-1 rounded hover:bg-blue-50"
+                className="text-slate-500 hover:text-purple-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-purple-50"
               >
                 Need help?
               </Link>
               <Link
                 href="/login"
-                className="text-blue-600 hover:text-blue-700 hover:underline font-medium transition-colors px-2 py-1 rounded hover:bg-blue-50"
+                className="text-purple-600 hover:text-purple-700 font-medium transition-colors px-3 py-1.5 rounded-lg hover:bg-purple-50"
               >
                 Already have an account? →
               </Link>
             </div>
 
-            {/* Compact Social proof */}
+            {/* Enhanced Social proof */}
             <div className="mb-4">
               <div className="flex items-center justify-center gap-3">
                 <div className="flex -space-x-2">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-7 h-7 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full border-2 border-white"></div>
+                    <div key={i} className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400 border-2 border-white shadow-sm" />
                   ))}
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-700">Join 5,000+ new users this month</p>
+                  <p className="text-xs font-medium text-slate-600">Join <span className="text-purple-600 font-bold">5,000+</span> new users this month</p>
                 </div>
               </div>
             </div>
 
-            {/* Compact Benefits */}
-            <div className="hidden sm:block mb-4 px-3 py-2 bg-blue-50/50 rounded-lg border border-blue-100">
+            {/* Enhanced Benefits */}
+            <div className="mb-4 px-4 py-2.5 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 rounded-xl border border-indigo-100">
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span className="text-xs font-medium text-blue-700">Get started in 60 seconds</span>
+                <CheckCircle2 size={14} className="text-purple-600" />
+                <span className="text-xs font-medium text-slate-700">Get started in 60 seconds</span>
               </div>
             </div>
 
-            {/* Compact Footer */}
-            <div className="pt-4 border-t border-gray-200">
-              <p className="text-xs text-gray-400 text-center">
+            {/* Enhanced Footer */}
+            <div className="pt-4 border-t border-slate-100">
+              <p className="text-xs text-slate-400 text-center">
                 By signing up, you agree to our{' '}
-                <Link href="#" className="text-blue-500 hover:text-blue-600 hover:underline">Terms</Link>
+                <Link href="#" className="text-purple-500 hover:text-purple-600 hover:underline">Terms</Link>
                 {' '}&{' '}
-                <Link href="#" className="text-blue-500 hover:text-blue-600 hover:underline">Privacy</Link>
+                <Link href="#" className="text-purple-500 hover:text-purple-600 hover:underline">Privacy</Link>
               </p>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Background elements */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-gradient-to-r from-cyan-200/10 to-blue-200/10 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-indigo-200/10 to-purple-200/10 rounded-full blur-2xl"></div>
+        </motion.div>
       </div>
     </div>
   );
