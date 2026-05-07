@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@next/font": "^14.2.15",
-    "antd": "^6.0.0",
+    "antd": "^6.3.7",
     "axios": "^1.13.5",
     "emailjs-com": "^3.2.0",
     "firebase": "^12.10.0",

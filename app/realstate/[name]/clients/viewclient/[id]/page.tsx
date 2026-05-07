@@ -80,13 +80,9 @@ export default function ViewClientPage() {
     }, [router]);
 
     // Fetch client data
-    // Fetch client data
     const fetchClientData = useCallback(async () => {
         if (!id) return;
-
-        // Wait for userInfo if it's not available yet
         if (!userInfo?.uid) {
-            console.log("Waiting for userInfo...");
             return;
         }
 
@@ -119,7 +115,7 @@ export default function ViewClientPage() {
         if (!client || !id) return;
 
         try {
-            await updateData(`clients/${id}`, {
+            await updateData(`clients/${userInfo?.uid}/${id}`, {
                 ...client,
                 status: newStatus,
                 lastContacted: new Date().toISOString().split('T')[0]
@@ -130,15 +126,15 @@ export default function ViewClientPage() {
             console.error("Error updating status:", error);
             message.error('Failed to update status');
         }
-    }, [client, id]);
+    }, [client, id, userInfo?.uid]);
 
     // Helper functions
     const getStatusConfig = useCallback((status: string) => {
         const configs = {
-            'active': { color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', icon: <CheckCircle className="w-4 h-4" /> },
+            'active': { color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', icon: <CheckCircle className="w-4 h-4" /> },
             'pending': { color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', icon: <Clock className="w-4 h-4" /> },
-            'closed': { color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', icon: <CheckCircle className="w-4 h-4" /> },
-            'lost': { color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', icon: <div className="w-4 h-4">✕</div> },
+            'closed': { color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-200', icon: <CheckCircle className="w-4 h-4" /> },
+            'lost': { color: 'text-rose-600', bg: 'bg-rose-50', border: 'border-rose-200', icon: <div className="w-4 h-4">✕</div> },
         };
         return configs[status as keyof typeof configs] || configs.active;
     }, []);
@@ -177,15 +173,15 @@ export default function ViewClientPage() {
 
     if (!client) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white">
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
                 <Header userData={userInfo} />
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-                        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                    <div className="bg-white rounded-xl border border-slate-100 p-6 text-center">
+                        <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
                             <div className="text-2xl">✕</div>
                         </div>
-                        <h2 className="text-xl font-semibold text-gray-900 mb-2">Client Not Found</h2>
-                        <p className="text-gray-600 mb-6">The client you're looking for doesn't exist.</p>
+                        <h2 className="text-xl font-semibold text-slate-800 mb-2">Client Not Found</h2>
+                        <p className="text-slate-500 mb-6">The client you're looking for doesn't exist.</p>
                         <Button
                             label="Back to Clients"
                             onClick={() => router.push(`/realstate/${userInfo?.uid}/clients`)}
@@ -200,11 +196,11 @@ export default function ViewClientPage() {
     }
 
     return (
-        <div className="min-h-screen w-full bg-gradient-to-br from-white via-gray-50 to-white">
+        <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
             <Header userData={userInfo} />
 
             <main className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                {/* Client Header - Elegant & Minimal */}
+                {/* Client Header */}
                 <div className="mb-8 mt-5">
                     <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
 
@@ -212,21 +208,21 @@ export default function ViewClientPage() {
                         <div className="flex items-start gap-3 sm:items-center">
                             <button
                                 onClick={() => router.push(`/realstate/${userInfo?.uid}/clients`)}
-                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                                className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
                             >
-                                <ArrowLeft className="w-5 h-5 text-gray-600" />
+                                <ArrowLeft className="w-5 h-5 text-slate-600" />
                             </button>
 
-                            <div className="hidden sm:block h-6 w-px bg-gray-300"></div>
+                            <div className="hidden sm:block h-6 w-px bg-slate-300"></div>
 
                             <div>
-                                <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 leading-tight">
+                                <h1 className="text-2xl sm:text-3xl font-semibold text-slate-800 leading-tight">
                                     {client.firstName}{" "}
-                                    <span className="bg-gradient-to-br from-purple-500 to-blue-500 text-transparent bg-clip-text">
+                                    <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-transparent bg-clip-text">
                                         {client.lastName}
                                     </span>
                                 </h1>
-                                <p className="text-sm text-gray-600 mt-1">
+                                <p className="text-sm text-slate-500 mt-1">
                                     Client Profile • Real Estate
                                 </p>
                             </div>
@@ -260,25 +256,25 @@ export default function ViewClientPage() {
                     </div>
                 </div>
 
-                {/* Main Content Grid - Balanced Layout */}
+                {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Left Column - Client Info */}
                     <div className="space-y-6">
                         {/* Client Profile Card */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                        <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
                             <div className="flex items-center gap-4 mb-6">
-                                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center text-white text-xl font-bold">
+                                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center text-white text-xl font-bold">
                                     {clientInitials}
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-semibold text-gray-900">{client.firstName} {client.lastName}</h2>
+                                    <h2 className="text-lg font-semibold text-slate-800">{client.firstName} {client.lastName}</h2>
                                     <div className="flex flex-col gap-1 mt-2">
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <Mail className="w-3.5 h-3.5" />
+                                        <div className="flex items-center gap-2 text-sm text-slate-600">
+                                            <Mail className="w-3.5 h-3.5 text-indigo-400" />
                                             <span className="truncate">{client.email}</span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <Phone className="w-3.5 h-3.5" />
+                                        <div className="flex items-center gap-2 text-sm text-slate-600">
+                                            <Phone className="w-3.5 h-3.5 text-indigo-400" />
                                             <span>{client.phone}</span>
                                         </div>
                                     </div>
@@ -287,35 +283,35 @@ export default function ViewClientPage() {
 
                             {/* Quick Info */}
                             <div className="space-y-3">
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
                                     <div className="flex items-center gap-2">
-                                        <Briefcase className="w-4 h-4 text-gray-600" />
-                                        <span className="text-sm text-gray-600">Source</span>
+                                        <Briefcase className="w-4 h-4 text-indigo-500" />
+                                        <span className="text-sm text-slate-600">Source</span>
                                     </div>
-                                    <span className="text-sm font-medium text-gray-900 capitalize">{client.source}</span>
+                                    <span className="text-sm font-medium text-slate-800 capitalize">{client.source}</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
                                     <div className="flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-gray-600" />
-                                        <span className="text-sm text-gray-600">Last Contact</span>
+                                        <Calendar className="w-4 h-4 text-indigo-500" />
+                                        <span className="text-sm text-slate-600">Last Contact</span>
                                     </div>
-                                    <span className="text-sm font-medium text-gray-900">{formatDate(client.lastContacted)}</span>
+                                    <span className="text-sm font-medium text-slate-800">{formatDate(client.lastContacted)}</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
                                     <div className="flex items-center gap-2">
-                                        <Users className="w-4 h-4 text-gray-600" />
-                                        <span className="text-sm text-gray-600">Created</span>
+                                        <Users className="w-4 h-4 text-indigo-500" />
+                                        <span className="text-sm text-slate-600">Created</span>
                                     </div>
-                                    <span className="text-sm font-medium text-gray-900">{formatDate(client.createdAt)}</span>
+                                    <span className="text-sm font-medium text-slate-800">{formatDate(client.createdAt)}</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Quick Actions */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                        <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
                             <div className="flex items-center gap-2 mb-4">
                                 <Zap className="w-5 h-5 text-amber-500" />
-                                <h3 className="font-semibold text-gray-900">Quick Actions</h3>
+                                <h3 className="font-semibold text-slate-800">Quick Actions</h3>
                             </div>
                             <div className="space-y-2">
                                 <Button
@@ -347,8 +343,8 @@ export default function ViewClientPage() {
                         </div>
 
                         {/* Status Update */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                            <h3 className="font-semibold text-gray-900 mb-4">Update Status</h3>
+                        <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+                            <h3 className="font-semibold text-slate-800 mb-4">Update Status</h3>
                             <div className="grid grid-cols-2 gap-2">
                                 {[
                                     { status: 'active', label: 'Active' },
@@ -365,7 +361,7 @@ export default function ViewClientPage() {
                                             className={`px-3 py-2.5 rounded-lg text-sm transition-all duration-200 border flex items-center justify-center gap-2
                                                 ${isActive
                                                     ? `${config.bg} ${config.border} border ${config.color} font-medium`
-                                                    : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                                                    : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
                                                 }`}
                                         >
                                             {config.icon}
@@ -380,7 +376,7 @@ export default function ViewClientPage() {
                     {/* Center Column - Main Panel */}
                     <div className="lg:col-span-2">
                         {/* Panel Navigation */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-1.5 mb-6 shadow-sm">
+                        <div className="bg-white rounded-xl border border-slate-100 p-1.5 mb-6 shadow-sm">
                             <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth">
                                 {panels.map((panel) => (
                                     <button
@@ -388,8 +384,8 @@ export default function ViewClientPage() {
                                         onClick={() => setActivePanel(panel.id)}
                                         className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2
                                             ${activePanel === panel.id
-                                                ? 'bg-purple-50 text-purple-600'
-                                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                                ? 'bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-600'
+                                                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
                                             }`}
                                     >
                                         {panel.icon}
@@ -400,55 +396,55 @@ export default function ViewClientPage() {
                         </div>
 
                         {/* Panel Content */}
-                        <div className="bg-white rounded-xl border border-gray-200 px-6 py-4 shadow-sm">
+                        <div className="bg-white rounded-xl border border-slate-100 px-6 py-4 shadow-sm">
                             {activePanel === 'details' && (
                                 <div className="space-y-4">
                                     <div>
-                                        <h3 className="text-xl font-semibold text-gray-900 mb-4">Client Overview</h3>
+                                        <h3 className="text-xl font-semibold text-slate-800 mb-4">Client Overview</h3>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="px-4 pt-2 pb-2 rounded-lg bg-gray-50">
+                                            <div className="px-4 pt-2 pb-2 rounded-lg bg-slate-50">
                                                 <div className="flex items-center gap-3 mb-3">
-                                                    <div className="p-2 bg-purple-100 rounded-lg">
-                                                        <DollarSign className="w-4 h-4 text-purple-600" />
+                                                    <div className="p-2 bg-indigo-100 rounded-lg">
+                                                        <DollarSign className="w-4 h-4 text-indigo-600" />
                                                     </div>
                                                     <div>
-                                                        <div className="text-sm text-gray-600">Budget Range</div>
-                                                        <div className="font-semibold text-gray-900">
+                                                        <div className="text-sm text-slate-600">Budget Range</div>
+                                                        <div className="font-semibold text-slate-800">
                                                             ${client.minBudget.toLocaleString()} - ${client.maxBudget.toLocaleString()}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="px-4 pt-2 pb-2  rounded-lg bg-gray-50">
+                                            <div className="px-4 pt-2 pb-2 rounded-lg bg-slate-50">
                                                 <div className="flex items-center gap-3 mb-3">
-                                                    <div className="p-2 bg-blue-100 rounded-lg">
-                                                        <Home className="w-4 h-4 text-blue-600" />
+                                                    <div className="p-2 bg-purple-100 rounded-lg">
+                                                        <Home className="w-4 h-4 text-purple-600" />
                                                     </div>
                                                     <div>
-                                                        <div className="text-sm text-gray-600">Property Type</div>
-                                                        <div className="font-semibold text-gray-900 capitalize">{client.propertyType}</div>
+                                                        <div className="text-sm text-slate-600">Property Type</div>
+                                                        <div className="font-semibold text-slate-800 capitalize">{client.propertyType}</div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="px-4 pt-2 pb-2  rounded-lg bg-gray-50">
+                                            <div className="px-4 pt-2 pb-2 rounded-lg bg-slate-50">
                                                 <div className="flex items-center gap-3 mb-3">
-                                                    <div className="p-2 bg-green-100 rounded-lg">
-                                                        <Bed className="w-4 h-4 text-green-600" />
+                                                    <div className="p-2 bg-emerald-100 rounded-lg">
+                                                        <Bed className="w-4 h-4 text-emerald-600" />
                                                     </div>
                                                     <div>
-                                                        <div className="text-sm text-gray-600">Bedrooms</div>
-                                                        <div className="font-semibold text-gray-900">{client.bedrooms}</div>
+                                                        <div className="text-sm text-slate-600">Bedrooms</div>
+                                                        <div className="font-semibold text-slate-800">{client.bedrooms}</div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="px-4 pt-2 pb-2  rounded-lg bg-gray-50">
+                                            <div className="px-4 pt-2 pb-2 rounded-lg bg-slate-50">
                                                 <div className="flex items-center gap-3 mb-3">
                                                     <div className="p-2 bg-amber-100 rounded-lg">
                                                         <Layers className="w-4 h-4 text-amber-600" />
                                                     </div>
                                                     <div>
-                                                        <div className="text-sm text-gray-600">Priority</div>
-                                                        <div className="font-semibold text-gray-900">High</div>
+                                                        <div className="text-sm text-slate-600">Priority</div>
+                                                        <div className="font-semibold text-slate-800">High</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -456,13 +452,13 @@ export default function ViewClientPage() {
                                     </div>
 
                                     <div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Property Preferences</h3>
-                                        <div className="px-4 py-1 rounded-lg border border-gray-200">
+                                        <h3 className="text-lg font-semibold text-slate-800 mb-4">Property Preferences</h3>
+                                        <div className="px-4 py-3 rounded-lg border border-slate-200">
                                             <div className="flex items-center gap-3 mb-3">
-                                                <MapPin className="w-5 h-5 text-blue-600" />
+                                                <MapPin className="w-5 h-5 text-indigo-600" />
                                                 <div>
-                                                    <div className="font-medium text-gray-900">Preferred Locations</div>
-                                                    <div className="text-gray-700 mt-1">{client.preferredLocations}</div>
+                                                    <div className="font-medium text-slate-800">Preferred Locations</div>
+                                                    <div className="text-slate-600 mt-1">{client.preferredLocations}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -472,47 +468,47 @@ export default function ViewClientPage() {
 
                             {activePanel === 'requirements' && (
                                 <div className="space-y-6">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Detailed Requirements</h3>
+                                    <h3 className="text-lg font-semibold text-slate-800 mb-4">Detailed Requirements</h3>
 
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="px-4 py-2 rounded-lg border border-gray-200">
+                                        <div className="px-4 py-3 rounded-lg border border-slate-200">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <Home className="w-4 h-4 text-purple-600" />
-                                                <span className="font-medium text-gray-900">Type</span>
+                                                <Home className="w-4 h-4 text-indigo-600" />
+                                                <span className="font-medium text-slate-800">Type</span>
                                             </div>
-                                            <div className="text-gray-700 capitalize">{client.propertyType}</div>
+                                            <div className="text-slate-600 capitalize">{client.propertyType}</div>
                                         </div>
-                                        <div className="px-4 py-2 rounded-lg border border-gray-200">
+                                        <div className="px-4 py-3 rounded-lg border border-slate-200">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <Bed className="w-4 h-4 text-blue-600" />
-                                                <span className="font-medium text-gray-900">Bedrooms</span>
+                                                <Bed className="w-4 h-4 text-indigo-600" />
+                                                <span className="font-medium text-slate-800">Bedrooms</span>
                                             </div>
-                                            <div className="text-gray-700">{client.bedrooms}</div>
+                                            <div className="text-slate-600">{client.bedrooms}</div>
                                         </div>
-                                        <div className="px-4 py-2 rounded-lg border border-gray-200">
+                                        <div className="px-4 py-3 rounded-lg border border-slate-200">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <DollarSign className="w-4 h-4 text-green-600" />
-                                                <span className="font-medium text-gray-900">Min Budget</span>
+                                                <DollarSign className="w-4 h-4 text-indigo-600" />
+                                                <span className="font-medium text-slate-800">Min Budget</span>
                                             </div>
-                                            <div className="text-gray-700">${client.minBudget.toLocaleString()}</div>
+                                            <div className="text-slate-600">${client.minBudget.toLocaleString()}</div>
                                         </div>
-                                        <div className="px-4 py-2 rounded-lg border border-gray-200">
+                                        <div className="px-4 py-3 rounded-lg border border-slate-200">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <TrendingUp className="w-4 h-4 text-amber-600" />
-                                                <span className="font-medium text-gray-900">Max Budget</span>
+                                                <TrendingUp className="w-4 h-4 text-indigo-600" />
+                                                <span className="font-medium text-slate-800">Max Budget</span>
                                             </div>
-                                            <div className="text-gray-700">${client.maxBudget.toLocaleString()}</div>
+                                            <div className="text-slate-600">${client.maxBudget.toLocaleString()}</div>
                                         </div>
                                     </div>
 
                                     {client.requirements && (
                                         <div className="mt-6">
                                             <div className="flex items-center gap-2 mb-3">
-                                                <Plus className="w-4 h-4 text-gray-600" />
-                                                <span className="font-medium text-gray-900">Additional Requirements</span>
+                                                <Plus className="w-4 h-4 text-slate-600" />
+                                                <span className="font-medium text-slate-800">Additional Requirements</span>
                                             </div>
-                                            <div className="p-4 rounded-lg bg-gray-50">
-                                                <p className="text-gray-700">{client.requirements}</p>
+                                            <div className="p-4 rounded-lg bg-slate-50">
+                                                <p className="text-slate-600">{client.requirements}</p>
                                             </div>
                                         </div>
                                     )}
@@ -522,7 +518,7 @@ export default function ViewClientPage() {
                             {activePanel === 'notes' && (
                                 <div className="space-y-6">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-900">Client Notes</h3>
+                                        <h3 className="text-lg font-semibold text-slate-800">Client Notes</h3>
                                         <Button
                                             label="Add Note"
                                             variant="theme"
@@ -531,8 +527,8 @@ export default function ViewClientPage() {
                                             onClick={async () => {
                                                 if (newNote.trim()) {
                                                     try {
-                                                        const updatedNotes = `${newNote}`;
-                                                        await updateData(`clients/${id}`, { ...client, notes: updatedNotes });
+                                                        const updatedNotes = client.notes ? `${client.notes}\n\n${newNote}` : newNote;
+                                                        await updateData(`clients/${userInfo?.uid}/${id}`, { ...client, notes: updatedNotes });
                                                         setClient(prev => prev ? { ...prev, notes: updatedNotes } : null);
                                                         setNewNote('');
                                                         message.success('Note added successfully');
@@ -549,26 +545,26 @@ export default function ViewClientPage() {
                                             value={newNote}
                                             onChange={(e) => setNewNote(e.target.value)}
                                             placeholder="Add a new note..."
-                                            className="w-full h-32 p-4 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors resize-none"
+                                            className="w-full h-32 p-4 rounded-lg border border-slate-200 focus:border-indigo-300 focus:ring-1 focus:ring-indigo-300 transition-colors resize-none"
                                             rows={3}
                                         />
                                     </div>
 
                                     {client.notes ? (
                                         <div className="space-y-4">
-                                            {client.notes.split('\n\n').filter(note => note.trim()).map((note, index) => (
-                                                <div key={index} className="p-4 rounded-lg border border-gray-200 hover:border-purple-200 transition-colors">
+                                            {client.notes.split('\n\n').filter((note: string) => note.trim()).map((note: string, index: number) => (
+                                                <div key={index} className="p-4 rounded-lg border border-slate-200 hover:border-indigo-200 transition-colors">
                                                     <div className="flex items-center gap-2 mb-2">
-                                                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                                        <span className="text-sm text-gray-500">{formatDate(client.createdAt)}</span>
+                                                        <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                                                        <span className="text-sm text-slate-500">{formatDate(client.createdAt)}</span>
                                                     </div>
-                                                    <p className="text-gray-700">{note}</p>
+                                                    <p className="text-slate-600">{note}</p>
                                                 </div>
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="text-center py-1 text-gray-500">
-                                            <MessageSquare className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                                        <div className="text-center py-8 text-slate-500">
+                                            <MessageSquare className="w-12 h-12 mx-auto mb-3 text-slate-300" />
                                             <p>No notes yet. Add your first note above.</p>
                                         </div>
                                     )}
@@ -577,36 +573,36 @@ export default function ViewClientPage() {
 
                             {activePanel === 'activity' && (
                                 <div className="space-y-6">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+                                    <h3 className="text-lg font-semibold text-slate-800 mb-4">Recent Activity</h3>
 
                                     <div className="space-y-4">
-                                        <div className="flex items-start gap-4 px-4 py-2 rounded-lg border border-gray-200">
+                                        <div className="flex items-start gap-4 px-4 py-3 rounded-lg border border-slate-200">
+                                            <div className="p-2 bg-indigo-100 rounded-lg">
+                                                <Calendar className="w-4 h-4 text-indigo-600" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="font-medium text-slate-800">Client Created</div>
+                                                <div className="text-sm text-slate-500 mt-1">{formatDate(client.createdAt)}</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-4 px-4 py-3 rounded-lg border border-slate-200">
                                             <div className="p-2 bg-purple-100 rounded-lg">
-                                                <Calendar className="w-4 h-4 text-purple-600" />
+                                                <PhoneCall className="w-4 h-4 text-purple-600" />
                                             </div>
                                             <div className="flex-1">
-                                                <div className="font-medium text-gray-900">Client Created</div>
-                                                <div className="text-sm text-gray-600 mt-1">{formatDate(client.createdAt)}</div>
+                                                <div className="font-medium text-slate-800">Last Contact</div>
+                                                <div className="text-sm text-slate-500 mt-1">{formatDate(client.lastContacted)}</div>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-start gap-4 px-4 py-2 rounded-lg border border-gray-200">
-                                            <div className="p-2 bg-blue-100 rounded-lg">
-                                                <PhoneCall className="w-4 h-4 text-blue-600" />
+                                        <div className="flex items-start gap-4 px-4 py-3 rounded-lg border border-slate-200">
+                                            <div className="p-2 bg-emerald-100 rounded-lg">
+                                                <CheckCircle className="w-4 h-4 text-emerald-600" />
                                             </div>
                                             <div className="flex-1">
-                                                <div className="font-medium text-gray-900">Last Contact</div>
-                                                <div className="text-sm text-gray-600 mt-1">{formatDate(client.lastContacted)}</div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-start gap-4 px-4 py-2 rounded-lg border border-gray-200">
-                                            <div className="p-2 bg-green-100 rounded-lg">
-                                                <CheckCircle className="w-4 h-4 text-green-600" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="font-medium text-gray-900">Status Updated</div>
-                                                <div className="text-sm text-gray-600 mt-1">Changed to <span className="font-medium capitalize">{client.status}</span></div>
+                                                <div className="font-medium text-slate-800">Status Updated</div>
+                                                <div className="text-sm text-slate-500 mt-1">Changed to <span className="font-medium capitalize">{client.status}</span></div>
                                             </div>
                                         </div>
                                     </div>

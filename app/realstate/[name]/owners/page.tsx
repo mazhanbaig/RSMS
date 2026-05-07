@@ -11,11 +11,12 @@ import {
     Trash2, DollarSign, TrendingUp,
     UserCheck,
     Import,
-    Layers
+    Layers, Sparkles
 } from "lucide-react";
 import React from "react";
 import Loader from "@/components/Loader";
 import DraggableButton from "@/components/DraggableButton";
+import { motion } from "framer-motion";
 
 export default function OwnersPage() {
     interface UserInfo {
@@ -31,13 +32,11 @@ export default function OwnersPage() {
     const [activeFilter, setActiveFilter] = useState<string>("all");
     const [loading, setLoading] = useState<boolean>(true);
 
-    // ✅ SINGLE useEffect for authentication and user data
     useEffect(() => {
         const initPage = async () => {
             try {
                 setLoading(true);
 
-                // 1. Check Firebase Auth session
                 const sessionUser = await checkUserSession();
                 if (!sessionUser) {
                     message.error('Please Login First');
@@ -45,7 +44,6 @@ export default function OwnersPage() {
                     return;
                 }
 
-                // 2. Get user data from localStorage
                 const storedUser = localStorage.getItem('userInfo');
                 if (!storedUser) {
                     message.error('User data not found');
@@ -55,8 +53,6 @@ export default function OwnersPage() {
 
                 const userData = JSON.parse(storedUser);
                 setUserInfo(userData);
-
-                // 3. Fetch owners immediately
                 await fetchOwners(userData.uid);
 
             } catch (err) {
@@ -70,7 +66,6 @@ export default function OwnersPage() {
         initPage();
     }, [router]);
 
-    // ✅ Separate function to fetch owners
     const fetchOwners = async (uid: string) => {
         try {
             const res = await getData(`owners/${uid}`);
@@ -79,7 +74,6 @@ export default function OwnersPage() {
                     id,
                     ...value
                 })).reverse()
-
                 setOwners(ownersArray);
             } else {
                 setOwners([]);
@@ -90,7 +84,6 @@ export default function OwnersPage() {
         }
     };
 
-    // ✅ Optimized delete function
     const deleteOwner = useCallback(async (id: string) => {
         if (!confirm("Are you sure you want to delete this owner?")) return;
 
@@ -108,7 +101,6 @@ export default function OwnersPage() {
         }
     }, [userInfo?.uid]);
 
-    // ✅ Fast filtered owners (memoized)
     const filteredOwners = useMemo(() => {
         if (!owners.length) return [];
 
@@ -126,21 +118,20 @@ export default function OwnersPage() {
         });
     }, [owners, searchVal, activeFilter]);
 
-    // ✅ Fast stats calculation (memoized)
     const ownerStats = useMemo(() => [
         {
             title: "Total Owners",
             value: owners.length,
-            icon: <Users className="h-5 w-5 text-blue-600" />,
+            icon: <Users className="h-5 w-5 text-indigo-600" />,
         },
         {
             title: "Active Owners",
             value: owners.filter(o => o.status === 'active').length,
-            icon: <UserCheck className="h-5 w-5 text-green-600" />,
+            icon: <UserCheck className="h-5 w-5 text-emerald-600" />,
         },
         {
             title: "Deal Done",
-            value: owners.filter(o => o.status === 'deal-done').length,
+            value: owners.filter(o => o.status === 'deal-done' || o.status === 'deal-Done').length,
             icon: <DollarSign className="h-5 w-5 text-purple-600" />,
         },
         {
@@ -150,15 +141,13 @@ export default function OwnersPage() {
         }
     ], [owners]);
 
-    // ✅ Fast status filters (memoized)
     const statusFilters = useMemo(() => [
         { id: "all", label: "All Owners", count: owners.length },
         { id: "active", label: "Active", count: owners.filter(o => o.status === 'active').length },
-        { id: "deal-done", label: "Deal Done", count: owners.filter(o => o.status === 'deal-done').length },
+        { id: "deal-done", label: "Deal Done", count: owners.filter(o => o.status === 'deal-done' || o.status === 'deal-Done').length },
         { id: "inactive", label: "Inactive", count: owners.filter(o => o.status === 'inactive').length }
     ], [owners]);
 
-    // ✅ Fast growth calculation
     const calculateOwnersGrowth = useMemo(() => {
         if (!owners.length) return 0;
 
@@ -172,17 +161,15 @@ export default function OwnersPage() {
         return Math.round((thisMonthCount / owners.length) * 100);
     }, [owners]);
 
-    // ✅ Fast status color function
     const getStatusColor = useCallback((status: string) => {
         switch (status?.toLowerCase()) {
-            case 'active': return 'bg-green-100 text-green-800 border-green-200';
+            case 'active': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
             case 'deal-done': return 'bg-purple-100 text-purple-800 border-purple-200';
-            case 'inactive': return 'bg-red-100 text-red-800 border-red-200';
-            default: return 'bg-gray-100 text-gray-800 border-gray-200';
+            case 'inactive': return 'bg-rose-100 text-rose-800 border-rose-200';
+            default: return 'bg-slate-100 text-slate-800 border-slate-200';
         }
     }, []);
 
-    // ✅ Optimized handlers
     const handleAddOwner = useCallback(() => {
         if (userInfo?.uid) {
             router.push(`/realstate/${userInfo.uid}/owners/addowner`);
@@ -214,54 +201,51 @@ export default function OwnersPage() {
         }
     }, [router, userInfo?.uid]);
 
-    // Show loader while loading
     if (loading || !userInfo) {
         return <Loader />;
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white via-white to-purple-50">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
             <Header userData={userInfo} />
 
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
                 {/* Welcome Section */}
                 <div className="mb-10">
                     <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
-                        {/* Left Side - Welcome Message */}
                         <div className="flex-1">
                             <div className="flex items-center gap-2 mb-6 mt-6 sm:mt-3">
-                                <div className="w-6 h-px bg-gradient-to-r from-purple-500 to-blue-500"></div>
-                                <span className="text-xs font-medium text-gray-500 uppercase tracking-widest">Owners Management</span>
-                                <div className="w-6 h-px bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+                                <div className="w-6 h-px bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+                                <span className="text-xs font-medium text-slate-500 uppercase tracking-widest">Owners Management</span>
+                                <div className="w-6 h-px bg-gradient-to-r from-purple-500 to-pink-500"></div>
                             </div>
 
                             <div className="space-y-3">
                                 <div>
-                                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                                    <h1 className="text-3xl md:text-4xl font-bold text-slate-800">
                                         Owner's {''}
-                                        <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                        <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                                             Directory
                                         </span>
                                     </h1>
-                                    <p className="text-gray-600 mt-2 max-w-xl">
+                                    <p className="text-slate-500 mt-2 max-w-xl">
                                         Manage your property owners, track their properties, and grow your real estate business.
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Right Side - Quick Stats */}
                         <div className="lg:w-80">
-                            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl px-5 py-4 border border-purple-100 mt-6 sm:mt-3">
+                            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl px-5 py-4 border border-indigo-100 mt-6 sm:mt-3">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
-                                        <Users className="h-5 w-5 text-purple-600" />
-                                        <span className="text-sm font-medium text-gray-700">Owner Growth</span>
+                                        <Users className="h-5 w-5 text-indigo-600" />
+                                        <span className="text-sm font-medium text-slate-700">Owner Growth</span>
                                     </div>
-                                    <span className="text-sm font-medium text-green-600">+{calculateOwnersGrowth}% this month</span>
+                                    <span className="text-sm font-medium text-emerald-600">+{calculateOwnersGrowth}% this month</span>
                                 </div>
-                                <div className="text-2xl font-bold text-gray-900">{owners.length} Owners</div>
-                                <div className="text-sm text-gray-600 mt-1">Total in your portfolio</div>
+                                <div className="text-2xl font-bold text-slate-800">{owners.length} Owners</div>
+                                <div className="text-sm text-slate-500 mt-1">Total in your portfolio</div>
                             </div>
                         </div>
                     </div>
@@ -292,7 +276,7 @@ export default function OwnersPage() {
                                 type="text"
                                 value={searchVal}
                                 placeholder="Search owners by name, email, number"
-                                className="md:min-w-80 border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="md:min-w-80 border border-slate-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 onChange={(e) => setSearchVal(e.target.value)}
                             />
                         </div>
@@ -305,8 +289,8 @@ export default function OwnersPage() {
                                 key={filter.id}
                                 onClick={() => setActiveFilter(filter.id)}
                                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${activeFilter === filter.id
-                                    ? 'bg-purple-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
+                                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                                     }`}
                             >
                                 {filter.label}
@@ -321,70 +305,61 @@ export default function OwnersPage() {
                 {/* Table View */}
                 <div className="mt-6">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-bold text-gray-900">All Owners</h2>
-                        <div className="text-sm text-gray-600">
+                        <h2 className="text-xl font-bold text-slate-800">All Owners</h2>
+                        <div className="text-sm text-slate-500">
                             Showing {filteredOwners.length} of {owners.length} owners
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead className="bg-gray-50">
+                                <thead className="bg-slate-50">
                                     <tr>
-                                        <th className="text-left p-4 font-semibold text-gray-900">Owner</th>
-                                        <th className="text-left p-4 font-semibold text-gray-900">Contact</th>
-                                        {/* <th className="text-left p-4 font-semibold text-gray-900">Properties</th> */}
-                                        <th className="text-left p-4 font-semibold text-gray-900">Status</th>
-                                        <th className="text-left p-4 font-semibold text-gray-900">Actions</th>
+                                        <th className="text-left p-4 font-semibold text-slate-800">Owner</th>
+                                        <th className="text-left p-4 font-semibold text-slate-800">Contact</th>
+                                        <th className="text-left p-4 font-semibold text-slate-800">Status</th>
+                                        <th className="text-left p-4 font-semibold text-slate-800">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-200">
+                                <tbody className="divide-y divide-slate-200">
                                     {filteredOwners.length > 0 ? (
                                         filteredOwners.map((owner: any) => (
                                             <tr
                                                 key={owner.id}
-                                                className="hover:bg-gray-50 cursor-pointer"
+                                                className="hover:bg-slate-50 cursor-pointer"
                                                 onClick={() => handleRowClick(owner.id)}
                                             >
-                                                <td className="px-4 py-2">
+                                                <td className="px-4 py-3">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
-                                                            <span className="font-bold text-purple-600">
+                                                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
+                                                            <span className="font-bold text-indigo-600">
                                                                 {owner.firstName?.charAt(0)}{owner.lastName?.charAt(0)}
                                                             </span>
                                                         </div>
                                                         <div>
-                                                            <div className="font-medium text-gray-900">
+                                                            <div className="font-medium text-slate-800">
                                                                 {owner.firstName} {owner.lastName}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-2">
+                                                <td className="px-4 py-3">
                                                     <div className="space-y-1">
-                                                        <div className="text-sm text-gray-900">{owner.email}</div>
-                                                        <div className="text-sm text-gray-500">{owner.phone}</div>
+                                                        <div className="text-sm text-slate-800">{owner.email}</div>
+                                                        <div className="text-sm text-slate-500">{owner.phone}</div>
                                                     </div>
                                                 </td>
-                                                {/* <td className="px-4 py-2">
-                                                    <div className="text-sm font-medium text-gray-900">
-                                                        {owner.propertyOwn || 0} Properties
-                                                    </div>
-                                                    <div className="text-sm text-gray-500">
-                                                        {owner.propertyTypes || "Various types"}
-                                                    </div>
-                                                </td> */}
-                                                <td className="px-4 py-2">
+                                                <td className="px-4 py-3">
                                                     <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(owner.status)}`}>
                                                         {owner.status || 'Active'}
                                                     </span>
                                                 </td>
-                                                <td className="px-4 py-2">
+                                                <td className="px-4 py-3">
                                                     <div className="flex items-center gap-2">
                                                         <button
                                                             onClick={(e) => handleViewOwner(owner.id, e)}
-                                                            className="p-2 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors"
+                                                            className="p-2 hover:bg-indigo-50 rounded-lg text-indigo-600 transition-colors"
                                                         >
                                                             <Eye className="h-4 w-4" />
                                                         </button>
@@ -396,7 +371,7 @@ export default function OwnersPage() {
                                                         </button>
                                                         <button
                                                             onClick={(e) => handleDeleteOwner(owner.id, e)}
-                                                            className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                                                            className="p-2 hover:bg-rose-50 rounded-lg text-rose-600 transition-colors"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </button>
@@ -406,10 +381,10 @@ export default function OwnersPage() {
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={5} className="p-8 text-center">
-                                                <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                                                <p className="text-gray-600">No owners found</p>
-                                                <p className="text-sm text-gray-500 mt-2">
+                                            <td colSpan={4} className="p-8 text-center">
+                                                <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                                                <p className="text-slate-600">No owners found</p>
+                                                <p className="text-sm text-slate-500 mt-2">
                                                     {searchVal || activeFilter !== 'all'
                                                         ? 'Try changing your search or filter'
                                                         : 'Click "Add Owner" to add your first owner'}
@@ -423,7 +398,6 @@ export default function OwnersPage() {
                     </div>
                 </div>
                 <DraggableButton onClick={handleAddOwner} />
-
             </main>
         </div>
     );
