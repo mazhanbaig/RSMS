@@ -21,7 +21,6 @@ import WelcomeSection from "@/components/WelcomeSection";
 import QuickActions from "@/components/QuickActions";
 import { motion, AnimatePresence } from 'framer-motion';
 import CommunicationHub from "@/components/CommunicationHub";
-import DocumentManager from "@/components/DocumentManager";
 
 // Types
 interface MetricData {
@@ -467,11 +466,11 @@ export default function AdminDashboardPage() {
                     {enhancedStats.map((stat, idx) => (<StatsCard key={idx} index={idx} stat={stat} onClick={() => handleStatClick(stat)} />))}
                 </div>
 
-                {/* Communication & Documents Section */}
+                {/* Communication & Documents Section
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                     <CommunicationHub clients={filteredClients} onSendMessage={handleSendMessage} onBulkMessage={handleBulkMessage} templates={templates} onSaveTemplate={saveTemplate} />
                     <DocumentManager documents={documents} onUpload={handleUpload} onDelete={handleDeleteDocument} onView={handleViewDocument} />
-                </div>
+                </div> */}
 
                 {/* Main 2-Column Layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
