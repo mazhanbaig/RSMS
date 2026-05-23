@@ -79,7 +79,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
-      <CustomCursor />
+      {/* <CustomCursor /> */}
       <HomeHeader />
       <HeroSection />
       <ProblemsSolutions />

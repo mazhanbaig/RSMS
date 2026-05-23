@@ -12,7 +12,7 @@ import {
     ChevronDown, MoreVertical, Edit, Trash2,
     User, Sparkles, Crown, Bed, Bath,
     Check, X, AlertCircle, ExternalLink,
-    Layers
+    Layers, HomeIcon, Briefcase
 } from "lucide-react";
 import Header from "@/components/Header";
 import Button from "@/components/Button";
@@ -20,7 +20,6 @@ import Loader from "@/components/Loader";
 import DraggableButton from "@/components/DraggableButton";
 import { checkUserSession, deleleData, getData } from "@/FBConfig/fbFunctions";
 
-// ✅ Moved ListIcon to top
 const ListIcon = ({ className }: { className?: string }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -34,12 +33,35 @@ interface UserInfo {
     [key: string]: any;
 }
 
+interface ClientData {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    propertyType?: string;
+    preferredLocations?: string;
+    ownerUid?: string;
+    agentUid?: string;
+}
+
+interface OwnerData {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    propertyAddress?: string;
+    ownerUid?: string;
+    agentUid?: string;
+}
+
 interface EventData {
     id: string;
     title: string;
     description: string;
     eventType: 'property-viewing' | 'client-meeting' | 'closing-session' | 'property-inspection' | 'follow-up-call';
-    clientIds: string[];
+    clientIds: string[]; // Can contain both client and owner IDs
     address: string;
     date: string;
     startTime: string;
@@ -52,10 +74,22 @@ interface EventData {
     createdAt: string;
 }
 
+interface AttendeeInfo {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    type: 'client' | 'owner';
+    propertyInfo?: string;
+}
+
 export default function ElegantEventsPage() {
     const router = useRouter();
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
     const [events, setEvents] = useState<EventData[]>([]);
+    const [clients, setClients] = useState<ClientData[]>([]);
+    const [owners, setOwners] = useState<OwnerData[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState<string>('all');
@@ -63,7 +97,7 @@ export default function ElegantEventsPage() {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
-    // Event type configuration matching your theme
+    // Event type configuration
     const eventTypeConfig = useMemo(() => ({
         'property-viewing': {
             label: 'Property Viewing',
@@ -102,7 +136,7 @@ export default function ElegantEventsPage() {
         }
     }), []);
 
-    // Get event status based on date/time
+    // Get event status
     const getEventStatus = useCallback((event: EventData) => {
         const now = new Date();
         const eventDate = new Date(`${event.date}T${event.startTime}`);
@@ -142,7 +176,88 @@ export default function ElegantEventsPage() {
         }
     }), []);
 
-    // Load user info and events
+    // Fetch clients and owners
+    const fetchClients = useCallback(async (uid: string) => {
+        try {
+            const clientsData: any = await getData(`clients/${uid}`);
+            if (clientsData) {
+                const clientsArray = Object.entries(clientsData)
+                    .map(([id, data]: [string, any]) => ({ id, ...data }))
+                    .filter((client) => client.agentUid === uid || client.ownerUid === uid);
+                setClients(clientsArray);
+            }
+        } catch (error) {
+            console.error('Error fetching clients:', error);
+        }
+    }, []);
+
+    const fetchOwners = useCallback(async (uid: string) => {
+        try {
+            const ownersData: any = await getData(`owners/${uid}`);
+            if (ownersData) {
+                const ownersArray = Object.entries(ownersData)
+                    .map(([id, data]: [string, any]) => ({ id, ...data }))
+                    .filter((owner) => owner.agentUid === uid);
+                setOwners(ownersArray);
+            }
+        } catch (error) {
+            console.error('Error fetching owners:', error);
+        }
+    }, []);
+
+    // Get attendee info by ID (works for both clients and owners)
+    const getAttendeeInfo = useCallback((id: string): AttendeeInfo | null => {
+        const client = clients.find(c => c.id === id);
+        if (client) {
+            return {
+                ...client,
+                type: 'client',
+                propertyInfo: client.propertyType
+            };
+        }
+        const owner = owners.find(o => o.id === id);
+        if (owner) {
+            return {
+                ...owner,
+                type: 'owner',
+                propertyInfo: owner.propertyAddress
+            };
+        }
+        return null;
+    }, [clients, owners]);
+
+    // Get formatted attendees string for table
+    const getAttendeesDisplay = useCallback((clientIds: string[]) => {
+        if (!clientIds || clientIds.length === 0) {
+            return { text: 'No attendees', hasMultiple: false, attendees: [] };
+        }
+
+        const attendees = clientIds.map(id => getAttendeeInfo(id)).filter(Boolean) as AttendeeInfo[];
+
+        if (attendees.length === 0) {
+            return { text: 'Unknown attendees', hasMultiple: false, attendees: [] };
+        }
+
+        const clientCount = attendees.filter(a => a.type === 'client').length;
+        const ownerCount = attendees.filter(a => a.type === 'owner').length;
+
+        let text = '';
+        if (clientCount > 0 && ownerCount > 0) {
+            text = `${clientCount} client${clientCount > 1 ? 's' : ''}, ${ownerCount} owner${ownerCount > 1 ? 's' : ''}`;
+        } else if (clientCount > 0) {
+            text = `${clientCount} client${clientCount > 1 ? 's' : ''}`;
+        } else if (ownerCount > 0) {
+            text = `${ownerCount} owner${ownerCount > 1 ? 's' : ''}`;
+        }
+
+        return {
+            text,
+            hasMultiple: attendees.length > 1,
+            attendees
+        };
+    }, [getAttendeeInfo]);
+
+    // Load all data
     useEffect(() => {
         const checkAuth = async () => {
             try {
@@ -167,8 +282,12 @@ export default function ElegantEventsPage() {
 
                 if (userData) {
                     setUserInfo({ uid: user.uid, ...userData });
-                    // Fetch events for this user
-                    await fetchEvents(user.uid);
+                    // Fetch all data in parallel
+                    await Promise.all([
+                        fetchEvents(user.uid),
+                        fetchClients(user.uid),
+                        fetchOwners(user.uid)
+                    ]);
                 }
             } catch (err) {
                 console.error('Authentication error:', err);
@@ -180,7 +299,7 @@ export default function ElegantEventsPage() {
         };
 
         checkAuth();
-    }, [router]);
+    }, [router, fetchClients, fetchOwners]);
 
     const fetchEvents = async (uid: string) => {
         try {
@@ -190,8 +309,7 @@ export default function ElegantEventsPage() {
                 let eventsArray: EventData[] = Object.entries(eventsData).map(([id, value]: any) => ({
                     id,
                     ...value
-                }))
-
+                }));
                 eventsArray = eventsArray.reverse();
                 setEvents(eventsArray);
             } else {
@@ -201,8 +319,6 @@ export default function ElegantEventsPage() {
             console.error('Error fetching events:', error);
             message.error('Failed to fetch events');
             setEvents([]);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -234,20 +350,6 @@ export default function ElegantEventsPage() {
         });
     }, []);
 
-    const getTimeUntilEvent = useCallback((date: string, time: string) => {
-        const eventDateTime = new Date(`${date}T${time}`);
-        const now = new Date();
-        const diffMs = eventDateTime.getTime() - now.getTime();
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-        if (diffMs < 0) return { text: 'Past', color: 'text-gray-500', bg: 'bg-gray-100' };
-        if (diffDays > 1) return { text: `${diffDays} days`, color: 'text-blue-600', bg: 'bg-blue-50' };
-        if (diffDays === 1) return { text: 'Tomorrow', color: 'text-green-600', bg: 'bg-green-50' };
-        if (diffHours > 0) return { text: `${diffHours} hours`, color: 'text-amber-600', bg: 'bg-amber-50' };
-        return { text: 'Today', color: 'text-red-600', bg: 'bg-red-50' };
-    }, []);
-
     // Filter events
     const filteredEvents = useMemo(() => {
         return events.filter(event => {
@@ -256,8 +358,6 @@ export default function ElegantEventsPage() {
                 event.address?.toLowerCase().includes(searchTerm.toLowerCase());
 
             const matchesType = filterType === 'all' || event.eventType === filterType;
-
-            // Get status for filtering
             const eventStatus = getEventStatus(event);
             const matchesStatus = filterStatus === 'all' || eventStatus === filterStatus;
 
@@ -286,7 +386,6 @@ export default function ElegantEventsPage() {
 
         setDeletingId(eventId);
         try {
-            // ✅ FIXED: Using deleleData function
             await deleleData(`events/${userInfo?.uid}/${eventId}`);
             setEvents(events.filter(event => event.id !== eventId));
             message.success('Event deleted successfully');
@@ -340,33 +439,13 @@ export default function ElegantEventsPage() {
                     </div>
                 </div>
 
-                {/* Stats Overview - ✅ FIXED: Now showing all 4 stats */}
+                {/* Stats Overview */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
                     {[
-                        {
-                            title: 'Total Events',
-                            value: eventStats.total,
-                            icon: <Calendar className="w-5 h-5 text-purple-600" />,
-                            color: 'purple'
-                        },
-                        {
-                            title: 'Upcoming',
-                            value: eventStats.upcoming,
-                            icon: <TrendingUp className="w-5 h-5 text-blue-600" />,
-                            color: 'blue'
-                        },
-                        {
-                            title: 'Today',
-                            value: eventStats.today,
-                            icon: <Clock className="w-5 h-5 text-green-600" />,
-                            color: 'green'
-                        },
-                        {
-                            title: 'Completed',
-                            value: eventStats.completed,
-                            icon: <CheckCircle className="w-5 h-5 text-amber-600" />,
-                            color: 'amber'
-                        }
+                        { title: 'Total Events', value: eventStats.total, icon: <Calendar className="w-5 h-5 text-purple-600" />, color: 'purple' },
+                        { title: 'Upcoming', value: eventStats.upcoming, icon: <TrendingUp className="w-5 h-5 text-blue-600" />, color: 'blue' },
+                        { title: 'Today', value: eventStats.today, icon: <Clock className="w-5 h-5 text-green-600" />, color: 'green' },
+                        { title: 'Completed', value: eventStats.completed, icon: <CheckCircle className="w-5 h-5 text-amber-600" />, color: 'amber' }
                     ].map((stat, idx) => (
                         <div key={idx} className="relative group">
                             <div className="relative bg-white rounded-xl border border-gray-100 px-4 py-2 shadow-sm hover:shadow-md hover:border-purple-200 transition-all duration-300">
@@ -375,7 +454,6 @@ export default function ElegantEventsPage() {
                                         {stat.icon}
                                     </div>
                                 </div>
-
                                 <div className="-mt-1">
                                     <div className="text-right">
                                         <h3 className="text-2xl font-bold text-gray-900 mb-0.5">{stat.value}</h3>
@@ -390,69 +468,31 @@ export default function ElegantEventsPage() {
                 {/* Search and Filter Bar */}
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 mb-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        {/* Action Buttons */}
                         <div className="flex flex-wrap gap-3">
-                            <Button
-                                label="Add Event"
-                                onClick={handleCreateEvent}
-                                variant="theme"
-                                icon={<Layers className="w-4 h-4" />}
-                                size="md"
-                            />
-                            <Button
-                                label={viewMode === 'grid' ? 'List View' : 'Grid View'}
-                                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                                variant="theme2"
-                                icon={viewMode === 'grid' ? <ListIcon className="w-4 h-4" /> : <Grid className="w-4 h-4" />}
-                                size="md"
-                            />
+                            <Button label="Add Event" onClick={handleCreateEvent} variant="theme" icon={<Layers className="w-4 h-4" />} size="md" />
+                            <Button label={viewMode === 'grid' ? 'List View' : 'Grid View'} onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')} variant="theme2" icon={viewMode === 'grid' ? <ListIcon className="w-4 h-4" /> : <Grid className="w-4 h-4" />} size="md" />
                         </div>
-
-                        {/* Search Input */}
-                        <div className="flex flex-wrap gap-3">
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <input
-                                    type="text"
-                                    placeholder="Search by events or address"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors md:min-w-80"
-                                />
-                            </div>
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <input type="text" placeholder="Search by events or address" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors md:min-w-80" />
                         </div>
                     </div>
 
                     {/* Filter Buttons */}
                     <div className="flex flex-wrap gap-2 mt-4">
-                        {/* Event Type Filters */}
-                        <div className="flex flex-wrap gap-2">
-                            {[
-                                { id: 'all', label: 'All Types', count: events.length },
-                                ...Object.entries(eventTypeConfig).map(([key, config]) => ({
-                                    id: key,
-                                    label: config.label,
-                                    count: events.filter(e => e.eventType === key).length
-                                }))
-                            ].map((filter) => (
-                                <button
-                                    key={filter.id}
-                                    onClick={() => setFilterType(filter.id)}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filterType === filter.id
-                                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }`}
-                                >
-                                    {filter.label}
-                                    <span className={`ml-1.5 px-1.5 py-0.5 rounded text-xs ${filterType === filter.id
-                                        ? 'bg-white/20'
-                                        : 'bg-white'
-                                        }`}>
-                                        {filter.count}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
+                        {[
+                            { id: 'all', label: 'All Types', count: events.length },
+                            ...Object.entries(eventTypeConfig).map(([key, config]) => ({
+                                id: key,
+                                label: config.label,
+                                count: events.filter(e => e.eventType === key).length
+                            }))
+                        ].map((filter) => (
+                            <button key={filter.id} onClick={() => setFilterType(filter.id)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filterType === filter.id ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                                {filter.label}
+                                <span className={`ml-1.5 px-1.5 py-0.5 rounded text-xs ${filterType === filter.id ? 'bg-white/20' : 'bg-white'}`}>{filter.count}</span>
+                            </button>
+                        ))}
                     </div>
                 </div>
 
@@ -460,9 +500,7 @@ export default function ElegantEventsPage() {
                 <div className="mt-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-bold text-gray-900">All Events</h2>
-                        <div className="text-sm text-gray-600">
-                            Showing {filteredEvents.length} of {events.length} events
-                        </div>
+                        <div className="text-sm text-gray-600">Showing {filteredEvents.length} of {events.length} events</div>
                     </div>
 
                     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
@@ -475,7 +513,9 @@ export default function ElegantEventsPage() {
                                         <th className="text-left p-4 font-semibold text-gray-900">Status</th>
                                         <th className="text-left p-4 font-semibold text-gray-900">Date & Time</th>
                                         <th className="text-left p-4 font-semibold text-gray-900">Address</th>
-                                        <th className="text-left p-4 font-semibold text-gray-900">Clients</th>                                    </tr>
+                                        <th className="text-left p-4 font-semibold text-gray-900">Attendees</th>
+                                        <th className="text-left p-4 font-semibold text-gray-900">Actions</th>
+                                    </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                     {filteredEvents.length > 0 ? (
@@ -483,14 +523,12 @@ export default function ElegantEventsPage() {
                                             const typeConfig = eventTypeConfig[event.eventType];
                                             const eventStatus = getEventStatus(event);
                                             const statusConfigItem = statusConfig[eventStatus];
+                                            const attendeesDisplay = getAttendeesDisplay(event.clientIds);
+
                                             return (
-                                                <tr
-                                                    key={event.id}
-                                                    className="hover:bg-gray-50 cursor-pointer"
-                                                    onClick={() => handleViewEvent(event.id)}
-                                                >
-                                                    <td className="px-4 py-2 font-medium text-gray-900">{event.title}</td>
-                                                    <td className="px-4 py-2">
+                                                <tr key={event.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleViewEvent(event.id)}>
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{event.title}</td>
+                                                    <td className="px-4 py-3">
                                                         <div className="flex items-center gap-2">
                                                             <div className={`p-2 rounded-lg ${typeConfig.bg}`}>
                                                                 <div className={typeConfig.color}>{typeConfig.icon}</div>
@@ -498,37 +536,48 @@ export default function ElegantEventsPage() {
                                                             <span className="text-sm text-gray-700">{typeConfig.label}</span>
                                                         </div>
                                                     </td>
-                                                    <td className="px-4 py-2">
+                                                    <td className="px-4 py-3">
                                                         <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusConfigItem.bg} ${statusConfigItem.color}`}>
                                                             {statusConfigItem.label}
                                                         </span>
                                                     </td>
-                                                    <td className="px-4 py-2">
+                                                    <td className="px-4 py-3">
                                                         <div className="text-sm text-gray-700">
-                                                            {formatDate(event.date)} {formatTime(event.startTime)} - {formatTime(event.endTime)}
+                                                            {formatDate(event.date)} • {formatTime(event.startTime)} - {formatTime(event.endTime)}
                                                         </div>
                                                     </td>
-                                                    <td className="px-4 py-2">
-                                                        <span className="text-sm text-gray-700 truncate max-w-xs">{event.address}</span>
+                                                    <td className="px-4 py-3">
+                                                        <span className="text-sm text-gray-700 line-clamp-1 max-w-xs">{event.address}</span>
                                                     </td>
-                                                    <td className="px-4 py-2">
-                                                        {event.clientIds && event.clientIds.length > 0 ? (
-                                                            <span className="text-sm text-gray-700">
-                                                                {event.clientIds.length} Client{event.clientIds.length > 1 ? 's' : ''}
-                                                            </span>
+                                                    <td className="px-4 py-3">
+                                                        {attendeesDisplay.attendees.length > 0 ? (
+                                                            <div className="flex flex-col gap-1">
+                                                                <span className="text-sm text-gray-700 font-medium">
+                                                                    {attendeesDisplay.text}
+                                                                </span>
+                                                                {attendeesDisplay.hasMultiple && (
+                                                                    <div className="flex -space-x-2">
+                                                                        {attendeesDisplay.attendees.slice(0, 3).map((attendee, idx) => (
+                                                                            <div key={attendee.id} className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white ${attendee.type === 'client' ? 'bg-purple-500' : 'bg-amber-500'} ring-2 ring-white`} title={`${attendee.firstName} ${attendee.lastName} (${attendee.type === 'client' ? 'Client' : 'Owner'})`}>
+                                                                                {attendee.firstName?.charAt(0)}{attendee.lastName?.charAt(0)}
+                                                                            </div>
+                                                                        ))}
+                                                                        {attendeesDisplay.attendees.length > 3 && (
+                                                                            <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700 ring-2 ring-white">
+                                                                                +{attendeesDisplay.attendees.length - 3}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         ) : (
-                                                            <span className="text-sm text-gray-400">No clients</span>
+                                                            <span className="text-sm text-gray-400">No attendees</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-4 py-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <button
-                                                                onClick={(e) => { e.stopPropagation(); handleDeleteEvent(event.id); }}
-                                                                className="p-2 hover:bg-red-50 rounded-lg text-red-600"
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </button>
-                                                        </div>
+                                                    <td className="px-4 py-3">
+                                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteEvent(event.id); }} className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors" disabled={deletingId === event.id}>
+                                                            <Trash2 className={`h-4 w-4 ${deletingId === event.id ? 'opacity-50' : ''}`} />
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             );
@@ -548,9 +597,7 @@ export default function ElegantEventsPage() {
                     </div>
                 </div>
 
-
                 <DraggableButton onClick={handleCreateEvent} />
-
             </main>
         </div>
     );

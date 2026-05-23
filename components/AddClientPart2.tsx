@@ -168,7 +168,7 @@ export default function AddClientPart2({ formData, handleChange }: PropertyInfoP
                             name="minBudget"
                             value={formData.minBudget}
                             onChange={handleChange}
-                            placeholder="$50,000"
+                            placeholder="PKR 50,000"
                             required
                             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 focus:outline-none transition-all bg-gray-50/50 hover:bg-white"
                         />
@@ -187,7 +187,7 @@ export default function AddClientPart2({ formData, handleChange }: PropertyInfoP
                             name="maxBudget"
                             value={formData.maxBudget}
                             onChange={handleChange}
-                            placeholder="$500,000"
+                            placeholder="PKR 500,000"
                             required
                             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 focus:outline-none transition-all bg-gray-50/50 hover:bg-white"
                         />

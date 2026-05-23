@@ -48,6 +48,16 @@ interface EventFormData {
   clientIds: string[];
   reminderTime: '15' | '30' | '60' | '120';
 }
+interface OwnerData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  propertyAddress?: string;
+  ownerUid?: string;
+  agentUid?: string;
+}
 
 export default function AddEventPage() {
   const router = useRouter();
@@ -56,6 +66,9 @@ export default function AddEventPage() {
   const [loading, setLoading] = useState(true); // For auth
   const [clientsLoading, setClientsLoading] = useState(false); // ✅ Separate for clients
   const [clients, setClients] = useState<ClientData[]>([]);
+  const [owners, setOwners] = useState<OwnerData[]>([]);
+  const [ownersLoading, setOwnersLoading] = useState(false);
+  const [attendeeType, setAttendeeType] = useState<'clients' | 'owners'>('clients');
   const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState<EventFormData>({
@@ -116,6 +129,26 @@ export default function AddEventPage() {
     }
   }, [userInfo?.uid]);
 
+  const fetchOwners = useCallback(async (uid: string) => {
+    if (!uid) return;
+    setOwnersLoading(true);
+    try {
+      const ownersData: any = await getData(`owners/${uid}`);
+      if (!ownersData) {
+        setOwners([]);
+        return;
+      }
+      const ownersArray = Object.entries(ownersData)
+        .map(([id, data]: [string, any]) => ({ id, ...data }))
+        .filter((owner) => owner.agentUid === uid);
+      setOwners(ownersArray);
+    } catch (error) {
+      message.error("Failed to load owners");
+    } finally {
+      setOwnersLoading(false);
+    }
+  }, []);
+
   // Get selected clients
   const selectedClients = clients.filter(client => formData.clientIds.includes(client.id));
 
@@ -145,6 +178,7 @@ export default function AddEventPage() {
 
         // ✅ Fetch clients after user is set
         await fetchClients(userData.uid);
+        await fetchOwners(userData.uid);
 
       } catch (err) {
         console.error('Authentication error:', err);
@@ -321,66 +355,111 @@ export default function AddEventPage() {
                 </div>
               </div>
 
-              {/* Client Selection */}
+              {/* Attendee Type Toggle + Selection */}
               <div className="bg-white rounded-lg border border-gray-200 px-5 py-4 shadow-sm">
                 <label className="flex items-center gap-3 text-lg font-semibold text-gray-900 mb-3">
-                  <User size={22} className="w-5 h-5 text-purple-600" />
-                  <span>Select Client</span>
-                  {selectedClients.length > 0 && (
-                    <span className="ml-2 text-sm text-gray-600">
-                      • {selectedClients[0].firstName} {selectedClients[0].lastName}
-                      {selectedClients.length > 1 && ` + ${selectedClients.length - 1} more`}
-                    </span>
-                  )}
+                  <Users size={22} className="w-5 h-5 text-purple-600" />
+                  <span>Select Attendee</span>
                 </label>
+
+                {/* Toggle between Clients & Owners */}
+                <div className="flex gap-2 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setAttendeeType('clients')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${attendeeType === 'clients'
+                        ? 'bg-purple-600 text-white shadow-sm'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                  >
+                    Clients
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAttendeeType('owners')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${attendeeType === 'owners'
+                        ? 'bg-purple-600 text-white shadow-sm'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                  >
+                    Owners
+                  </button>
+                </div>
+
+                {/* Dropdown */}
                 <select
-                  onChange={(e) => handleClientSelect(e.target.value)}
+                  onChange={(e) => {
+                    const selectedId = e.target.value;
+                    if (!selectedId) return;
+
+                    if (attendeeType === 'clients') {
+                      handleClientSelect(selectedId);
+                    } else {
+                      const selectedOwner = owners.find(o => o.id === selectedId);
+                      if (selectedOwner && !formData.clientIds.includes(selectedId)) {
+                        setFormData(prev => ({
+                          ...prev,
+                          clientIds: [...prev.clientIds, selectedId]
+                        }));
+                        const eventTypeLabel = eventTypes.find(et => et.value === formData.eventType)?.label || '';
+                        setFormData(prev => ({
+                          ...prev,
+                          title: `${eventTypeLabel} with Owner ${selectedOwner.firstName} ${selectedOwner.lastName}`
+                        }));
+                      }
+                    }
+                  }}
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors bg-white"
                   value=""
                 >
-                  <option value="">Select a client...</option>
-                  {clients.map(client => (
-                    <option key={client.id} value={client.id}>
-                      {client.firstName} {client.lastName} • {client.email}
+                  <option value="">Select {attendeeType === 'clients' ? 'a client' : 'an owner'}...</option>
+                  {(attendeeType === 'clients' ? clients : owners).map(person => (
+                    <option key={person.id} value={person.id}>
+                      {person.firstName} {person.lastName} • {person.email}
+                      {attendeeType === 'owners' && (person as OwnerData).propertyAddress && ` • ${(person as OwnerData).propertyAddress}`}
                     </option>
                   ))}
                 </select>
+
+                {/* Loading state inside dropdown area */}
+                {(attendeeType === 'clients' ? clientsLoading : ownersLoading) && (
+                  <div className="mt-2 text-sm text-gray-500">Loading...</div>
+                )}
+
+                {/* Selected attendees display (supports both clients & owners) */}
                 {selectedClients.length > 0 && (
                   <div className="mt-4 space-y-2">
-                    {selectedClients.map(client => (
-                      <div
-                        key={client.id}
-                        className="px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center text-white font-semibold">
-                            {client.firstName?.charAt(0) || ''}
-                            {client.lastName?.charAt(0) || ''}
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900">
-                              {client.firstName} {client.lastName}
+                    {selectedClients.map(person => {
+                      const isOwner = owners.some(o => o.id === person.id);
+                      return (
+                        <div key={person.id} className="px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center text-white font-semibold">
+                              {person.firstName?.charAt(0)}{person.lastName?.charAt(0)}
                             </div>
-                            <div className="text-sm text-gray-600">
-                              {client.email} • {client.phone}
+                            <div>
+                              <div className="font-medium text-gray-900">
+                                {person.firstName} {person.lastName}
+                                {isOwner && <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Owner</span>}
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                {person.email} • {person.phone}
+                              </div>
                             </div>
                           </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setFormData(prev => ({
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({
                               ...prev,
-                              clientIds: prev.clientIds.filter(id => id !== client.id),
-                            }))
-                          }
-                          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                          <X className="w-4 h-4 text-gray-500" />
-                        </button>
-                      </div>
-                    ))}
+                              clientIds: prev.clientIds.filter(id => id !== person.id)
+                            }))}
+                            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
+                            <X className="w-4 h-4 text-gray-500" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

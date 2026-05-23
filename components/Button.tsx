@@ -63,7 +63,7 @@ import React, { useState } from "react";
 
 interface ButtonProps {
     label: string;
-    onClick?: (e?: any) => Promise<any> | void; // support async
+    onClick?: (e?: any) => any; // support async
     type?: "button" | "submit";
     variant?: "primary" | "secondary" | "danger" | "theme" | "theme2";
     size?: "sm" | "md" | "lg" | "xl";
