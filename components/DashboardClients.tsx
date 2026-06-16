@@ -35,9 +35,6 @@ export default function RecentClients({ clients, userUid, onViewAll, onNavigate 
                             <Users size={10} className="text-indigo-500" />
                             <span className="text-[10px] font-medium text-slate-600 uppercase tracking-wider">Client Relations</span>
                         </motion.div>
-                        <h2 className="text-xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                            Recent Clients
-                        </h2>
                         <p className="text-xs text-slate-400 mt-0.5">Your newest connections</p>
                     </div>
                     <Button

@@ -466,12 +466,6 @@ export default function AdminDashboardPage() {
                     {enhancedStats.map((stat, idx) => (<StatsCard key={idx} index={idx} stat={stat} onClick={() => handleStatClick(stat)} />))}
                 </div>
 
-                {/* Communication & Documents Section
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    <CommunicationHub clients={filteredClients} onSendMessage={handleSendMessage} onBulkMessage={handleBulkMessage} templates={templates} onSaveTemplate={saveTemplate} />
-                    <DocumentManager documents={documents} onUpload={handleUpload} onDelete={handleDeleteDocument} onView={handleViewDocument} />
-                </div> */}
-
                 {/* Main 2-Column Layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-8">

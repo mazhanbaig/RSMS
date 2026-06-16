@@ -33,9 +33,6 @@ export default function RecentOwners({ owners, userUid, onViewAll, onNavigate }:
                             <Building2 size={10} className="text-indigo-500" />
                             <span className="text-[10px] font-medium text-slate-600 uppercase tracking-wider">Property Owners</span>
                         </motion.div>
-                        <h2 className="text-xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                            Recent Owners
-                        </h2>
                         <p className="text-xs text-slate-400 mt-0.5">Property partners & investors</p>
                     </div>
                     <Button

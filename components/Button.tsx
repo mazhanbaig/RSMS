@@ -63,7 +63,7 @@ import React, { useState } from "react";
 
 interface ButtonProps {
     label: string;
-    onClick?: (e?: any) => any; // support async
+    onClick?: (e?: any) => any;
     type?: "button" | "submit";
     variant?: "primary" | "secondary" | "danger" | "theme" | "theme2";
     size?: "sm" | "md" | "lg" | "xl";
@@ -80,7 +80,7 @@ export default function Button({
     disabled = false,
     classNameC = "",
     icon,
-}: ButtonProps) {
+}: any) {
     const [loading, setLoading] = useState(false);
 
     const handleClick = async (e: any) => {
