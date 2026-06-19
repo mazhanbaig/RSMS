@@ -4,13 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { message } from "antd";
 import {
-  Calendar, Clock, MapPin, Users, Home, DollarSign,
-  ArrowLeft, Plus, X, PhoneCall, Mail, MessageSquare,
-  Building, Target, Eye, Key, Bell, FileText,
-  User, HomeIcon, Briefcase, Layers,
-  Presentation,
-  ListFilter,
-  PenLine
+  Plus, X, PhoneCall, Mail, MessageSquare, MapPin, Calendar, Clock, Users, Eye, Key, Target
 } from "lucide-react";
 import Header from "@/components/Header";
 import Button from "@/components/Button";
@@ -48,6 +42,7 @@ interface EventFormData {
   clientIds: string[];
   reminderTime: '15' | '30' | '60' | '120';
 }
+
 interface OwnerData {
   id: string;
   firstName: string;
@@ -63,20 +58,29 @@ export default function AddEventPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-  const [loading, setLoading] = useState(true); // For auth
-  const [clientsLoading, setClientsLoading] = useState(false); // ✅ Separate for clients
+  const [loading, setLoading] = useState(true);
+  const [clientsLoading, setClientsLoading] = useState(false);
   const [clients, setClients] = useState<ClientData[]>([]);
   const [owners, setOwners] = useState<OwnerData[]>([]);
   const [ownersLoading, setOwnersLoading] = useState(false);
   const [attendeeType, setAttendeeType] = useState<'clients' | 'owners'>('clients');
   const [saving, setSaving] = useState(false);
 
+  // Get date from URL params or use today
+  const getInitialDate = useCallback(() => {
+    const dateParam = searchParams.get('date');
+    if (dateParam) {
+      return dateParam;
+    }
+    return new Date().toISOString().split('T')[0];
+  }, [searchParams]);
+
   const [formData, setFormData] = useState<EventFormData>({
     title: '',
     description: '',
     eventType: 'property-viewing',
     address: '',
-    date: new Date().toISOString().split('T')[0],
+    date: getInitialDate(),
     startTime: '10:00',
     endTime: '11:00',
     notes: '',
@@ -101,33 +105,28 @@ export default function AddEventPage() {
     { value: '120', label: '2 hours before' }
   ];
 
-  // ✅ FIXED: Fetch clients with proper error handling
   const fetchClients = useCallback(async (uid: string) => {
     if (!uid) return;
-
     setClientsLoading(true);
     try {
       const clientsData: any = await getData(`clients/${uid}`);
-
       if (!clientsData) {
         setClients([]);
         return;
       }
-
       const clientsArray = Object.entries(clientsData)
         .map(([id, data]: [string, any]) => ({
           id,
           ...data,
         }))
         .filter((client) => client.agentUid === uid || client.ownerUid === uid);
-
       setClients(clientsArray);
     } catch (error) {
       message.error("Failed to load clients");
     } finally {
       setClientsLoading(false);
     }
-  }, [userInfo?.uid]);
+  }, []);
 
   const fetchOwners = useCallback(async (uid: string) => {
     if (!uid) return;
@@ -152,12 +151,10 @@ export default function AddEventPage() {
   // Get selected clients
   const selectedClients = clients.filter(client => formData.clientIds.includes(client.id));
 
-  // ✅ FIXED: Single useEffect for auth
   useEffect(() => {
     const checkAuth = async () => {
       try {
         setLoading(true);
-
         const user: any = await checkUserSession();
         if (!user) {
           message.error('Please Login First');
@@ -165,7 +162,6 @@ export default function AddEventPage() {
           return;
         }
 
-        // Get user data from localStorage
         const storedUser = localStorage.getItem('userInfo');
         if (!storedUser) {
           message.error('No user info found');
@@ -175,10 +171,14 @@ export default function AddEventPage() {
 
         const userData = JSON.parse(storedUser);
         setUserInfo(userData);
-
-        // ✅ Fetch clients after user is set
         await fetchClients(userData.uid);
         await fetchOwners(userData.uid);
+
+        // Update date if it was passed in URL
+        const dateParam = searchParams.get('date');
+        if (dateParam) {
+          setFormData(prev => ({ ...prev, date: dateParam }));
+        }
 
       } catch (err) {
         console.error('Authentication error:', err);
@@ -190,7 +190,7 @@ export default function AddEventPage() {
     };
 
     checkAuth();
-  }, [router, fetchClients]);
+  }, [router, fetchClients, fetchOwners, searchParams]);
 
   const handleClientSelect = (clientId: string) => {
     if (!clientId || formData.clientIds.includes(clientId)) return;
@@ -200,7 +200,6 @@ export default function AddEventPage() {
       clientIds: [...prev.clientIds, clientId],
     }));
 
-    // Auto-update title with client name
     const selectedClient = clients.find(c => c.id === clientId);
     if (selectedClient && formData.eventType) {
       const eventTypeLabel = eventTypes.find(et => et.value === formData.eventType)?.label || '';
@@ -211,7 +210,6 @@ export default function AddEventPage() {
     }
   };
 
-  // Handle form input changes
   const handleInputChange = (field: keyof EventFormData, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -219,7 +217,6 @@ export default function AddEventPage() {
     }));
   };
 
-  // Validate form
   const validateForm = (): boolean => {
     if (!formData.title.trim()) {
       message.error('Please enter a title for the event');
@@ -248,7 +245,6 @@ export default function AddEventPage() {
     return true;
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -261,7 +257,6 @@ export default function AddEventPage() {
     setSaving(true);
 
     try {
-      // Generate a unique ID for the event
       const eventId = crypto.randomUUID();
       const eventData = {
         ...formData,
@@ -272,7 +267,6 @@ export default function AddEventPage() {
         createdAt: new Date().toISOString(),
       };
 
-      // ✅ FIXED: Save event with flat structure (matches your fetch pattern)
       await saveData(`events/${userInfo?.uid}/${eventId}`, eventData);
 
       message.success('Event created successfully!');
@@ -286,7 +280,6 @@ export default function AddEventPage() {
     }
   };
 
-  // Show loader while checking auth or loading clients
   if (loading || clientsLoading || !userInfo?.uid) {
     return <Loader />;
   }
@@ -329,7 +322,6 @@ export default function AddEventPage() {
               {/* Event Type Selection */}
               <div className="bg-white rounded-lg border border-gray-200 px-5 py-4 shadow-sm">
                 <label className="flex items-center gap-3 text-lg font-semibold text-gray-900 mb-4">
-                  <ListFilter size={22} className="w-5 h-5 text-purple-600" />
                   <span>Select Event Type</span>
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -368,8 +360,8 @@ export default function AddEventPage() {
                     type="button"
                     onClick={() => setAttendeeType('clients')}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${attendeeType === 'clients'
-                        ? 'bg-purple-600 text-white shadow-sm'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                   >
                     Clients
@@ -378,8 +370,8 @@ export default function AddEventPage() {
                     type="button"
                     onClick={() => setAttendeeType('owners')}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${attendeeType === 'owners'
-                        ? 'bg-purple-600 text-white shadow-sm'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                   >
                     Owners
@@ -421,12 +413,11 @@ export default function AddEventPage() {
                   ))}
                 </select>
 
-                {/* Loading state inside dropdown area */}
                 {(attendeeType === 'clients' ? clientsLoading : ownersLoading) && (
                   <div className="mt-2 text-sm text-gray-500">Loading...</div>
                 )}
 
-                {/* Selected attendees display (supports both clients & owners) */}
+                {/* Selected attendees display */}
                 {selectedClients.length > 0 && (
                   <div className="mt-4 space-y-2">
                     {selectedClients.map(person => {
@@ -468,7 +459,6 @@ export default function AddEventPage() {
               <div className="bg-white rounded-lg border border-gray-200 px-5 py-4 shadow-sm">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 text-lg font-semibold text-gray-900 mb-4">
-                    <PenLine size={22} className="w-5 h-5 text-purple-600" />
                     <span>Event Details</span>
                   </div>
                   <div>
@@ -523,10 +513,12 @@ export default function AddEventPage() {
                       type="date"
                       value={formData.date}
                       onChange={(e) => handleInputChange('date', e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-purple-300 focus:ring-1 focus:ring-purple-300 transition-colors"
                       required
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      You can select any date - past, today, or future
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">

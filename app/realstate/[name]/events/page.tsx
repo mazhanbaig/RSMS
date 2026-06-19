@@ -602,6 +602,10 @@
 //         </div>
 //     );
 // }
+
+
+
+
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -616,7 +620,9 @@ import {
     ChevronDown, MoreVertical, Edit, Trash2,
     User, Sparkles, Crown, Bed, Bath,
     Check, X, AlertCircle, ExternalLink,
-    Layers, HomeIcon, Briefcase, ChevronLeft
+    Layers, HomeIcon, Briefcase, ChevronLeft,
+    CalendarRange, CalendarCheck, CalendarX, CalendarPlus,
+    ListFilter, Clock8
 } from "lucide-react";
 import Header from "@/components/Header";
 import Button from "@/components/Button";
@@ -752,6 +758,17 @@ const statusConfig = {
     }
 };
 
+// Time filter options - UPDATED: Tomorrow instead of Yesterday
+type TimeFilter = 'today' | 'tomorrow' | 'this-week' | 'this-month' | 'all';
+
+const timeFilterConfig: Record<TimeFilter, { label: string; icon: any }> = {
+    'today': { label: 'Today', icon: <Clock8 className="w-4 h-4" /> },
+    'tomorrow': { label: 'Tomorrow', icon: <CalendarPlus className="w-4 h-4" /> },
+    'this-week': { label: 'This Week', icon: <CalendarRange className="w-4 h-4" /> },
+    'this-month': { label: 'This Month', icon: <CalendarCheck className="w-4 h-4" /> },
+    'all': { label: 'All Events', icon: <ListFilter className="w-4 h-4" /> },
+};
+
 export default function CalendarEventsPage() {
     const router = useRouter();
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
@@ -762,6 +779,11 @@ export default function CalendarEventsPage() {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState<string>('all');
+    const [showFilters, setShowFilters] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     // Get event status
     const getEventStatus = useCallback((event: EventData) => {
@@ -899,16 +921,14 @@ export default function CalendarEventsPage() {
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
         const daysInMonth = lastDay.getDate();
-        const startingDayOfWeek = firstDay.getDay(); // 0 = Sunday
+        const startingDayOfWeek = firstDay.getDay();
 
         const days: (Date | null)[] = [];
 
-        // Add empty cells for days before the first day of the month
         for (let i = 0; i < startingDayOfWeek; i++) {
             days.push(null);
         }
 
-        // Add days of the month
         for (let i = 1; i <= daysInMonth; i++) {
             days.push(new Date(year, month, i));
         }
@@ -930,17 +950,117 @@ export default function CalendarEventsPage() {
     const goToToday = () => {
         setCurrentMonth(new Date());
         setSelectedDate(new Date());
+        setTimeFilter('today');
     };
 
-    // Get events for a specific date
-    const getEventsForDate = (date: Date) => {
-        if (!date) return [];
-        const dateString = date.toISOString().split('T')[0];
-        return events.filter(event => event.date === dateString);
+    // Get date range based on time filter - UPDATED: Tomorrow instead of Yesterday
+    const getDateRange = useCallback((filter: TimeFilter): { start: Date | null; end: Date | null } => {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        switch (filter) {
+            case 'today':
+                return { start: today, end: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1) };
+            case 'tomorrow':
+                return { start: tomorrow, end: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000 - 1) };
+            case 'this-week': {
+                const start = new Date(today);
+                start.setDate(today.getDate() - today.getDay());
+                const end = new Date(start);
+                end.setDate(start.getDate() + 6);
+                end.setHours(23, 59, 59, 999);
+                return { start, end };
+            }
+            case 'this-month': {
+                const start = new Date(today.getFullYear(), today.getMonth(), 1);
+                const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                end.setHours(23, 59, 59, 999);
+                return { start, end };
+            }
+            case 'all':
+            default:
+                return { start: null, end: null };
+        }
+    }, []);
+
+    // Filter events based on time filter
+    const filterEventsByTime = useCallback((events: EventData[], filter: TimeFilter) => {
+        if (filter === 'all') return events;
+
+        const range = getDateRange(filter);
+        if (!range.start) return events;
+
+        return events.filter(event => {
+            const eventDate = new Date(event.date);
+            if (range.end) {
+                return eventDate >= range.start! && eventDate <= range.end!;
+            }
+            return eventDate >= range.start!;
+        });
+    }, [getDateRange]);
+
+    // Filtered events based on time filter, search, and type
+    const filteredEvents = useMemo(() => {
+        let filtered = filterEventsByTime(events, timeFilter);
+
+        if (searchTerm) {
+            filtered = filtered.filter(event =>
+                event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                event.address?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        if (filterType !== 'all') {
+            filtered = filtered.filter(event => event.eventType === filterType);
+        }
+
+        return filtered.sort((a, b) => {
+            const dateA = new Date(`${a.date}T${a.startTime}`);
+            const dateB = new Date(`${b.date}T${b.startTime}`);
+            return dateA.getTime() - dateB.getTime();
+        });
+    }, [events, timeFilter, searchTerm, filterType, filterEventsByTime]);
+
+    const formatDateForComparison = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     };
+
+    const getEventsForDate = useCallback((date: Date) => {
+        if (!date) return [];
+        const dateString = formatDateForComparison(date);
+        return events.filter(event => event.date === dateString);
+    }, [events]);
 
     // Events for selected date
-    const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : [];
+    const selectedDateEvents = useMemo(() => {
+        if (!selectedDate) return [];
+
+        let selectedEvents = getEventsForDate(selectedDate);
+
+        if (searchTerm) {
+            selectedEvents = selectedEvents.filter(event =>
+                event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                event.address?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        if (filterType !== 'all') {
+            selectedEvents = selectedEvents.filter(
+                event => event.eventType === filterType
+            );
+        }
+
+        return selectedEvents.sort((a, b) => {
+            const dateA = new Date(`${a.date}T${a.startTime}`);
+            const dateB = new Date(`${b.date}T${b.startTime}`);
+            return dateA.getTime() - dateB.getTime();
+        });
+    }, [selectedDate, getEventsForDate, searchTerm, filterType]);
 
     // Format helpers
     const formatDate = useCallback((dateString: string) => {
@@ -970,16 +1090,18 @@ export default function CalendarEventsPage() {
         });
     }, []);
 
-    // Event statistics
+    // Event statistics with time filter applied
     const eventStats = useMemo(() => ({
-        total: events.length,
-        upcoming: events.filter(e => {
+        total: filteredEvents.length,
+        upcoming: filteredEvents.filter(e => {
             const eventDate = new Date(`${e.date}T${e.startTime}`);
             return eventDate > new Date();
         }).length,
-        today: events.filter(e => e.date === new Date().toISOString().split('T')[0]).length,
-        completed: events.filter(e => getEventStatus(e) === 'completed').length
-    }), [events, getEventStatus]);
+        today: filteredEvents.filter(
+            e => e.date === formatDateForComparison(new Date())
+        ).length,
+        completed: filteredEvents.filter(e => getEventStatus(e) === 'completed').length
+    }), [filteredEvents, getEventStatus]);
 
     // Handlers
     const handleDeleteEvent = async (eventId: string) => {
@@ -1026,7 +1148,7 @@ export default function CalendarEventsPage() {
                             <div className="w-6 h-px bg-gradient-to-r from-blue-500 to-cyan-500"></div>
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div>
                                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
                                     Event {" "}
@@ -1035,20 +1157,30 @@ export default function CalendarEventsPage() {
                                     </span>
                                 </h1>
                                 <p className="text-gray-600 mt-2 max-w-xl">
-                                    View and manage all your property viewings, client meetings, and appointments in a beautiful calendar interface
+                                    View and manage all your property viewings, client meetings, and appointments
                                 </p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Button
+                                    onClick={handleCreateEvent}
+                                    variant="theme"
+                                    icon={<Plus className="w-4 h-4" />}
+                                    size="md"
+                                >
+                                    Add Event
+                                </Button>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Stats Overview */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                     {[
-                        { title: 'Total Events', value: eventStats.total, icon: <Calendar className="w-5 h-5 text-purple-600" />, color: 'purple' },
-                        { title: 'Upcoming', value: eventStats.upcoming, icon: <TrendingUp className="w-5 h-5 text-blue-600" />, color: 'blue' },
-                        { title: 'Today', value: eventStats.today, icon: <Clock className="w-5 h-5 text-green-600" />, color: 'green' },
-                        { title: 'Completed', value: eventStats.completed, icon: <CheckCircle className="w-5 h-5 text-amber-600" />, color: 'amber' }
+                        { title: 'Total Events', value: eventStats.total, icon: <Calendar className="w-5 h-5 text-purple-600" /> },
+                        { title: 'Upcoming', value: eventStats.upcoming, icon: <TrendingUp className="w-5 h-5 text-blue-600" /> },
+                        { title: 'Today', value: eventStats.today, icon: <Clock className="w-5 h-5 text-green-600" /> },
+                        { title: 'Completed', value: eventStats.completed, icon: <CheckCircle className="w-5 h-5 text-amber-600" /> }
                     ].map((stat, idx) => (
                         <div key={idx} className="relative group">
                             <div className="relative bg-white rounded-xl border border-gray-100 px-4 py-2 shadow-sm hover:shadow-md hover:border-purple-200 transition-all duration-300">
@@ -1154,7 +1286,7 @@ export default function CalendarEventsPage() {
                                             </div>
                                             <div className="mt-1 space-y-1">
                                                 {dayEvents.slice(0, 2).map((event) => {
-                                                    const typeConfig = eventTypeConfig[event.eventType];
+                                                    const typeConfig = eventTypeConfig[event.eventType as keyof typeof eventTypeConfig];
                                                     return (
                                                         <div
                                                             key={event.id}
@@ -1185,8 +1317,9 @@ export default function CalendarEventsPage() {
                     {/* Events List Column */}
                     <div className="lg:col-span-1">
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm h-full flex flex-col">
+                            {/* Today Header with Dropdown Filter */}
                             <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">
                                         <Clock className="w-5 h-5 text-purple-600" />
                                         <h2 className="text-lg font-semibold text-gray-900">
@@ -1200,20 +1333,171 @@ export default function CalendarEventsPage() {
                                         icon={<Plus className="w-4 h-4" />}
                                         className="px-3 py-1.5 text-sm"
                                     >
-                                        Add Event
+                                        Add
                                     </Button>
                                 </div>
                                 {selectedDate && (
-                                    <p className="text-sm text-gray-500 mt-1">
+                                    <p className="text-sm text-gray-500 mb-3">
                                         {selectedDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                                     </p>
                                 )}
+
+                                {/* DROPDOWN FILTER */}
+                                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100">
+                                    <span className="text-xs text-gray-500">View:</span>
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                            className={`px-3 py-1 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5
+                                                ${isDropdownOpen
+                                                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md shadow-purple-500/25'
+                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                }
+                                            `}
+                                        >
+                                            {timeFilterConfig[timeFilter].icon}
+                                            {timeFilterConfig[timeFilter].label}
+                                            <ChevronDown className={`w-3 h-3 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+
+                                        {isDropdownOpen && (
+                                            <>
+                                                <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />
+                                                <div className="absolute top-full left-0 mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50">
+                                                    {Object.entries(timeFilterConfig).map(([key, config]) => {
+                                                        const isActive = timeFilter === key;
+                                                        return (
+                                                            <button
+                                                                key={key}
+                                                                onClick={() => {
+                                                                    setTimeFilter(key as TimeFilter);
+                                                                    if (key === 'today') {
+                                                                        setCurrentMonth(new Date());
+                                                                        setSelectedDate(new Date());
+                                                                    }
+                                                                    setIsDropdownOpen(false);
+                                                                }}
+                                                                className={`w-full px-3 py-2 text-xs font-medium transition-all flex items-center gap-2 text-left
+                                                                    ${isActive
+                                                                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
+                                                                        : 'text-gray-700 hover:bg-gray-50'
+                                                                    }
+                                                                `}
+                                                            >
+                                                                {config.icon}
+                                                                {config.label}
+                                                                {isActive && (
+                                                                    <CheckCircle className="w-3 h-3 ml-auto" />
+                                                                )}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                    <div className="border-t border-gray-100">
+                                                        <button
+                                                            onClick={() => {
+                                                                setSearchTerm('');
+                                                                setFilterType('all');
+                                                                setTimeFilter('all');
+                                                                setIsDropdownOpen(false);
+                                                            }}
+                                                            className="w-full px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition-colors text-left flex items-center gap-2"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                            Clear All Filters
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    <button
+                                        onClick={() => setShowFilters(!showFilters)}
+                                        className={`px-2 py-0.5 rounded-full text-xs transition-all flex items-center gap-1
+                                            ${showFilters
+                                                ? 'bg-purple-600 text-white'
+                                                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                                            }
+                                        `}
+                                    >
+                                        <Filter className="w-3 h-3" />
+                                        Filters
+                                        <ChevronDown className={`w-3 h-3 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                                    </button>
+                                </div>
+
+                                {/* Filter count badge */}
+                                <div className="flex flex-wrap items-center gap-1.5 mt-1.5 text-xs text-gray-500">
+                                    <span className="font-medium">Showing:</span>
+                                    <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
+                                        {filteredEvents.length} events
+                                    </span>
+                                    {timeFilter !== 'all' && (
+                                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
+                                            {timeFilterConfig[timeFilter].label}
+                                        </span>
+                                    )}
+                                    {filterType !== 'all' && (
+                                        <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+                                            {eventTypeConfig[filterType as keyof typeof eventTypeConfig]?.label || filterType}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Expanded Filters */}
+                                {showFilters && (
+                                    <div className="border-t border-gray-200 pt-3 mt-2 space-y-3">
+                                        {/* Search */}
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                                            <input
+                                                type="text"
+                                                placeholder="Search events or address..."
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                className="w-full pl-9 pr-3 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-xs"
+                                            />
+                                        </div>
+
+                                        {/* Event Type Filter */}
+                                        <div className="flex flex-wrap gap-1.5">
+                                            <span className="text-xs text-gray-500 flex items-center mr-1">Type:</span>
+                                            <button
+                                                onClick={() => setFilterType('all')}
+                                                className={`px-2 py-0.5 rounded-lg text-xs font-medium transition-colors
+                                                    ${filterType === 'all'
+                                                        ? 'bg-purple-600 text-white'
+                                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                    }
+                                                `}
+                                            >
+                                                All
+                                            </button>
+                                            {Object.entries(eventTypeConfig).map(([key, config]) => (
+                                                <button
+                                                    key={key}
+                                                    onClick={() => setFilterType(key)}
+                                                    className={`px-2 py-0.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1
+                                                        ${filterType === key
+                                                            ? 'bg-purple-600 text-white'
+                                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                        }
+                                                    `}
+                                                >
+                                                    {config.icon}
+                                                    {config.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
+                            {/* Events List */}
                             <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[500px]">
                                 {selectedDateEvents.length > 0 ? (
                                     selectedDateEvents.map((event) => {
-                                        const typeConfig = eventTypeConfig[event.eventType];
+                                        const typeConfig = eventTypeConfig[event.eventType as keyof typeof eventTypeConfig];
                                         const eventStatus = getEventStatus(event);
                                         const status = statusConfig[eventStatus];
 
@@ -1268,44 +1552,72 @@ export default function CalendarEventsPage() {
                                         );
                                     })
                                 ) : (
-                                    <div className="text-center py-12">
+                                    <div className="text-center pt-12">
                                         <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                                         <p className="text-gray-500">No events for this day</p>
-                                        <Button
-                                            onClick={handleCreateEvent}
-                                            variant="theme2"
-                                            size="sm"
-                                            className="mt-4"
-                                            icon={<Plus className="w-4 h-4" />}
-                                        >
-                                            Add Event
-                                        </Button>
+                                            <div className="pl-[34.5%]">
+                                            <Button
+                                                label="Add Event"
+                                                onClick={handleCreateEvent}
+                                                variant="theme2"
+                                                size="sm"
+                                                className="mt-4"
+                                                icon={<Plus className="w-4 h-4" />}
+                                            >
+                                            </Button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
 
-                            {/* Upcoming Events Summary */}
-                            {events.filter(e => new Date(`${e.date}T${e.startTime}`) > new Date()).length > 0 && (
-                                <div className="p-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-                                    <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                            {/* Upcoming Events Summary - IMPROVED */}
+                            {filteredEvents.filter(e => new Date(`${e.date}T${e.startTime}`) > new Date()).length > 0 && (
+                                <div className="p-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white rounded-b-xl">
+                                    <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                                         <TrendingUp className="w-4 h-4 text-purple-600" />
                                         Upcoming Events
+                                        <span className="ml-auto text-xs text-gray-400">
+                                            {filteredEvents.filter(e => new Date(`${e.date}T${e.startTime}`) > new Date()).length} upcoming
+                                        </span>
                                     </h3>
                                     <div className="space-y-2">
-                                        {events
+                                        {filteredEvents
                                             .filter(e => new Date(`${e.date}T${e.startTime}`) > new Date())
                                             .sort((a, b) => new Date(`${a.date}T${a.startTime}`).getTime() - new Date(`${b.date}T${b.startTime}`).getTime())
-                                            .slice(0, 3)
-                                            .map(event => (
-                                                <div key={event.id} className="flex items-center gap-2 text-xs">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                                                    <span className="text-gray-600">{formatDate(event.date)}</span>
-                                                    <span className="text-gray-400">•</span>
-                                                    <span className="text-gray-700 truncate flex-1">{event.title}</span>
-                                                </div>
-                                            ))
+                                            .slice(0, 5)
+                                            .map(event => {
+                                                const isToday = formatDate(event.date) === 'Today';
+                                                const isTomorrow = formatDate(event.date) === 'Tomorrow';
+                                                return (
+                                                    <div
+                                                        key={event.id}
+                                                        className={`flex items-center gap-2 text-xs p-2 rounded-lg transition-colors
+                                                            ${isToday ? 'bg-purple-50 border border-purple-100' : ''}
+                                                            ${isTomorrow ? 'bg-blue-50 border border-blue-100' : ''}
+                                                            hover:bg-gray-50 cursor-pointer
+                                                        `}
+                                                        onClick={() => handleViewEvent(event.id)}
+                                                    >
+                                                        <div className={`w-1.5 h-1.5 rounded-full ${isToday ? 'bg-purple-500' : isTomorrow ? 'bg-blue-500' : 'bg-gray-400'}`}></div>
+                                                        <span className={`font-medium ${isToday ? 'text-purple-700' : isTomorrow ? 'text-blue-700' : 'text-gray-700'}`}>
+                                                            {formatDate(event.date)}
+                                                        </span>
+                                                        <span className="text-gray-300">•</span>
+                                                        <span className="text-gray-600 truncate flex-1">{event.title}</span>
+                                                        <span className="text-gray-400 text-[10px]">{formatTime(event.startTime)}</span>
+                                                    </div>
+                                                );
+                                            })
                                         }
                                     </div>
+                                    {filteredEvents.filter(e => new Date(`${e.date}T${e.startTime}`) > new Date()).length > 5 && (
+                                        <button
+                                            onClick={() => setTimeFilter('all')}
+                                            className="mt-2 text-xs text-purple-600 hover:text-purple-700 font-medium"
+                                        >
+                                            View all {filteredEvents.filter(e => new Date(`${e.date}T${e.startTime}`) > new Date()).length} upcoming events →
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
