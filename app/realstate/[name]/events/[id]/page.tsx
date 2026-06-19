@@ -734,7 +734,7 @@ export default function ViewEventPage() {
                                                             variant="theme2"
                                                             size="sm"
                                                             icon={<Mail className="w-3 h-3" />}
-                                                            onClick={(e) => {
+                                                            onClick={(e:any) => {
                                                                 e.stopPropagation();
                                                                 window.location.href = `mailto:${attendee.email}`;
                                                             }}
