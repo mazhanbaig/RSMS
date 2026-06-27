@@ -17,14 +17,9 @@ import {
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import Loader from "@/components/Loader";
-import { checkUserSession, getData, updateData } from "@/FBConfig/fbFunctions";
+import { getData, updateData } from "@/FBConfig/fbFunctions";
+import { useAuth } from "@/hooks/useAuth";
 import { useEventReminder } from "@/hooks/useEventReminder";
-
-interface UserInfo {
-    uid: string;
-    name?: string;
-    email?: string;
-}
 
 interface AttendeeInfo {
     id: string;
@@ -59,7 +54,7 @@ export default function ViewEventPage() {
     const params = useParams();
     const eventId = params.id as string;
 
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+    const { user, loading: authLoading } = useAuth();
     const [event, setEvent] = useState<EventData | null>(null);
     const [loading, setLoading] = useState(true);
     const [activePanel, setActivePanel] = useState('overview');
@@ -108,35 +103,12 @@ export default function ViewEventPage() {
 
     // ✅ Authentication
     useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                setLoading(true);
-                const user: any = await checkUserSession();
-                if (!user) {
-                    message.error('Please Login First');
-                    router.replace('/login');
-                    return;
-                }
-
-                const storedUser = localStorage.getItem('userInfo');
-                if (!storedUser) {
-                    message.error('User not logged in');
-                    router.push('/login');
-                    return;
-                }
-
-                const userData = JSON.parse(storedUser);
-                setUserInfo(userData);
-
-            } catch (err) {
-                console.error('Authentication error:', err);
-                message.error('Error occurred during authentication');
-                router.replace('/login');
-            }
-        };
-
-        checkAuth();
-    }, [router]);
+        if (authLoading) return;
+        if (!user) {
+            message.error('Please Login First');
+            router.replace('/login');
+        }
+    }, [user, authLoading, router]);
 
     // ✅ Fetch clients from correct path
     const fetchClients = useCallback(async (clientIds: string[], agentUid: string) => {
@@ -194,16 +166,16 @@ export default function ViewEventPage() {
 
     // ✅ Fetch event data
     const fetchEventData = useCallback(async () => {
-        if (!userInfo?.uid || !eventId) return;
+        if (!user?.uid || !eventId) return;
 
         try {
             setLoading(true);
-            const eventData: any = await getData(`events/${userInfo.uid}/${eventId}`);
+            const eventData: any = await getData(`events/${user.uid}/${eventId}`);
 
             if (eventData) {
-                if (eventData.agentUid !== userInfo.uid) {
+                if (eventData.agentUid !== user.uid) {
                     message.error("You don't have permission to view this event");
-                    router.push(`/realstate/${userInfo.uid}/events`);
+                    router.push(`/realstate/${user.uid}/events`);
                     return;
                 }
 
@@ -211,8 +183,8 @@ export default function ViewEventPage() {
 
                 if (eventData.clientIds?.length > 0) {
                     const [resolvedClients, resolvedOwners] = await Promise.all([
-                        fetchClients(eventData.clientIds, userInfo.uid),
-                        fetchOwners(eventData.clientIds, userInfo.uid)
+                        fetchClients(eventData.clientIds, user.uid),
+                        fetchOwners(eventData.clientIds, user.uid)
                     ]);
                     setClients(resolvedClients);
                     setOwners(resolvedOwners);
@@ -222,7 +194,7 @@ export default function ViewEventPage() {
                 }
             } else {
                 message.error("Event not found");
-                router.push(`/realstate/${userInfo.uid}/events`);
+                router.push(`/realstate/${user.uid}/events`);
             }
         } catch (error) {
             console.error("Error fetching event:", error);
@@ -230,14 +202,14 @@ export default function ViewEventPage() {
         } finally {
             setLoading(false);
         }
-    }, [userInfo, eventId, router, fetchClients, fetchOwners]);
+    }, [user, eventId, router, fetchClients, fetchOwners]);
 
-    // Fetch event when userInfo is available
+    // Fetch event when user is available
     useEffect(() => {
-        if (userInfo?.uid) {
+        if (user?.uid) {
             fetchEventData();
         }
-    }, [userInfo, fetchEventData]);
+    }, [user, fetchEventData]);
 
     // ✅ Get combined attendees
     const getAllAttendees = useCallback((): AttendeeInfo[] => {
@@ -350,29 +322,29 @@ export default function ViewEventPage() {
 
     // ✅ Navigate to attendee
     const navigateToAttendee = useCallback((attendeeId: string, type: 'client' | 'owner') => {
-        if (userInfo?.uid) {
+        if (user?.uid) {
             if (type === 'client') {
-                router.push(`/realstate/${userInfo.uid}/clients/viewclient/${attendeeId}`);
+                router.push(`/realstate/${user.uid}/clients/viewclient/${attendeeId}`);
             } else {
-                router.push(`/realstate/${userInfo.uid}/owners/viewowner/${attendeeId}`);
+                router.push(`/realstate/${user.uid}/owners/viewowner/${attendeeId}`);
             }
         }
-    }, [userInfo, router]);
+    }, [user, router]);
 
     // ✅ Add note to event
     const addNote = useCallback(async () => {
-        if (!newNote.trim() || !event || !userInfo?.uid) return;
+        if (!newNote.trim() || !event || !user?.uid) return;
 
         try {
             const updatedNotes = event.notes ? `${event.notes}\n\n${newNote}` : newNote;
-            await updateData(`events/${userInfo.uid}/${eventId}`, { ...event, notes: updatedNotes });
+            await updateData(`events/${user.uid}/${eventId}`, { ...event, notes: updatedNotes });
             setEvent(prev => prev ? { ...prev, notes: updatedNotes } : null);
             setNewNote('');
             message.success('Note added successfully');
         } catch (error) {
             message.error('Failed to add note');
         }
-    }, [newNote, event, userInfo?.uid, eventId]);
+    }, [newNote, event, user?.uid, eventId]);
 
     // Memoized values
     const typeConfig = useMemo(() =>
@@ -392,14 +364,14 @@ export default function ViewEventPage() {
         { id: 'details', label: 'Details', icon: <Clipboard className="w-4 h-4" /> }
     ];
 
-    if (loading) {
+    if (loading || authLoading) {
         return <Loader />;
     }
 
     if (!event) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
-                <Header userData={userInfo} />
+                <Header userData={user} />
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="bg-white rounded-xl border border-slate-100 p-6 text-center">
                         <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
@@ -409,7 +381,7 @@ export default function ViewEventPage() {
                         <p className="text-slate-500 mb-6">The event you're looking for doesn't exist or has been deleted.</p>
                         <Button
                             label="Back to Events"
-                            onClick={() => userInfo?.uid ? router.push(`/realstate/${userInfo.uid}/events`) : router.back()}
+                            onClick={() => user?.uid ? router.push(`/realstate/${user.uid}/events`) : router.back()}
                             variant="theme"
                             size="md"
                             icon={<ArrowLeft className="w-4 h-4" />}
@@ -422,7 +394,7 @@ export default function ViewEventPage() {
 
     return (
         <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
-            <Header userData={userInfo} />
+            <Header userData={user} />
 
             <main className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 {/* Event Header */}
@@ -454,7 +426,7 @@ export default function ViewEventPage() {
 
                             <Button
                                 label="Edit"
-                                onClick={() => router.push(`/realstate/${userInfo?.uid}/events/editevent/${eventId}`)}
+                                onClick={() => router.push(`/realstate/${user?.uid}/events/editevent/${eventId}`)}
                                 variant="theme"
                                 size="sm"
                                 icon={<Edit className="w-4 h-4" />}
@@ -753,7 +725,7 @@ export default function ViewEventPage() {
                                                 variant="theme"
                                                 size="sm"
                                                 icon={<Plus className="w-4 h-4" />}
-                                                onClick={() => router.push(`/realstate/${userInfo?.uid}/events/addevent`)}
+                                                onClick={() => router.push(`/realstate/${user?.uid}/events/addevent`)}
                                                 classNameC="mt-4"
                                             />
                                         </div>

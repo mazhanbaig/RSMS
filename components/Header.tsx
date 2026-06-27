@@ -14,10 +14,10 @@ import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 
 interface UserInfo {
-    name: string;
+    name: string | null;
     uid: string;
-    email: string;
-    createdAt: string;
+    email: string | null;
+    createdAt?: string;
 }
 
 export default function Header({ userData }: { userData?: Partial<UserInfo> | null }) {

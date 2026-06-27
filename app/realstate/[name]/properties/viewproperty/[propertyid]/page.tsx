@@ -1,6 +1,7 @@
 'use client'
 
-import { auth, checkUserSession, getData, updateData, deleleData } from "@/FBConfig/fbFunctions"
+import { getData, updateData, deleleData } from "@/FBConfig/fbFunctions"
+import { useAuth } from "@/hooks/useAuth"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState, useCallback, useMemo } from "react"
 import {
@@ -53,7 +54,7 @@ export default function ViewPropertyPage() {
     const [relatedProperties, setRelatedProperties] = useState<any[]>([])
     const [currIndex, setCurrIndex] = useState(0)
     const [loading, setLoading] = useState(true)
-    const [userInfo, setUserInfo] = useState<any>(null)
+    const { user, loading: authLoading } = useAuth()
     const [liked, setLiked] = useState(false)
     const [activePanel, setActivePanel] = useState('overview')
     const [isOpen, setIsOpen] = useState(false);
@@ -136,55 +137,32 @@ export default function ViewPropertyPage() {
 
     // ✅ SINGLE useEffect for authentication
     useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const user: any = await checkUserSession();
-                if (!user) {
-                    message.error('Please Login First');
-                    router.replace('/login');
-                    return;
-                }
+        if (authLoading) return;
+        if (!user) {
+            message.error('Please Login First');
+            router.replace('/login');
+            return;
+        }
+    }, [user, authLoading, router]);
 
-                const storedUser = localStorage.getItem('userInfo');
-                if (!storedUser) {
-                    message.error('User info not found');
-                    router.replace('/login');
-                    return;
-                }
-
-                const userData = JSON.parse(storedUser);
-                setUserInfo(userData);
-
-            } catch (err) {
-                console.error('Authentication error:', err);
-                message.error('Error occurred during authentication');
-                router.replace('/login');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        checkAuth();
-    }, [router]);
-
-    // Fetch property when userInfo and propertyid are available
+    // Fetch property when user and propertyid are available
     useEffect(() => {
-        if (!propertyid || !userInfo?.uid) return;
+        if (!propertyid || !user?.uid) return;
         const id = Array.isArray(propertyid) ? propertyid[0] : propertyid;
         fetchPropertyData(id);
-    }, [propertyid, userInfo?.uid]);
+    }, [propertyid, user?.uid]);
 
     const fetchPropertyData = useCallback((id: string) => {
         setLoading(true);
-        if (!userInfo?.uid) {
+        if (!user?.uid) {
             message.error('Something went wrong!')
         }
-        getData(`properties/${userInfo?.uid}/${id}`)
+        getData(`properties/${user?.uid}/${id}`)
             .then((res: any) => {
                 if (!res) {
                     message.error("Property not found");
-                    if (userInfo?.uid) {
-                        router.replace(`/realstate/${userInfo.uid}/properties`);
+                    if (user?.uid) {
+                        router.replace(`/realstate/${user.uid}/properties`);
                     } else {
                         router.replace('/login');
                     }
@@ -198,12 +176,12 @@ export default function ViewPropertyPage() {
                 message.error("Failed to load property");
             })
             .finally(() => setLoading(false));
-    }, [userInfo?.uid, router]);
+    }, [user?.uid, router]);
 
     const fetchRelatedProperties = useCallback((currentProperty?: PropertyFormData) => {
-        if (!userInfo?.uid) return;
+        if (!user?.uid) return;
 
-        getData(`properties/${userInfo?.uid}`)
+        getData(`properties/${user?.uid}`)
             .then((allProps: any) => {
                 if (!allProps) return;
                 const propsArray = Object.entries(allProps).map(([key, value]: [string, any]) => ({ id: key, ...value }));
@@ -219,7 +197,7 @@ export default function ViewPropertyPage() {
                 }
             })
             .catch(err => console.error(err));
-    }, [property, propertyid, userInfo?.uid]);
+    }, [property, propertyid, user?.uid]);
 
     const handleNext = useCallback(() => {
         if (!property?.images) return;
@@ -241,7 +219,7 @@ export default function ViewPropertyPage() {
     }, [property]);
 
     const handleStatusChange = useCallback((newStatus: PropertyFormData['propertyStatus']) => {
-        if (!propertyid || !userInfo?.uid) return;
+        if (!propertyid || !user?.uid) return;
 
         updateData(`properties/${propertyid}`, { propertyStatus: newStatus })
             .then(() => {
@@ -252,21 +230,21 @@ export default function ViewPropertyPage() {
                 console.error(err);
                 message.error('Failed to change status of property');
             });
-    }, [propertyid, userInfo?.uid, propertyStatusConfig]);
+    }, [propertyid, user?.uid, propertyStatusConfig]);
 
     const handleDeleteProperty = useCallback(() => {
-        if (!propertyid || !userInfo?.uid || !window.confirm("Are you sure you want to delete this property?")) return;
+        if (!propertyid || !user?.uid || !window.confirm("Are you sure you want to delete this property?")) return;
 
         deleleData(`properties/${propertyid}`)
             .then(() => {
                 message.success("Property deleted successfully");
-                router.replace(`/realstate/${userInfo.uid}/properties`);
+                router.replace(`/realstate/${user.uid}/properties`);
             })
             .catch((err) => {
                 console.error(err);
                 message.error("Failed to delete property");
             });
-    }, [propertyid, userInfo?.uid, router]);
+    }, [propertyid, user?.uid, router]);
 
     // Format date
     const formatDate = useCallback((dateString?: string) => {
@@ -290,10 +268,10 @@ export default function ViewPropertyPage() {
         [property, propertyTypeConfig]
     );
 
-    if (loading) {
+    if (authLoading || loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
-                <Header userData={userInfo} />
+                <Header userData={user} />
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="animate-pulse space-y-6">
                         <div className="h-8 bg-slate-200 rounded w-1/3"></div>
@@ -316,7 +294,7 @@ export default function ViewPropertyPage() {
     if (!property) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
-                <Header userData={userInfo} />
+                <Header userData={user} />
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="bg-white rounded-xl border border-slate-200 p-6 text-center">
                         <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
@@ -326,7 +304,7 @@ export default function ViewPropertyPage() {
                         <p className="text-slate-500 mb-6">The property you're looking for doesn't exist.</p>
                         <Button
                             label="Back to Properties"
-                            onClick={() => router.push(`/realstate/${userInfo?.uid}/properties`)}
+                            onClick={() => router.push(`/realstate/${user?.uid}/properties`)}
                             variant="theme2"
                             size="md"
                             icon={<ArrowLeft className="w-4 h-4" />}
@@ -339,7 +317,7 @@ export default function ViewPropertyPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
-            <Header userData={userInfo} />
+            <Header userData={user} />
 
             <main className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 {/* Property Header - Matching Owners Page Style */}
@@ -737,7 +715,7 @@ export default function ViewPropertyPage() {
                                     icon={<Calendar className="w-4 h-4" />}
                                     size="sm"
                                     fullWidth
-                                    onClick={() => router.push(`/realstate/${userInfo?.uid}/events/addevent`)}
+                                    onClick={() => router.push(`/realstate/${user?.uid}/events/addevent`)}
                                 />
                             </div>
 
@@ -762,7 +740,7 @@ export default function ViewPropertyPage() {
                                 label="View All"
                                 variant="theme2"
                                 size="sm"
-                                onClick={() => router.push(`/realstate/${userInfo?.uid}/properties`)}
+                                onClick={() => router.push(`/realstate/${user?.uid}/properties`)}
                             />
                         </div>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -773,7 +751,7 @@ export default function ViewPropertyPage() {
                                 return (
                                     <div
                                         key={prop.id}
-                                        onClick={() => router.push(`/realstate/${userInfo?.uid}/properties/viewproperty/${prop.id}`)}
+                                        onClick={() => router.push(`/realstate/${user?.uid}/properties/viewproperty/${prop.id}`)}
                                         className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
                                     >
                                         <div className="relative h-40">

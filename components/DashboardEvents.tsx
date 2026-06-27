@@ -3,8 +3,11 @@
 import { motion } from "framer-motion";
 import { ChevronRight, Calendar, Clock, MapPin, Video, Users, Bell, Sparkles } from "lucide-react";
 import Button from "@/components/Button";
+import EmptyState from "@/components/EmptyState";
+import { useRouter } from "next/navigation";
 
 export default function UpcomingEvents({ events, userUid, onViewAll, onNavigate }: any) {
+    const router = useRouter();
     const sortedEvents = [...events].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 3);
 
     const getEventType = (event: any) => {
@@ -162,17 +165,12 @@ export default function UpcomingEvents({ events, userUid, onViewAll, onNavigate 
                         );
                     })
                 ) : (
-                    <div className="text-center py-12 px-5">
-                        <motion.div
-                            initial={{ scale: 0.9 }}
-                            animate={{ scale: 1 }}
-                            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 mb-4"
-                        >
-                            <Calendar size={28} className="text-indigo-400" />
-                        </motion.div>
-                        <p className="text-slate-500 font-medium">No upcoming events</p>
-                        <p className="text-xs text-slate-400 mt-1">Schedule your first appointment</p>
-                    </div>
+                    <EmptyState
+                        title="No upcoming events"
+                        message="Schedule your first appointment"
+                        icon={<Calendar size={28} className="text-indigo-400" />}
+                        action={{ label: 'Create Event', onClick: () => router.push(`/realstate/${userUid}/events/addevent`) }}
+                    />
                 )}
             </div>
         </motion.div>

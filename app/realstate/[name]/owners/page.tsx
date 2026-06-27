@@ -2,7 +2,8 @@
 
 import Button from "@/components/Button";
 import Header from "@/components/Header";
-import { getData, deleleData, checkUserSession } from "@/FBConfig/fbFunctions";
+import { useAuth } from "@/hooks/useAuth";
+import { getData, deleleData, queryList } from "@/FBConfig/fbFunctions";
 import { message } from "antd";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useCallback, useState } from "react";
@@ -16,71 +17,53 @@ import {
 import React from "react";
 import Loader from "@/components/Loader";
 import DraggableButton from "@/components/DraggableButton";
+import ErrorState from "@/components/ErrorState";
 import { motion } from "framer-motion";
 
 export default function OwnersPage() {
-    interface UserInfo {
-        uid: string;
-        email?: string;
-        name?: string;
-    }
-
     const router = useRouter();
-    const [owners, setOwners] = useState<any[]>([]);
-    const [searchVal, setSearchVal] = useState<string>('');
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-    const [activeFilter, setActiveFilter] = useState<string>("all");
-    const [loading, setLoading] = useState<boolean>(true);
+
+    const { user, loading: authLoading } = useAuth();
 
     useEffect(() => {
-        const initPage = async () => {
-            try {
-                setLoading(true);
+        if (authLoading) return;
+        if (!user) {
+            message.error('Please Login First');
+            router.replace('/login');
+        }
+    }, [user, authLoading, router]);
 
-                const sessionUser = await checkUserSession();
-                if (!sessionUser) {
-                    message.error('Please Login First');
-                    router.replace('/login');
-                    return;
-                }
+    const [owners, setOwners] = useState<any[]>([]);
+    const [searchVal, setSearchVal] = useState<string>('');
+    const [activeFilter, setActiveFilter] = useState<string>("all");
+    const [loading, setLoading] = useState<boolean>(true);
+    const [pageSize, setPageSize] = useState(100);
+    const [fetchError, setFetchError] = useState<string | null>(null);
 
-                const storedUser = localStorage.getItem('userInfo');
-                if (!storedUser) {
-                    message.error('User data not found');
-                    router.replace('/login');
-                    return;
-                }
+    useEffect(() => {
+        if (user?.uid) {
+            setFetchError(null);
+            fetchOwners(user.uid, pageSize);
+        }
+    }, [user?.uid]);
 
-                const userData = JSON.parse(storedUser);
-                setUserInfo(userData);
-                await fetchOwners(userData.uid);
-
-            } catch (err) {
-                message.error('Error loading page');
-                router.replace('/login');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        initPage();
-    }, [router]);
-
-    const fetchOwners = async (uid: string) => {
+    const fetchOwners = async (uid: string, limit?: number) => {
         try {
-            const res = await getData(`owners/${uid}`);
-            if (res) {
-                const ownersArray = Object.entries(res).map(([id, value]: any) => ({
-                    id,
-                    ...value
-                })).reverse()
-                setOwners(ownersArray);
-            } else {
-                setOwners([]);
-            }
+            const ownersArray = await queryList(`owners/${uid}`, limit ? { limitToLast: limit } : {});
+            setOwners(ownersArray.reverse());
+            setFetchError(null);
         } catch (err) {
             console.error("Fetch owners error:", err);
-            message.error("Failed to load owners");
+            setFetchError("Failed to load owners. Please check your connection and try again.");
+        }
+    };
+
+    const loadMore = () => {
+        if (user?.uid) {
+            setLoading(true);
+            setFetchError(null);
+            fetchOwners(user.uid).finally(() => setLoading(false));
+            setPageSize(Infinity);
         }
     };
 
@@ -88,18 +71,18 @@ export default function OwnersPage() {
         if (!confirm("Are you sure you want to delete this owner?")) return;
 
         try {
-            if (!userInfo?.uid) {
+            if (!user?.uid) {
                 message.error("Something went wrong")
                 return
             }
-            await deleleData(`owners/${userInfo?.uid}/${id}`);
+            await deleleData(`owners/${user?.uid}/${id}`);
             setOwners(prev => prev.filter(owner => owner.id !== id));
             message.success("Owner deleted successfully");
         } catch (err) {
             console.error(err);
             message.error("Failed to delete owner");
         }
-    }, [userInfo?.uid]);
+    }, [user?.uid]);
 
     const filteredOwners = useMemo(() => {
         if (!owners.length) return [];
@@ -171,24 +154,24 @@ export default function OwnersPage() {
     }, []);
 
     const handleAddOwner = useCallback(() => {
-        if (userInfo?.uid) {
-            router.push(`/realstate/${userInfo.uid}/owners/addowner`);
+        if (user?.uid) {
+            router.push(`/realstate/${user.uid}/owners/addowner`);
         }
-    }, [router, userInfo?.uid]);
+    }, [router, user?.uid]);
 
     const handleViewOwner = useCallback((id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (userInfo?.uid) {
-            router.push(`/realstate/${userInfo.uid}/owners/viewowner/${id}`);
+        if (user?.uid) {
+            router.push(`/realstate/${user.uid}/owners/viewowner/${id}`);
         }
-    }, [router, userInfo?.uid]);
+    }, [router, user?.uid]);
 
     const handleEditOwner = useCallback((owner: any, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (userInfo?.uid) {
-            router.push(`/realstate/${userInfo.uid}/owners/addowner?ownerData=${encodeURIComponent(JSON.stringify(owner))}`);
+        if (user?.uid) {
+            router.push(`/realstate/${user.uid}/owners/addowner?ownerData=${encodeURIComponent(JSON.stringify(owner))}`);
         }
-    }, [router, userInfo?.uid]);
+    }, [router, user?.uid]);
 
     const handleDeleteOwner = useCallback((id: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -196,18 +179,22 @@ export default function OwnersPage() {
     }, [deleteOwner]);
 
     const handleRowClick = useCallback((id: string) => {
-        if (userInfo?.uid) {
-            router.push(`/realstate/${userInfo.uid}/owners/viewowner/${id}`);
+        if (user?.uid) {
+            router.push(`/realstate/${user.uid}/owners/viewowner/${id}`);
         }
-    }, [router, userInfo?.uid]);
+    }, [router, user?.uid]);
 
-    if (loading || !userInfo) {
+    if (fetchError && !owners.length) {
+        return <ErrorState message={fetchError} onRetry={() => { setLoading(true); setFetchError(null); user?.uid && fetchOwners(user.uid, pageSize).finally(() => setLoading(false)); }} />;
+    }
+
+    if (loading || authLoading || !user) {
         return <Loader />;
     }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
-            <Header userData={userInfo} />
+            <Header userData={user} />
 
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
                 {/* Welcome Section */}
@@ -306,8 +293,13 @@ export default function OwnersPage() {
                 <div className="mt-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-bold text-slate-800">All Owners</h2>
-                        <div className="text-sm text-slate-500">
-                            Showing {filteredOwners.length} of {owners.length} owners
+                        <div className="flex items-center gap-3 text-sm text-slate-500">
+                            <span>Showing {filteredOwners.length} of {owners.length} owners</span>
+                            {pageSize !== Infinity && owners.length >= pageSize && (
+                                <button onClick={loadMore} className="text-indigo-600 hover:text-indigo-700 font-medium underline">
+                                    Load All
+                                </button>
+                            )}
                         </div>
                     </div>
 

@@ -9,14 +9,8 @@ import {
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import Loader from "@/components/Loader";
-import { checkUserSession, getData, saveData } from "@/FBConfig/fbFunctions";
-
-interface UserInfo {
-  uid: string;
-  email?: string;
-  name?: string;
-  [key: string]: any;
-}
+import { getData, saveData } from "@/FBConfig/fbFunctions";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ClientData {
   id: string;
@@ -57,7 +51,7 @@ interface OwnerData {
 export default function AddEventPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [clientsLoading, setClientsLoading] = useState(false);
   const [clients, setClients] = useState<ClientData[]>([]);
@@ -152,45 +146,26 @@ export default function AddEventPage() {
   const selectedClients = clients.filter(client => formData.clientIds.includes(client.id));
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        setLoading(true);
-        const user: any = await checkUserSession();
-        if (!user) {
-          message.error('Please Login First');
-          router.replace('/login');
-          return;
-        }
+    if (authLoading) return;
+    if (!user) {
+      message.error('Please Login First');
+      router.replace('/login');
+    }
+  }, [user, authLoading, router]);
 
-        const storedUser = localStorage.getItem('userInfo');
-        if (!storedUser) {
-          message.error('No user info found');
-          router.replace('/login');
-          return;
-        }
-
-        const userData = JSON.parse(storedUser);
-        setUserInfo(userData);
-        await fetchClients(userData.uid);
-        await fetchOwners(userData.uid);
-
-        // Update date if it was passed in URL
-        const dateParam = searchParams.get('date');
-        if (dateParam) {
-          setFormData(prev => ({ ...prev, date: dateParam }));
-        }
-
-      } catch (err) {
-        console.error('Authentication error:', err);
-        message.error('Error occurred during authentication');
-        router.replace('/login');
-      } finally {
-        setLoading(false);
+  useEffect(() => {
+    if (!user?.uid) return;
+    setLoading(true);
+    Promise.all([
+      fetchClients(user.uid),
+      fetchOwners(user.uid)
+    ]).then(() => {
+      const dateParam = searchParams.get('date');
+      if (dateParam) {
+        setFormData(prev => ({ ...prev, date: dateParam }));
       }
-    };
-
-    checkAuth();
-  }, [router, fetchClients, fetchOwners, searchParams]);
+    }).finally(() => setLoading(false));
+  }, [user?.uid, fetchClients, fetchOwners, searchParams]);
 
   const handleClientSelect = (clientId: string) => {
     if (!clientId || formData.clientIds.includes(clientId)) return;
@@ -249,7 +224,7 @@ export default function AddEventPage() {
     e.preventDefault();
 
     if (!validateForm()) return;
-    if (!userInfo?.uid) {
+    if (!user?.uid) {
       message.error('User not authenticated');
       return;
     }
@@ -261,16 +236,16 @@ export default function AddEventPage() {
       const eventData = {
         ...formData,
         id: eventId,
-        agentUid: userInfo.uid,
-        agentName: userInfo.name || userInfo.email,
+        agentUid: user.uid,
+        agentName: user.name || user.email,
         reminderSent: false,
         createdAt: new Date().toISOString(),
       };
 
-      await saveData(`events/${userInfo?.uid}/${eventId}`, eventData);
+      await saveData(`events/${user?.uid}/${eventId}`, eventData);
 
       message.success('Event created successfully!');
-      router.push(`/realstate/${userInfo.uid}/events`);
+      router.push(`/realstate/${user.uid}/events`);
 
     } catch (error) {
       console.error('Error creating event:', error);
@@ -280,13 +255,13 @@ export default function AddEventPage() {
     }
   };
 
-  if (loading || clientsLoading || !userInfo?.uid) {
+  if (loading || clientsLoading || authLoading || !user?.uid) {
     return <Loader />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white">
-      <Header userData={userInfo} />
+      <Header userData={user} />
 
       <main className="mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
         {/* Header */}
@@ -608,7 +583,7 @@ export default function AddEventPage() {
                 label="Cancel"
                 type="button"
                 variant="theme2"
-                onClick={() => router.push(`/realstate/${userInfo?.uid}/events`)}
+                onClick={() => router.push(`/realstate/${user?.uid}/events`)}
                 disabled={saving}
               />
 

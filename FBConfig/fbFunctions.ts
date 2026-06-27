@@ -1,4 +1,5 @@
 import api from "./api"
+// api is initialized with axios and auto-attaches the Firebase ID token as Bearer auth header
 
 interface PaymentData {
   pp_Version: string;
@@ -17,7 +18,8 @@ interface PaymentData {
 }
 
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
-import { app } from "./config";
+import { ref, query, orderByChild, equalTo, onValue, off, limitToFirst, limitToLast, get as fbGet } from "firebase/database";
+import { app, db } from "./config";
 export const auth = getAuth(app);
 
 const FIREBASE_DB_URL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL;
@@ -82,8 +84,15 @@ export const loginWithGoogle = async () => {
 // ---------------- LOGOUT ----------------
 export const logout = async () => {
   try {
+    // Revoke refresh tokens server-side first
+    try {
+      await api.post("/api/auth/logout");
+    } catch (revokeErr) {
+      console.error("Backend revoke failed (non-blocking):", revokeErr);
+    }
     await signOut(auth);
     localStorage.removeItem('userInfo');
+    localStorage.removeItem('sessionInfo');
   } catch (error) {
     throw error;
   }
@@ -113,30 +122,44 @@ export const checkUserSession = () => {
 
 
 
-// Get public data - NO LOGIN REQUIRED
+// Get public data - reads go through the backend for auth consistency
 export const getPublicData = async (path: string) => {
   try {
-    const response = await fetch(`${FIREBASE_DB_URL}/${path}.json`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return await response.json();
+    const res = await api.get(`/api/data?path=${path}`);
+    return res.data.data;
   } catch (error) {
     console.error("Error fetching public data:", error);
     return null;
   }
 };
 
-// Update public data - NO LOGIN REQUIRED
-export const updatePublicData = async (path: string, data: any) => {
+// Public data write - used by public property page for view count and inquiries
+// Writes are controlled by database.rules.json (not auth-dependent)
+export const updatePublicData = async (path: string, data: Record<string, any>) => {
   try {
-    const response = await fetch(`${FIREBASE_DB_URL}/${path}.json`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return await response.json();
+    await fetch(
+      `${process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL}/${path}.json`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }
+    );
   } catch (error) {
     console.error("Error updating public data:", error);
+  }
+};
+
+// Submit public inquiry - write goes through backend, not direct DB
+export const submitPublicInquiry = async (inquiry: Record<string, any>) => {
+  try {
+    const res = await api.post(`/api/data/`, {
+      path: `public_inquiries/${Date.now()}`,
+      data: { ...inquiry, submittedAt: new Date().toISOString() }
+    });
+    return res.data?.success;
+  } catch (error) {
+    console.error("Error submitting public inquiry:", error);
     return null;
   }
 };
@@ -312,81 +335,66 @@ export const sendMessage = async (messageData: Omit<ChatMessage, 'id' | 'timesta
   }
 };
 
-// Get chat sessions for an agent
+// Generic paginated query helper
+export const queryList = async (
+  path: string,
+  options: { orderBy?: string; equalTo?: string | number | boolean | null; limitToFirst?: number; limitToLast?: number } = {}
+) => {
+  try {
+    const dbRef = ref(db, path);
+    let constraints: any[] = [];
+    if (options.orderBy) constraints.push(orderByChild(options.orderBy));
+    if (options.equalTo !== undefined) constraints.push(equalTo(options.equalTo));
+    if (options.limitToFirst) constraints.push(limitToFirst(options.limitToFirst));
+    if (options.limitToLast) constraints.push(limitToLast(options.limitToLast));
+
+    const dbQuery = constraints.length > 0 ? query(dbRef, ...constraints) : dbRef;
+    const snapshot = await fbGet(dbQuery);
+    const data = snapshot.val();
+    if (!data) return [];
+    return Object.entries(data).map(([id, value]: [string, any]) => ({ id, ...value }));
+  } catch (error) {
+    console.error(`Error querying ${path}:`, error);
+    return [];
+  }
+};
+
+// Get chat sessions for an agent (uses Firebase query — no client-side filtering)
 export const getAgentChatSessions = async (agentId: string) => {
-  try {
-    const allSessions = await getData('chatSessions');
-    if (!allSessions) return [];
-    
-    const sessions = Object.entries(allSessions)
-      .map(([id, data]: [string, any]) => ({ id, ...data }))
-      .filter(session => session.agentId === agentId)
-      .sort((a, b) => b.lastMessageTime - a.lastMessageTime);
-    
-    return sessions;
-  } catch (error) {
-    console.error('Error fetching agent chats:', error);
-    return [];
-  }
+  const sessions = await queryList('chatSessions', { orderBy: 'agentId', equalTo: agentId });
+  return sessions.sort((a: any, b: any) => b.lastMessageTime - a.lastMessageTime);
 };
 
-// Get chat sessions for a client
+// Get chat sessions for a client (uses Firebase query — no client-side filtering)
 export const getClientChatSessions = async (clientId: string) => {
-  try {
-    const allSessions = await getData('chatSessions');
-    if (!allSessions) return [];
-    
-    const sessions = Object.entries(allSessions)
-      .map(([id, data]: [string, any]) => ({ id, ...data }))
-      .filter(session => session.clientId === clientId)
-      .sort((a, b) => b.lastMessageTime - a.lastMessageTime);
-    
-    return sessions;
-  } catch (error) {
-    console.error('Error fetching client chats:', error);
-    return [];
-  }
+  const sessions = await queryList('chatSessions', { orderBy: 'clientId', equalTo: clientId });
+  return sessions.sort((a: any, b: any) => b.lastMessageTime - a.lastMessageTime);
 };
 
-// Get messages for a chat
+// Get messages for a chat (uses Firebase query — no client-side filtering)
 export const getChatMessages = async (chatId: string) => {
-  try {
-    const allMessages = await getData('chatMessages');
-    if (!allMessages) return [];
-    
-    const messages = Object.entries(allMessages)
-      .map(([id, data]: [string, any]) => ({ id, ...data }))
-      .filter(message => message.chatId === chatId)
-      .sort((a, b) => a.timestamp - b.timestamp);
-    
-    return messages;
-  } catch (error) {
-    console.error('Error fetching messages:', error);
-    return [];
-  }
+  const messages = await queryList('chatMessages', { orderBy: 'chatId', equalTo: chatId });
+  return messages.sort((a: any, b: any) => a.timestamp - b.timestamp);
 };
 
-// Subscribe to messages (polling for real-time updates)
-export const subscribeToMessages = (chatId: string, callback: (messages: ChatMessage[]) => void, interval = 2000) => {
-  let lastFetch = 0;
-  
-  const fetchMessages = async () => {
-    try {
-      const messages = await getChatMessages(chatId);
-      callback(messages);
-    } catch (error) {
-      console.error('Error fetching messages:', error);
+// Subscribe to messages (real-time listener)
+export const subscribeToMessages = (chatId: string, callback: (messages: ChatMessage[]) => void) => {
+  const messagesRef = ref(db, 'chatMessages');
+  const messagesQuery = query(messagesRef, orderByChild('chatId'), equalTo(chatId));
+
+  const handler = onValue(messagesQuery, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      callback([]);
+      return;
     }
-  };
-  
-  // Initial fetch
-  fetchMessages();
-  
-  // Set up polling
-  const intervalId = setInterval(fetchMessages, interval);
-  
-  // Return unsubscribe function
-  return () => clearInterval(intervalId);
+    const messages = Object.entries(data)
+      .map(([id, value]: [string, any]) => ({ id, ...value }))
+      .sort((a, b) => a.timestamp - b.timestamp);
+    callback(messages);
+  });
+
+  return () => off(messagesQuery, 'value', handler);
 };
 // Mark messages as read
 export const markMessagesAsRead = async (threadId: string, messageIds: string[], agentUid: string) => {

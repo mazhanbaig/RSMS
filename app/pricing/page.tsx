@@ -10,7 +10,8 @@ import {
 } from "lucide-react"
 import { message } from "antd"
 import Header from "@/components/Header"
-import { checkUserSession, createJazzCashPayment } from "@/FBConfig/fbFunctions"
+import { createJazzCashPayment } from "@/FBConfig/fbFunctions"
+import { useAuth } from "@/hooks/useAuth"
 
 export default function PricingPage() {
 
@@ -18,43 +19,17 @@ export default function PricingPage() {
     const [isProcessing, setIsProcessing] = useState<boolean>(false)
     const [selectedPayment, setSelectedPayment] = useState<string>('easypaisa')
     const [isExpanded, setIsExpanded] = useState<boolean>(false)
-    const [loading, setLoading] = useState<boolean>(true)
-    const [userInfo, setUserInfo] = useState<any>(null)
+    const { user, loading: authLoading } = useAuth()
 
     useEffect(() => {
-        const initPage = async () => {
-            try {
-                setLoading(true);
+        if (authLoading) return
+        if (!user) {
+            message.error('Please Login First')
+            router.replace('/login')
+        }
+    }, [user, authLoading, router])
 
-                // 1. Check Firebase Auth session
-                const sessionUser = await checkUserSession();
-                if (!sessionUser) {
-                    message.error('Please Login First');
-                    router.replace('/login');
-                    return;
-                }
-
-                const storedUser = localStorage.getItem('userInfo');
-                if (!storedUser) {
-                    message.error('User data not found');
-                    router.replace('/login');
-                    return;
-                }
-
-                const userData: any = JSON.parse(storedUser);
-                setUserInfo(userData);
-
-
-            } catch (err) {
-                message.error("Something went wrong!");
-                router.replace('/login');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        initPage();
-    }, [router]);
+    if (authLoading || !user) return null
 
     const ultimatePackage = {
         id: 'ultimate',
@@ -127,14 +102,14 @@ export default function PricingPage() {
     ], [])
 
     const handlePayment = async () => {
-        if (!userInfo?.email) return;
+        if (!user?.email) return;
 
         try {
             setIsProcessing(true);
 
             const paymentData = await createJazzCashPayment(
                 ultimatePackage.price,
-                userInfo.email,
+                user.email,
                 selectedPayment
             );
 

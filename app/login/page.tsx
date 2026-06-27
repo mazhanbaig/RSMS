@@ -223,13 +223,6 @@ export default function LoginPage() {
         try {
             const res = await loginWithGoogle();
 
-            localStorage.setItem("userInfo", JSON.stringify({
-                uid: res.user.uid,
-                email: res.user.email,
-                name: res.user.name,
-                photoURL: res.user.picture
-            }));
-
             message.success('Login Successful!');
             router.push(`/realstate/${res.user.uid}`);
 

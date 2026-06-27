@@ -4,8 +4,11 @@ import { motion } from "framer-motion";
 import { Home, ChevronRight, Sparkles } from "lucide-react";
 import Button from "@/components/Button";
 import PropertyCard from "@/components/PropertyCard";
+import EmptyState from "@/components/EmptyState";
+import { useRouter } from "next/navigation";
 
 export default function RecentProperties({ properties, userUid, onViewAll, onNavigate }: any) {
+    const router = useRouter();
     const recentProperties = properties.slice(-2).reverse();
 
     return (
@@ -70,17 +73,12 @@ export default function RecentProperties({ properties, userUid, onViewAll, onNav
                         </motion.div>
                     ))
                 ) : (
-                    <div className="text-center py-12 px-5">
-                        <motion.div
-                            initial={{ scale: 0.9 }}
-                            animate={{ scale: 1 }}
-                            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 mb-4"
-                        >
-                            <Home size={28} className="text-indigo-400" />
-                        </motion.div>
-                        <p className="text-slate-500 font-medium">No properties yet</p>
-                        <p className="text-xs text-slate-400 mt-1">Add your first property to get started</p>
-                    </div>
+                    <EmptyState
+                        title="No properties yet"
+                        message="Add your first property to get started"
+                        icon={<Home size={28} className="text-indigo-400" />}
+                        action={{ label: 'Add Property', onClick: () => router.push(`/realstate/${userUid}/properties/addproperty`) }}
+                    />
                 )}
             </div>
         </motion.div>

@@ -12,6 +12,7 @@ interface ImagesOwnerProps {
     imagePreviews: string[];
     handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
     removeImage: (index: number) => void;
+    uid?: string;
 }
 interface Owner {
     id: string,
@@ -33,19 +34,17 @@ export default function AddPropertyPart3({
     handleChange,
     imagePreviews,
     handleImageUpload,
-    removeImage
+    removeImage,
+    uid
 }: ImagesOwnerProps) {
 
     const [owners, setOwners] = useState<Owner[]>([]);
     const [loadingOwners, setLoadingOwners] = useState(true);
 
     useEffect(() => {
-        const userData = localStorage.getItem('userInfo');
-        if (!userData) return;
+        if (!uid) return;
 
-        const parsed = JSON.parse(userData);
-
-        getData(`owners/${parsed?.uid}`)
+        getData(`owners/${uid}`)
             .then((res: any) => {
                 if (!res) return;
 
@@ -57,14 +56,14 @@ export default function AddPropertyPart3({
                 );
 
                 const filtered = ownersArray.filter(
-                    (o) => o.agentUid === parsed.uid
+                    (o) => o.agentUid === uid
                 );
 
                 setOwners(filtered.reverse());
             })
             .catch(console.error)
             .finally(() => setLoadingOwners(false));
-    }, []);
+    }, [uid]);
 
     const handleOwnerSelect = (id: string) => {
         const selectedOwner = owners.find(o => o.id === id);

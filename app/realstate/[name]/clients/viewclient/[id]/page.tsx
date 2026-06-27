@@ -14,14 +14,9 @@ import {
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import Loader from "@/components/Loader";
-import { checkUserSession, getData, updateData } from "@/FBConfig/fbFunctions";
-
-interface UserInfo {
-    uid: string;
-    email?: string;
-    name?: string;
-    [key: string]: any;
-}
+import CommunicationHub from "@/components/CommunicationHub";
+import { getData, updateData } from "@/FBConfig/fbFunctions";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ClientData {
     id: string;
@@ -48,36 +43,19 @@ export default function ViewClientPage() {
     const router = useRouter();
     const { id } = useParams();
     const [client, setClient] = useState<ClientData | null>(null);
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [dataLoading, setDataLoading] = useState(true);
+    const [emailOpen, setEmailOpen] = useState(false);
+    const { user: userInfo, loading: authLoading } = useAuth();
     const [activePanel, setActivePanel] = useState('details');
     const [newNote, setNewNote] = useState('');
 
-    // Check authentication and load data
     useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const user: any = await checkUserSession();
-                if (!user) {
-                    message.error('Please Login First');
-                    router.replace('/login');
-                    return;
-                }
-
-                const storedUser: any = localStorage.getItem('userInfo')
-                const userData = JSON.parse(storedUser);
-                setUserInfo(userData);
-
-            } catch (err) {
-                message.error('Error occurred during authentication');
-                router.replace('/login');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        checkAuth();
-    }, [router]);
+        if (authLoading) return;
+        if (!userInfo) {
+            message.error('Please Login First');
+            router.replace('/login');
+        }
+    }, [userInfo, authLoading, router]);
 
     // Fetch client data
     const fetchClientData = useCallback(async () => {
@@ -87,7 +65,7 @@ export default function ViewClientPage() {
         }
 
         try {
-            setLoading(true);
+            setDataLoading(true);
             const clientData: any = await getData(`clients/${userInfo.uid}/${id}`);
 
             if (clientData) {
@@ -100,7 +78,7 @@ export default function ViewClientPage() {
             console.error("Error fetching client:", error);
             message.error('Failed to load client data');
         } finally {
-            setLoading(false);
+            setDataLoading(false);
         }
     }, [id, router, userInfo?.uid]);
 
@@ -167,7 +145,7 @@ export default function ViewClientPage() {
         { id: 'activity', label: 'Activity', icon: <Activity className="w-4 h-4" /> }
     ];
 
-    if (loading) {
+    if (authLoading || dataLoading) {
         return <Loader />;
     }
 
@@ -319,9 +297,14 @@ export default function ViewClientPage() {
                                     variant="theme"
                                     icon={<Mail className="w-4 h-4" />}
                                     size="sm"
-                                    onClick={() => {
-                                        window.location.href = `mailto:${client.email}`
-                                    }}
+                                    onClick={() => setEmailOpen(true)}
+                                />
+                                <CommunicationHub
+                                    open={emailOpen}
+                                    onClose={() => setEmailOpen(false)}
+                                    recipientEmail={client.email || ""}
+                                    recipientName={`${client.firstName || ""} ${client.lastName || ""}`}
+                                    agentName={userInfo?.name || userInfo?.email || "Your Agent"}
                                 />
                                 <Button
                                     label="Make Call"

@@ -1,91 +1,30 @@
-// 'use client';
-
-// import { useState, useEffect } from "react";
-// import { useRouter } from "next/navigation";
-// import Loader from "@/components/Loader";
-// import HomeHeader from "@/components/HomeHeader";
-// import { checkUserSession } from "@/FBConfig/fbFunctions";
-// import HeroSection from "@/components/HeroSection";
-// import ProblemsSolutions from "@/components/ProblemsSolutions";
-// import FeaturesGrid from "@/components/FeaturesGrid";
-// import HowItWorks from "@/components/HowItWorks";
-// import PricingSection from "@/components/PricingSection";
-// import CTASection from "@/components/CTASection";
-
-// export default function HomePage() {
-//   const router = useRouter();
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     const checkAuth = async () => {
-//       const user = await checkUserSession();
-//       if (user) {
-//         const storedUser = localStorage.getItem('userInfo');
-//         if (storedUser) {
-//           const userData = JSON.parse(storedUser);
-//           router.replace(`/realstate/${userData.uid}`);
-//           return;
-//         }
-//       }
-//       setLoading(false);
-//     };
-//     checkAuth();
-//   }, [router]);
-
-//   if (loading) return <Loader />;
-
-//   return (
-//     <div className="min-h-screen bg-white">
-//       <HomeHeader />
-//       <HeroSection />
-//       <ProblemsSolutions />
-//       <FeaturesGrid />
-//       <HowItWorks />
-//       {/* <PricingSection /> */}
-//       <CTASection />
-//     </div>
-//   );
-// }
-
-
-// app/page.tsx
-'use client';
-
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { CustomCursor } from "@/components/CustomCursor";
 import HomeHeader from "@/components/HomeHeader";
 import { HeroSection } from "@/components/layout/HeroSection";
 import { ProblemsSolutions } from "@/components/layout/ProblemsSolutions";
 import { FeaturesGrid } from "@/components/layout/FeaturesGrid";
 import { HowItWorks } from "@/components/layout/HowItWorks";
-import { PricingSection } from "@/components/layout/PricingSection";
 import { CTASection } from "@/components/layout/CTASection";
-import Loader from "@/components/Loader";
+
+export const metadata = {
+  title: "Zestate — Real Estate Management Platform",
+  description:
+    "Manage properties, clients, owners, and events with Zestate. The all-in-one real estate management platform for agents and agencies.",
+  openGraph: {
+    title: "Zestate — Real Estate Management Platform",
+    description:
+      "Manage properties, clients, owners, and events with Zestate.",
+  },
+};
 
 export default function HomePage() {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading) {
-    return (
-      <Loader/>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
-      {/* <CustomCursor /> */}
       <HomeHeader />
       <HeroSection />
       <ProblemsSolutions />
       <FeaturesGrid />
       <HowItWorks />
-      {/* <PricingSection /> */}
       <CTASection />
     </div>
   );

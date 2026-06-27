@@ -3,8 +3,11 @@
 import { motion } from "framer-motion";
 import { ChevronRight, Building2, Mail, Phone, Home, Briefcase, Crown } from "lucide-react";
 import Button from "@/components/Button";
+import EmptyState from "@/components/EmptyState";
+import { useRouter } from "next/navigation";
 
 export default function RecentOwners({ owners, userUid, onViewAll, onNavigate }: any) {
+    const router = useRouter();
     const recentOwners = owners.slice(-2).reverse();
 
     const getPropertyCount = (owner: any) => {
@@ -139,17 +142,12 @@ export default function RecentOwners({ owners, userUid, onViewAll, onNavigate }:
                         );
                     })
                 ) : (
-                    <div className="text-center py-12 px-5">
-                        <motion.div
-                            initial={{ scale: 0.9 }}
-                            animate={{ scale: 1 }}
-                            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 mb-4"
-                        >
-                            <Building2 size={28} className="text-indigo-400" />
-                        </motion.div>
-                        <p className="text-slate-500 font-medium">No owners yet</p>
-                        <p className="text-xs text-slate-400 mt-1">Add property owners to your network</p>
-                    </div>
+                    <EmptyState
+                        title="No owners yet"
+                        message="Add property owners to your network"
+                        icon={<Building2 size={28} className="text-indigo-400" />}
+                        action={{ label: 'Add Owner', onClick: () => router.push(`/realstate/${userUid}/owners/addowner`) }}
+                    />
                 )}
             </div>
         </motion.div>

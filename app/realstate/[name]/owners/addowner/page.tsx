@@ -3,20 +3,26 @@
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Button from "@/components/Button";
-import { auth, checkUserSession, getData, saveData, updateData } from "@/FBConfig/fbFunctions";
+import { getData, saveData, updateData } from "@/FBConfig/fbFunctions";
 import { useRouter, useSearchParams } from "next/navigation";
 import { message } from 'antd'
-import { onAuthStateChanged } from "firebase/auth";
+import { useAuth } from "@/hooks/useAuth";
 import { Building, UserPlus, Save, ArrowLeft, Briefcase, Phone, Mail, User, AlertCircle, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function AddOwnerPage() {
-    interface UserInfo {
-        uid: string;
-        email?: string;
-        name?: string;
-        [key: string]: any;
-    }
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const { user, loading: authLoading } = useAuth();
+
+    useEffect(() => {
+        if (authLoading) return;
+        if (!user) {
+            message.error('Please Login First');
+            router.replace('/login');
+        }
+    }, [user, authLoading, router]);
 
     const [formData, setFormData] = useState({
         id: "",
@@ -28,53 +34,7 @@ export default function AddOwnerPage() {
         notes: "",
     });
 
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const searchParams = useSearchParams();
-    const router = useRouter();
-
-    useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const user: any = await checkUserSession();
-                if (!user) {
-                    message.error('Please Login First');
-                    router.replace('/login');
-                    return;
-                }
-
-                const storedUser: any = localStorage.getItem('userInfo')
-                const userData = JSON.parse(storedUser);
-                setUserInfo(userData);
-
-            } catch (err) {
-                message.error('Error occurred during authentication');
-                router.replace('/login');
-            }
-        };
-
-        checkAuth();
-    }, [router]);
-
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                router.replace(`/login`)
-            }
-        })
-
-        const storedUser = localStorage.getItem("userInfo");
-        if (!storedUser) return;
-
-        const { uid } = JSON.parse(storedUser);
-
-        getData(`users/${uid}`)
-            .then((res: any) => {
-                setUserInfo(res);
-            })
-
-        return () => unsubscribe();
-    }, [router])
 
     useEffect(() => {
         const ownerData = searchParams.get("ownerData");
@@ -86,7 +46,7 @@ export default function AddOwnerPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!userInfo) {
+        if (!user) {
             message.error("User not detected!");
             return;
         }
@@ -104,24 +64,24 @@ export default function AddOwnerPage() {
         const ownerFullData = {
             ...formData,
             updatedAt: new Date().toISOString(),
-            agentUid: userInfo.uid,
-            agentName: userInfo.name
+            agentUid: user.uid,
+            agentName: user.name
         };
 
         try {
             if (formData.id) {
-                await updateData(`owners/${userInfo.uid}/${formData.id}`, ownerFullData);
+                await updateData(`owners/${user.uid}/${formData.id}`, ownerFullData);
                 message.success("Owner Updated Successfully");
-                router.push(`/realstate/${userInfo?.uid}/owners`);
+                router.push(`/realstate/${user?.uid}/owners`);
             } else {
                 const newId = crypto.randomUUID();
-                await saveData(`owners/${userInfo.uid}/${newId}`, {
+                await saveData(`owners/${user.uid}/${newId}`, {
                     ...ownerFullData,
                     id: newId,
                     createdAt: new Date().toISOString()
                 });
                 message.success("Owner Added Successfully");
-                router.push(`/realstate/${userInfo?.uid}/owners`);
+                router.push(`/realstate/${user?.uid}/owners`);
             }
         } catch (error) {
             message.error("Something went wrong!");
@@ -131,7 +91,7 @@ export default function AddOwnerPage() {
         }
     };
 
-    if (!userInfo) {
+    if (authLoading || !user) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -141,7 +101,7 @@ export default function AddOwnerPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
-            <Header userData={userInfo} />
+            <Header userData={user} />
 
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
                 <div className="max-w-4xl mx-auto">

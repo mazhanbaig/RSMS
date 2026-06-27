@@ -15,15 +15,10 @@ import {
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import Loader from "@/components/Loader";
+import CommunicationHub from "@/components/CommunicationHub";
+import { useAuth } from "@/hooks/useAuth";
 import { getData, updateData } from "@/FBConfig/fbFunctions";
 import { motion } from "framer-motion";
-
-interface UserInfo {
-    uid: string;
-    email?: string;
-    name?: string;
-    [key: string]: any;
-}
 
 interface OwnerData {
     id: string;
@@ -51,42 +46,36 @@ interface OwnerData {
 export default function ViewOwnerPage() {
     const router = useRouter();
     const { id } = useParams();
+
+    const { user, loading: authLoading } = useAuth();
+
+    useEffect(() => {
+        if (authLoading) return;
+        if (!user) {
+            message.error('Please Login First');
+            router.replace('/login');
+        }
+    }, [user, authLoading, router]);
+
     const [owner, setOwner] = useState<OwnerData | null>(null);
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [activePanel, setActivePanel] = useState('details');
     const [newNote, setNewNote] = useState('');
     const [ownerProperties, setOwnerProperties] = useState<any[]>([]);
-
-    // Load user info
-    useEffect(() => {
-        const stored = localStorage.getItem('userInfo');
-        if (stored) {
-            try {
-                const parsed: UserInfo = JSON.parse(stored);
-                setUserInfo(parsed);
-            } catch (err) {
-                message.error('Error loading user info');
-                setLoading(false);
-            }
-        } else {
-            message.error('Please login first');
-            router.replace('/login');
-        }
-    }, [router]);
+    const [emailOpen, setEmailOpen] = useState(false);
 
     // Fetch owner data
     const fetchOwnerData = useCallback(async () => {
-        if (!id || !userInfo?.uid) return;
+        if (!id || !user?.uid) return;
 
         try {
             setLoading(true);
-            const ownerData: any = await getData(`owners/${userInfo.uid}/${id}`);
+            const ownerData: any = await getData(`owners/${user.uid}/${id}`);
             if (ownerData) {
                 setOwner(ownerData);
             } else {
                 message.error('Owner not found');
-                router.push(`/realstate/${userInfo.uid}/owners`);
+                router.push(`/realstate/${user.uid}/owners`);
             }
         } catch (error) {
             console.error("Error fetching owner:", error);
@@ -94,21 +83,21 @@ export default function ViewOwnerPage() {
         } finally {
             setLoading(false);
         }
-    }, [id, router, userInfo?.uid]);
+    }, [id, router, user?.uid]);
 
     useEffect(() => {
-        if (userInfo?.uid) {
+        if (user?.uid) {
             fetchOwnerData();
         }
-    }, [fetchOwnerData, userInfo?.uid]);
+    }, [fetchOwnerData, user?.uid]);
 
     // Fetch properties when owner is loaded
     useEffect(() => {
         const fetchOwnersProperties = async () => {
-            if (!userInfo?.uid || !owner?.id) return;
+            if (!user?.uid || !owner?.id) return;
 
             try {
-                const ownersProps: any = await getData(`properties/${userInfo.uid}`);
+                const ownersProps: any = await getData(`properties/${user.uid}`);
                 if (!ownersProps) {
                     setOwnerProperties([]);
                     return;
@@ -129,14 +118,14 @@ export default function ViewOwnerPage() {
         };
 
         fetchOwnersProperties();
-    }, [userInfo?.uid, owner?.id]);
+    }, [user?.uid, owner?.id]);
 
     // Update status
     const updateStatus = useCallback(async (newStatus: string) => {
-        if (!owner || !id || !userInfo?.uid) return;
+        if (!owner || !id || !user?.uid) return;
 
         try {
-            await updateData(`owners/${userInfo.uid}/${id}`, {
+            await updateData(`owners/${user.uid}/${id}`, {
                 ...owner,
                 status: newStatus,
                 lastContacted: new Date().toISOString().split('T')[0]
@@ -147,7 +136,7 @@ export default function ViewOwnerPage() {
             console.error("Error updating status:", error);
             message.error('Failed to update status');
         }
-    }, [owner, id, userInfo?.uid]);
+    }, [owner, id, user?.uid]);
 
     // Helper functions
     const getStatusConfig = useCallback((status: string) => {
@@ -190,7 +179,7 @@ export default function ViewOwnerPage() {
         { id: 'activity', label: 'Activity', icon: <Activity className="w-4 h-4" /> }
     ];
 
-    if (!userInfo) {
+    if (authLoading || !user) {
         return <Loader />;
     }
 
@@ -201,7 +190,7 @@ export default function ViewOwnerPage() {
     if (!owner) {
         return (
             <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
-                <Header userData={userInfo} />
+                <Header userData={user} />
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="bg-white rounded-xl border border-slate-100 p-6 text-center">
                         <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
@@ -211,7 +200,7 @@ export default function ViewOwnerPage() {
                         <p className="text-slate-500 mb-6">The owner you're looking for doesn't exist.</p>
                         <Button
                             label="Back to Owners"
-                            onClick={() => router.push(`/realstate/${userInfo?.uid}/owners`)}
+                            onClick={() => router.push(`/realstate/${user?.uid}/owners`)}
                             variant="theme"
                             size="md"
                             icon={<ArrowLeft className="w-4 h-4" />}
@@ -224,7 +213,7 @@ export default function ViewOwnerPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
-            <Header userData={userInfo} />
+            <Header userData={user} />
 
             <main className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 {/* Owner Header */}
@@ -233,7 +222,7 @@ export default function ViewOwnerPage() {
                         {/* Left Section */}
                         <div className="flex items-start gap-3 sm:items-center">
                             <button
-                                onClick={() => router.push(`/realstate/${userInfo?.uid}/owners`)}
+                                onClick={() => router.push(`/realstate/${user?.uid}/owners`)}
                                 className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
                             >
                                 <ArrowLeft className="w-5 h-5 text-slate-600" />
@@ -269,7 +258,7 @@ export default function ViewOwnerPage() {
                                 label="Edit"
                                 onClick={() =>
                                     router.push(
-                                        `/realstate/${userInfo?.uid}/owners/addowner?ownerData=${encodeURIComponent(
+                                        `/realstate/${user?.uid}/owners/addowner?ownerData=${encodeURIComponent(
                                             JSON.stringify(owner)
                                         )}`
                                     )
@@ -348,7 +337,14 @@ export default function ViewOwnerPage() {
                                     variant="theme"
                                     icon={<Mail className="w-4 h-4" />}
                                     size="sm"
-                                    onClick={() => { window.location.href = `mailto:${owner.email}` }}
+                                    onClick={() => setEmailOpen(true)}
+                                />
+                                <CommunicationHub
+                                    open={emailOpen}
+                                    onClose={() => setEmailOpen(false)}
+                                    recipientEmail={owner.email || ""}
+                                    recipientName={`${owner.firstName || ""} ${owner.lastName || ""}`}
+                                    agentName={user?.name || user?.email || "Your Agent"}
                                 />
                                 <Button
                                     label="Make Call"
@@ -362,7 +358,7 @@ export default function ViewOwnerPage() {
                                     variant="theme2"
                                     icon={<Plus className="w-4 h-4" />}
                                     size="sm"
-                                    onClick={() => router.push(`/realstate/${userInfo?.uid}/properties/addproperty`)}
+                                    onClick={() => router.push(`/realstate/${user?.uid}/properties/addproperty`)}
                                 />
                             </div>
                         </div>
@@ -441,7 +437,7 @@ export default function ViewOwnerPage() {
                                             variant="theme"
                                             size="sm"
                                             icon={<Plus className="w-4 h-4" />}
-                                            onClick={() => router.push(`/realstate/${userInfo?.uid}/properties/addproperty`)}
+                                            onClick={() => router.push(`/realstate/${user?.uid}/properties/addproperty`)}
                                         />
                                     </div>
 
@@ -485,7 +481,7 @@ export default function ViewOwnerPage() {
                                             <Button
                                                 label="Add First Property"
                                                 variant="theme"
-                                                onClick={() => router.push(`/realstate/${userInfo?.uid}/properties/addproperty`)}
+                                                onClick={() => router.push(`/realstate/${user?.uid}/properties/addproperty`)}
                                             />
                                         </div>
                                     )}
@@ -505,7 +501,7 @@ export default function ViewOwnerPage() {
                                                 if (newNote.trim()) {
                                                     try {
                                                         const updatedNotes = owner.notes ? `${owner.notes}\n\n${newNote}` : newNote;
-                                                        await updateData(`owners/${userInfo?.uid}/${id}`, { ...owner, notes: updatedNotes });
+                                                        await updateData(`owners/${user?.uid}/${id}`, { ...owner, notes: updatedNotes });
                                                         setOwner(prev => prev ? { ...prev, notes: updatedNotes } : null);
                                                         setNewNote('');
                                                         message.success('Note added successfully');

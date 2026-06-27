@@ -2,7 +2,8 @@
 
 import Button from "@/components/Button";
 import Header from "@/components/Header";
-import { getData, deleleData, checkUserSession } from "@/FBConfig/fbFunctions";
+import { getData, deleleData, queryList } from "@/FBConfig/fbFunctions";
+import { useAuth } from "@/hooks/useAuth";
 import { message } from "antd";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useCallback, useState } from "react";
@@ -16,6 +17,8 @@ import {
 import React from "react";
 import Loader from "@/components/Loader";
 import DraggableButton from "@/components/DraggableButton";
+import ErrorState from "@/components/ErrorState";
+import KanbanBoard from "@/components/KanbanBoard";
 
 export default function ClientsPage() {
     interface UserInfo {
@@ -25,66 +28,43 @@ export default function ClientsPage() {
     }
 
     const router = useRouter();
+    const { user, loading: authLoading } = useAuth();
     const [clients, setClients] = useState<any[]>([]);
     const [searchVal, setSearchVal] = useState<string>('');
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
     const [activeFilter, setActiveFilter] = useState<string>("all");
     const [loading, setLoading] = useState<boolean>(true);
+    const [pageSize, setPageSize] = useState(100);
+    const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
+    const [fetchError, setFetchError] = useState<string | null>(null);
 
-    // SINGLE useEffect for authentication and user data
     useEffect(() => {
-        const initPage = async () => {
-            try {
-                setLoading(true);
+        if (authLoading) return;
+        if (!user) {
+            message.error('Please Login First');
+            router.replace('/login');
+            return;
+        }
+        setLoading(true);
+        setFetchError(null);
+        fetchClients(user.uid, pageSize).finally(() => setLoading(false));
+    }, [user, authLoading, router]);
 
-                // 1. Check Firebase Auth session
-                const sessionUser = await checkUserSession();
-                if (!sessionUser) {
-                    message.error('Please Login First');
-                    router.replace('/login');
-                    return;
-                }
-
-                // 2. Get user data from localStorage
-                const storedUser = localStorage.getItem('userInfo');
-                if (!storedUser) {
-                    message.error('User data not found');
-                    router.replace('/login');
-                    return;
-                }
-
-                const userData: any = JSON.parse(storedUser);
-                setUserInfo(userData);
-
-                // 3. Fetch clients immediately
-                await fetchClients(userData.uid);
-
-            } catch (err) {
-                message.error("Something went wrong!");
-                router.replace('/login');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        initPage();
-    }, [router]);
-
-    // Separate function to fetch clients
-    const fetchClients = async (uid: string) => {
+    const fetchClients = async (uid: string, limit?: number) => {
         try {
-            const res = await getData(`clients/${uid}`);
-            if (res) {
-                const clientsArray = Object.entries(res).map(([id, value]: any) => ({
-                    id,
-                    ...value
-                })).reverse()
-                setClients(clientsArray);
-            } else {
-                setClients([]);
-            }
+            const clientsArray = await queryList(`clients/${uid}`, limit ? { limitToLast: limit } : {});
+            setClients(clientsArray.reverse());
+            setFetchError(null);
         } catch (err) {
-            message.error("Failed to load clients");
+            setFetchError("Failed to load clients. Please check your connection and try again.");
+        }
+    };
+
+    const loadMore = () => {
+        if (user?.uid) {
+            setLoading(true);
+            setFetchError(null);
+            fetchClients(user.uid).finally(() => setLoading(false));
+            setPageSize(Infinity);
         }
     };
 
@@ -96,18 +76,18 @@ export default function ClientsPage() {
             return
         }
         try {
-            if (!userInfo?.uid) {
+            if (!user?.uid) {
                 message.error("Something went wrong")
                 return
             }
-            await deleleData(`clients/${userInfo?.uid}/${id}`);
+            await deleleData(`clients/${user?.uid}/${id}`);
             setClients(prev => prev.filter(client => client.id !== id));
             message.success("Client deleted successfully");
         } catch (err) {
             console.error(err);
             message.error("Something went wrong!");
         }
-    }, [userInfo?.uid]);
+    }, [user?.uid]);
 
     // Fast filtered clients (memoized)
     const filteredClients = useMemo(() => {
@@ -127,13 +107,14 @@ export default function ClientsPage() {
         });
     }, [clients, searchVal, activeFilter]);
 
-    // Fast status filters (memoized)
+    // Fast status filters (memoized) — matches Kanban pipeline stages
     const statusFilters = useMemo(() => [
         { id: "all", label: "All Clients", count: clients.length },
-        { id: "active", label: "Active", count: clients.filter(c => c.status === 'active').length },
-        { id: "new", label: "New", count: clients.filter(c => c.status === 'new').length },
-        { id: "converted", label: "Converted", count: clients.filter(c => c.status === 'converted').length },
-        { id: "lost", label: "Lost", count: clients.filter(c => c.status === 'lost').length }
+        { id: "new", label: "New Lead", count: clients.filter(c => (c.status === 'new' || c.status === 'lead')).length },
+        { id: "contacted", label: "Contacted", count: clients.filter(c => c.status === 'contacted').length },
+        { id: "viewing", label: "Viewing Scheduled", count: clients.filter(c => (c.status === 'viewing' || c.status === 'viewing-scheduled')).length },
+        { id: "offer", label: "Offer Made", count: clients.filter(c => (c.status === 'offer' || c.status === 'offer-made')).length },
+        { id: "closed", label: "Closed / Lost", count: clients.filter(c => (c.status === 'closed' || c.status === 'converted' || c.status === 'lost')).length }
     ], [clients]);
 
     // Fast growth calculation
@@ -163,24 +144,24 @@ export default function ClientsPage() {
 
     // Optimized handlers
     const handleAddClient = useCallback(() => {
-        if (userInfo?.uid) {
-            router.push(`/realstate/${userInfo.uid}/clients/addclient`);
+        if (user?.uid) {
+            router.push(`/realstate/${user.uid}/clients/addclient`);
         }
-    }, [router, userInfo?.uid]);
+    }, [router, user?.uid]);
 
     const handleViewClient = useCallback((id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (userInfo?.uid) {
-            router.push(`/realstate/${userInfo.uid}/clients/viewclient/${id}`);
+        if (user?.uid) {
+            router.push(`/realstate/${user.uid}/clients/viewclient/${id}`);
         }
-    }, [router, userInfo?.uid]);
+    }, [router, user?.uid]);
 
     const handleEditClient = useCallback((client: any, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (userInfo?.uid) {
-            router.push(`/realstate/${userInfo.uid}/clients/addclient?clientData=${encodeURIComponent(JSON.stringify(client))}`);
+        if (user?.uid) {
+            router.push(`/realstate/${user.uid}/clients/addclient?clientData=${encodeURIComponent(JSON.stringify(client))}`);
         }
-    }, [router, userInfo?.uid]);
+    }, [router, user?.uid]);
 
     const handleDeleteClient = useCallback((id: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -188,19 +169,22 @@ export default function ClientsPage() {
     }, [deleteClient]);
 
     const handleRowClick = useCallback((id: string) => {
-        if (userInfo?.uid) {
-            router.push(`/realstate/${userInfo.uid}/clients/viewclient/${id}`);
+        if (user?.uid) {
+            router.push(`/realstate/${user.uid}/clients/viewclient/${id}`);
         }
-    }, [router, userInfo?.uid]);
+    }, [router, user?.uid]);
 
-    // Show loader while loading
-    if (loading || !userInfo) {
+    if (fetchError && !clients.length) {
+        return <ErrorState message={fetchError} onRetry={() => { setLoading(true); setFetchError(null); user?.uid && fetchClients(user.uid, pageSize).finally(() => setLoading(false)); }} />;
+    }
+
+    if (loading || !user) {
         return <Loader />;
     }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
-            <Header userData={userInfo} />
+            <Header userData={user} />
 
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
                 {/* Welcome Section */}
@@ -297,12 +281,28 @@ export default function ClientsPage() {
                     </div>
                 </div>
 
-                {/* Table View */}
+                {/* View Toggle */}
+                <div className="mt-4 flex items-center justify-end gap-2">
+                    <button onClick={() => setViewMode('table')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${viewMode === 'table' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Table</button>
+                    <button onClick={() => setViewMode('kanban')} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${viewMode === 'kanban' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>Kanban</button>
+                </div>
+
+                {viewMode === 'kanban' ? (
+                    <div className="mt-4">
+                        <KanbanBoard clients={clients} userUid={user?.uid} onAdd={handleAddClient} />
+                    </div>
+                ) : (
+                /* Table View */
                 <div className="mt-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-bold text-slate-800">All Clients</h2>
-                        <div className="text-sm text-slate-500">
-                            Showing {filteredClients.length} of {clients.length} clients
+                        <div className="flex items-center gap-3 text-sm text-slate-500">
+                            <span>Showing {filteredClients.length} of {clients.length} clients</span>
+                            {pageSize !== Infinity && clients.length >= pageSize && (
+                                <button onClick={loadMore} className="text-indigo-600 hover:text-indigo-700 font-medium underline">
+                                    Load All
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -405,6 +405,7 @@ export default function ClientsPage() {
                         </div>
                     </div>
                 </div>
+                )}
                 <DraggableButton onClick={handleAddClient} />
             </main>
         </div>

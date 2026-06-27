@@ -7,7 +7,8 @@ import { useEffect, useState } from "react";
 import { Home, MapPin, Search, Filter, ChevronRight, Building } from "lucide-react";
 import Button from "@/components/Button";
 import Link from "next/link";
-import { Input, Select, Empty, Spin } from "antd";
+import { Input, Select, Empty } from "antd";
+import Loader from "@/components/Loader";
 
 const { Search: AntSearch } = Input;
 
@@ -71,11 +72,7 @@ export default function PublicPropertiesPage() {
     };
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <Spin size="large" tip="Loading properties..." />
-            </div>
-        );
+        return <Loader />;
     }
 
     return (

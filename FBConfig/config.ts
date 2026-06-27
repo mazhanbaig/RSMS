@@ -16,6 +16,7 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const db = getDatabase(app);
 
 let analytics;
 if (typeof window !== "undefined") {

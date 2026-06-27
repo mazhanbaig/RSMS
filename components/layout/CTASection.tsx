@@ -97,26 +97,32 @@ export const CTASection = () => {
                 <div className="absolute bottom-20 right-1/4 w-40 sm:w-56 md:w-64 lg:w-80 h-40 sm:h-56 md:h-64 lg:h-80 bg-gradient-to-r from-pink-200/20 to-rose-200/20 rounded-full blur-3xl" />
 
                 {/* Animated Particles - Fewer on mobile */}
-                {[...Array(isMobile ? 8 : 20)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        animate={{
-                            y: [0, -100, 0],
-                            x: [0, Math.sin(i) * 50, 0],
-                            opacity: [0, 0.5, 0],
-                        }}
-                        transition={{
-                            duration: 5 + i * 0.5,
-                            repeat: Infinity,
-                            delay: i * 0.3,
-                        }}
-                        className="absolute w-0.5 h-0.5 sm:w-1 sm:h-1 rounded-full bg-purple-400"
-                        style={{
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                        }}
-                    />
-                ))}
+                {[...Array(isMobile ? 8 : 20)].map((_, i) => {
+                    const seedL = Math.sin(i * 127.1 + 311.7) * 100;
+                    const seedT = Math.sin(i * 269.5 + 183.3) * 100;
+                    const left = seedL - Math.floor(seedL);
+                    const top = seedT - Math.floor(seedT);
+                    return (
+                        <motion.div
+                            key={i}
+                            animate={{
+                                y: [0, -100, 0],
+                                x: [0, Math.sin(i) * 50, 0],
+                                opacity: [0, 0.5, 0],
+                            }}
+                            transition={{
+                                duration: 5 + i * 0.5,
+                                repeat: Infinity,
+                                delay: i * 0.3,
+                            }}
+                            className="absolute w-0.5 h-0.5 sm:w-1 sm:h-1 rounded-full bg-purple-400"
+                            style={{
+                                left: `${left * 100}%`,
+                                top: `${top * 100}%`,
+                            }}
+                        />
+                    );
+                })}
             </motion.div>
 
             <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

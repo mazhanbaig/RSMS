@@ -220,15 +220,6 @@ export default function Signup() {
       const res: any = await loginWithGoogle();
       console.log(res);
 
-      localStorage.setItem(
-        "userInfo",
-        JSON.stringify({
-          uid: res.user.uid,
-          email: res.user.email,
-          name: res.user.name,
-          photoURL: res.user.photoURL
-        })
-      );
       message.success('Account Created Successfully');
       router.replace(`/realstate/${res.user.uid}`)
     } catch (err: any) {

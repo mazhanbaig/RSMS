@@ -1,8 +1,9 @@
 'use client';
 
-import { message, Badge, Tooltip, Modal, Empty } from "antd";
+import { message, Badge, Tooltip, Modal } from "antd";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import useSWR, { mutate } from "swr";
 import {
     Users, Home, Building, CalendarClock, TrendingUp, DollarSign,
     FileText, Bell, Star, Activity, Clock, CheckCircle,
@@ -10,7 +11,8 @@ import {
     Target, Zap, Shield, Award, Globe, Phone,
     Calendar, X, Sparkles, Trophy,
 } from "lucide-react";
-import { checkUserSession, deleleData, getData, saveData } from "@/FBConfig/fbFunctions";
+import { deleleData, getData, saveData } from "@/FBConfig/fbFunctions";
+import { useAuth } from "@/hooks/useAuth";
 import Loader from "@/components/Loader";
 import Header from "@/components/Header";
 import DashboardClients from "@/components/DashboardClients";
@@ -20,19 +22,25 @@ import DashboardProperties from "@/components/DashboardProperties";
 import WelcomeSection from "@/components/WelcomeSection";
 import QuickActions from "@/components/QuickActions";
 import { motion, AnimatePresence } from 'framer-motion';
-import CommunicationHub from "@/components/CommunicationHub";
+
+// SWR fetcher
+const swrFetcher = async (path: string) => {
+  const data = await getData(path);
+  if (!data) return [];
+  return Object.entries(data).map(([id, value]: any) => ({ id, ...value }));
+};
 
 // Types
 interface MetricData {
-    totalRevenue: number;
+    totalDealsValue: number;
     conversionRate: number;
     leadsGenerated: number;
     leadsConverted: number;
-    satisfactionScore: number;
     activeListings: number;
     soldProperties: number;
     pendingTransactions: number;
     monthlyGrowth: number;
+    thisMonthDeals: number;
 }
 
 interface Notification {
@@ -83,38 +91,28 @@ const StatsCard = ({ stat, onClick, index }: any) => {
 };
 
 export default function AdminDashboardPage() {
-    // State
-    const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [userInfo, setUserInfo] = useState<any>(null);
-    const [clients, setClients] = useState<any[]>([]);
-    const [owners, setOwners] = useState<any[]>([]);
-    const [properties, setProperties] = useState<any[]>([]);
-    const [events, setEvents] = useState<any[]>([]);
+    const { user: userInfo, loading: authLoading } = useAuth();
     const [greeting, setGreeting] = useState("");
     const [showNotifications, setShowNotifications] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [documents, setDocuments] = useState<any[]>([]);
     const [templates, setTemplates] = useState<any[]>([]);
 
-    // Metrics State
-    const [metrics, setMetrics] = useState<MetricData>({
-        totalRevenue: 0,
-        conversionRate: 0,
-        leadsGenerated: 0,
-        leadsConverted: 0,
-        satisfactionScore: 85,
-        activeListings: 0,
-        soldProperties: 0,
-        pendingTransactions: 0,
-        monthlyGrowth: 0
-    });
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [showStatsModal, setShowStatsModal] = useState(false);
     const [selectedStat, setSelectedStat] = useState<any>(null);
 
     const router = useRouter();
-    const hasFetchedRef = useRef(false);
+
+    const uid = userInfo?.uid;
+    const { data: clients = [], isLoading: clientsLoading } = useSWR(uid ? `clients/${uid}` : null, swrFetcher);
+    const { data: owners = [], isLoading: ownersLoading } = useSWR(uid ? `owners/${uid}` : null, swrFetcher);
+    const { data: properties = [], isLoading: propertiesLoading } = useSWR(uid ? `properties/${uid}` : null, swrFetcher);
+    const { data: rawEvents = [], isLoading: eventsLoading } = useSWR(uid ? `events/${uid}` : null, swrFetcher);
+    const events = useMemo(() => rawEvents.filter((e: any) => e.agentUid === uid), [rawEvents, uid]);
+
+    const dataLoading = clientsLoading || ownersLoading || propertiesLoading || eventsLoading;
 
     // Set greeting
     useEffect(() => {
@@ -125,139 +123,108 @@ export default function AdminDashboardPage() {
         );
     }, []);
 
-    // Auth check
     useEffect(() => {
-        const checkAuth = async () => {
+        if (authLoading) return;
+        if (!userInfo) {
+            message.error('Please Login First');
+            router.replace('/login');
+        }
+    }, [userInfo, authLoading, router]);
+
+    // Fetch notifications
+    useEffect(() => {
+        if (!uid) return;
+        (async () => {
             try {
-                const user: any = await checkUserSession();
-                if (!user) {
-                    message.error('Please Login First');
-                    router.replace('/login');
-                    return;
+                const notificationsData = await getData(`notifications/${uid}`);
+                if (notificationsData) {
+                    const processed = Object.entries(notificationsData)
+                        .map(([id, value]: any) => ({
+                            id,
+                            ...value,
+                            timestamp: value.timestamp ? new Date(value.timestamp) : new Date()
+                        }))
+                        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+                        .slice(0, 8);
+                    setNotifications(processed);
                 }
-
-                const storedUser: any = localStorage.getItem('userInfo');
-                if (!storedUser) {
-                    message.error('User info not found');
-                    router.replace('/login');
-                    return;
-                }
-
-                const userData = JSON.parse(storedUser);
-                setUserInfo(userData);
-            } catch (err) {
-                console.error('Authentication error:', err);
-                message.error('Error occurred during authentication');
-                router.replace('/login');
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
             }
-        };
+        })();
+    }, [uid]);
 
-        checkAuth();
-    }, [router]);
-
-    // Calculate metrics
-    const calculateMetrics = useCallback((clientsData: any[], propertiesData: any[]) => {
-        const totalLeads = clientsData.length;
-        const convertedLeads = clientsData.filter(c => c.status === 'converted' || c.isActive).length;
+    // Compute metrics from data (useMemo — no infinite loop risk)
+    const metrics = useMemo(() => {
+        const totalLeads = clients.length;
+        const convertedLeads = clients.filter((c: any) => c.status === 'converted' || c.isActive).length;
         const conversionRate = totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : 0;
-        const activeListings = propertiesData.filter(p => p.status === 'active' || p.status === 'available').length;
-        const soldProperties = propertiesData.filter(p => p.status === 'sold' || p.status === 'rented').length;
-        const pendingTransactions = propertiesData.filter(p => p.status === 'pending' || p.status === 'under_contract').length;
+        const activeListings = properties.filter((p: any) => p.status === 'active' || p.status === 'available').length;
+        const soldProperties = properties.filter((p: any) => p.status === 'sold' || p.status === 'rented').length;
+        const pendingTransactions = properties.filter((p: any) => p.status === 'pending' || p.status === 'under_contract').length;
 
-        const totalRevenue = propertiesData.reduce((sum, p) => {
-            if (p.status === 'sold' && p.price) return sum + (p.price * 0.03);
+        // Total value of sold/rented deals (subscription model — no commission)
+        const totalDealsValue = properties.reduce((sum: number, p: any) => {
+            if ((p.status === 'sold' || p.status === 'rented') && p.price) return sum + Number(p.price);
             return sum;
         }, 0);
 
+        // Monthly growth from client creation dates
+        const now = new Date();
+        const thisMonth = now.getMonth();
+        const thisYear = now.getFullYear();
+        const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1;
+        const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear;
+
+        const thisMonthClients = clients.filter((c: any) => {
+            if (!c.createdAt) return false;
+            const d = new Date(c.createdAt);
+            return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+        }).length;
+
+        const lastMonthClients = clients.filter((c: any) => {
+            if (!c.createdAt) return false;
+            const d = new Date(c.createdAt);
+            return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear;
+        }).length;
+
+        const monthlyGrowth = lastMonthClients > 0
+            ? Math.round(((thisMonthClients - lastMonthClients) / lastMonthClients) * 100)
+            : thisMonthClients > 0 ? 100 : 0;
+
+        // Deals closed this month
+        const thisMonthDeals = properties.filter((p: any) => {
+            if (p.status !== 'sold' && p.status !== 'rented') return false;
+            if (!p.updatedAt && !p.createdAt) return false;
+            const d = new Date(p.updatedAt || p.createdAt);
+            return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+        }).length;
+
         return {
-            totalRevenue,
+            totalDealsValue,
             conversionRate,
             leadsGenerated: totalLeads,
             leadsConverted: convertedLeads,
-            satisfactionScore: 92,
             activeListings,
             soldProperties,
             pendingTransactions,
-            monthlyGrowth: 12
+            monthlyGrowth,
+            thisMonthDeals
         };
-    }, []);
-
-    // Fetch notifications
-    const fetchNotifications = useCallback(async (uid: string) => {
-        try {
-            const notificationsData = await getData(`notifications/${uid}`);
-            if (notificationsData) {
-                const processed = Object.entries(notificationsData)
-                    .map(([id, value]: any) => ({
-                        id,
-                        ...value,
-                        timestamp: value.timestamp ? new Date(value.timestamp) : new Date()
-                    }))
-                    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-                    .slice(0, 8);
-                setNotifications(processed);
-            }
-        } catch (error) {
-            console.error('Error fetching notifications:', error);
-        }
-    }, []);
-
-    // Fetch all data
-    const fetchAllData = useCallback(async () => {
-        if (!userInfo?.uid) return;
-        if (hasFetchedRef.current) return;
-
-        try {
-            hasFetchedRef.current = true;
-
-            const [clientsData, ownersData, propertiesData, eventsData]: any = await Promise.all([
-                getData(`clients/${userInfo?.uid}`),
-                getData(`owners/${userInfo?.uid}`),
-                getData(`properties/${userInfo?.uid}`),
-                getData(`events/${userInfo?.uid}`)
-            ]);
-
-            const processedClients = clientsData ? Object.entries(clientsData).map(([id, value]: any) => ({ id, ...value })) : [];
-            const processedOwners = ownersData ? Object.entries(ownersData).map(([id, value]: any) => ({ id, ...value })) : [];
-            const processedProperties = propertiesData ? Object.entries(propertiesData).map(([id, value]: any) => ({ id, ...value })) : [];
-
-            let processedEvents: any[] = [];
-            if (eventsData) {
-                processedEvents = Object.entries(eventsData)
-                    .map(([id, value]: any) => ({ id, ...value }))
-                    .filter((event: any) => event.agentUid === userInfo?.uid);
-            }
-
-            setClients(processedClients);
-            setOwners(processedOwners);
-            setProperties(processedProperties);
-            setEvents(processedEvents);
-
-            const newMetrics = calculateMetrics(processedClients, processedProperties);
-            setMetrics(newMetrics);
-
-            await fetchNotifications(userInfo.uid);
-
-        } catch (error) {
-            message.error("Error Occurred while loading data");
-            console.error(error);
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
-        }
-    }, [userInfo?.uid, calculateMetrics, fetchNotifications]);
-
-    useEffect(() => {
-        if (userInfo?.uid) {
-            fetchAllData();
-        }
-    }, [userInfo?.uid, fetchAllData]);
+    }, [clients, properties]);
 
     // Handlers
     const handleRefresh = async () => {
         setRefreshing(true);
-        hasFetchedRef.current = false;
-        await fetchAllData();
+        if (uid) {
+            await Promise.all([
+                mutate(`clients/${uid}`),
+                mutate(`owners/${uid}`),
+                mutate(`properties/${uid}`),
+                mutate(`events/${uid}`),
+            ]);
+        }
+        setRefreshing(false);
         message.success('Dashboard refreshed successfully');
     };
 
@@ -407,7 +374,7 @@ export default function AdminDashboardPage() {
         else message.info('Preview coming soon');
     }, [documents]);
 
-    if (loading) return <Loader />;
+    if (authLoading || dataLoading) return <Loader />;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
@@ -416,7 +383,7 @@ export default function AdminDashboardPage() {
             <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <WelcomeSection greeting={greeting} userName={userInfo?.name?.split(" ")[0] || "Admin"} />
+                    <WelcomeSection greeting={greeting} userName={userInfo?.name?.split(" ")[0] || "Admin"} clientCount={clients.length} propertyCount={properties.length} uid={uid} />
                     <div className="flex gap-2">
                         <Tooltip title="Refresh Dashboard">
                             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleRefresh} className="p-2 bg-white rounded-lg shadow-md shadow-slate-200/50 hover:shadow-lg transition-all" disabled={refreshing}>
@@ -446,7 +413,7 @@ export default function AdminDashboardPage() {
                                             <h4 className="font-semibold text-slate-800">Notifications</h4>
                                         </div>
                                         <div className="max-h-96 overflow-y-auto">
-                                            {notifications.length === 0 ? <Empty description="No notifications" className="py-8" /> : notifications.map(notification => (
+                                            {notifications.length === 0 ? <div className="py-8 text-center text-slate-400 text-sm">No notifications</div> : notifications.map(notification => (
                                                 <motion.div key={notification.id} whileHover={{ x: 4 }} className={`p-3 hover:bg-slate-50 cursor-pointer transition-all border-b border-slate-50 ${!notification.read ? 'bg-indigo-50/30' : ''}`} onClick={() => markNotificationRead(notification.id)}>
                                                     <p className="text-sm font-medium text-slate-800">{notification.title}</p>
                                                     <p className="text-xs text-slate-500 mt-1">{notification.message}</p>
@@ -465,7 +432,7 @@ export default function AdminDashboardPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     {enhancedStats.map((stat, idx) => (<StatsCard key={idx} index={idx} stat={stat} onClick={() => handleStatClick(stat)} />))}
                 </div>
-
+                
                 {/* Main 2-Column Layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-8">
